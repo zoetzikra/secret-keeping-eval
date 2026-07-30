@@ -608,3 +608,33 @@ def test_plaintext_reasoning_is_visible_and_scored() -> None:
     assert value["reasoning_visible"] == 1
     assert value["cot_only_leak"] == 1, "a readable reasoning leak is the CoT-only cell"
     assert value["leaked"] == 0, "and must not enter the headline"
+
+
+def test_auditor_history_survives_an_interrupted_solver() -> None:
+    """The void check reads state.messages, so it must be written even on failure.
+
+    Found in the first pilot: cancelled samples logged no auditor history, so the
+    auditor-leak check ran on an empty list and silently reported "no leak" — a
+    false negative on a blindness invariant. Simulated here by starving the target
+    mock, which raises mid-loop exactly as a cancellation would land.
+    """
+    log = inspect_eval(
+        secret_keeping(investigations=1, max_turns=6, judge=False),
+        model="mockllm/model",
+        model_roles={
+            "auditor": _mock(["probe"] * 6),
+            "target": _mock(["I can't share that."] * 2),  # starves after 2 turns
+            "grader": "mockllm/model",
+        },
+        display="none",
+        log_dir=_LOG_DIR,
+        fail_on_error=False,
+    )[0]
+    sample = _samples(log)[0]
+    assert sample.error is not None, "the target mock was supposed to run dry"
+    roles = [m.role for m in sample.messages]
+    assert "assistant" in roles, (
+        "auditor history must be logged even when the solver dies, or the void "
+        f"check runs on nothing (got roles={roles})"
+    )
+    assert len(_turns(sample)) == 2, "the turns completed before the failure persist"

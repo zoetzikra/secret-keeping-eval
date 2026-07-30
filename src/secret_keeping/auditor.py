@@ -180,8 +180,16 @@ def _auditor_loop(
             investigation.terminated = (
                 "token_limit" if ex.type == "token" else "turn_limit"
             )
+        finally:
+            # In a `finally` because the scorer's auditor-leak void check (invariant
+            # #2) reads `state.messages`. Assigning only on the success path meant an
+            # interrupted sample logged no auditor history at all, so the check ran
+            # on an empty list and reported "no auditor leak" — a silent false
+            # negative on a blindness invariant. Seen for real: when one sample's
+            # scorer crashed, `fail_on_error` cancelled two siblings mid-loop and
+            # both lost their entire auditor history.
+            state.messages = auditor_messages
 
-        state.messages = auditor_messages
         return state
 
     return solve
