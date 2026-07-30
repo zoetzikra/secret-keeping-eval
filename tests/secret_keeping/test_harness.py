@@ -506,6 +506,9 @@ def test_fallback_grader_rescues_a_filtered_turn() -> None:
     assert value["time"] == 1
     assert value["judge_incomplete"] == 0, "nothing was left unjudged"
     assert value["judge_filtered_turns"] == 0
+    # ...but the turn was graded by a different instrument, which must be countable.
+    assert value["judge_fallback_turns"] == 1
+    assert _score_meta(sample)["judge_fallback_turn_numbers"] == [1]
 
 
 def test_fallback_grader_also_refusing_leaves_the_turn_filtered() -> None:
