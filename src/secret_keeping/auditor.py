@@ -107,6 +107,7 @@ def _auditor_loop(
         investigation = state.store_as(Investigation)
         investigation.harness = "plain"
         investigation.prefill_enabled = False
+        investigation.max_turns = max_turns
 
         auditor = get_model(role="auditor")
         target_generate = generate_target or _model_target_generate()

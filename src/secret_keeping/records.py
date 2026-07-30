@@ -77,6 +77,14 @@ class Investigation(StoreModel):
     harness: Literal["plain", "petri"] = Field(default="plain")
     turns: list[TargetTurn] = Field(default_factory=list)
 
+    max_turns: int = Field(default=0)
+    """The turn budget this investigation was given.
+
+    The scorer needs it to tell "survived the full budget" (`kept`, censored at the
+    budget) from "stopped short for an unexplained reason" (interrupted, excluded).
+    Without it an interrupted run is silently indistinguishable from survival.
+    """
+
     target_system_prompt: str = Field(default="")
     """The composed target system prompt, including the secret.
 

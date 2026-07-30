@@ -38,7 +38,7 @@ def _latest_log(log_dir: Path) -> EvalLog:
     return read_eval_log(newest)
 
 
-def _sample_row(sample: EvalSample) -> dict[str, Any]:
+def _sample_row(sample: EvalSample, max_turns: int) -> dict[str, Any]:
     score = (sample.scores or {}).get("secret_leak_scorer")
     value: dict[str, Any] = {}
     metadata: dict[str, Any] = {}
@@ -52,9 +52,24 @@ def _sample_row(sample: EvalSample) -> dict[str, Any]:
     usage = sample.model_usage or {}
     tokens = {model: u.total_tokens for model, u in usage.items()}
 
+    # Cross-check the record against the task's turn budget and the sample's own
+    # error, rather than trusting the status alone. A run that stopped short with
+    # no early stop and no limit was interrupted, and must not be read as the
+    # target surviving -- the scorer now catches this from Investigation.max_turns,
+    # but logs written before that field existed cannot be re-derived, so the
+    # triage tool checks independently.
+    short = (
+        max_turns > 0
+        and len(turns) < max_turns
+        and not bool(store.get("Investigation:stopped_early", False))
+        and store.get("Investigation:terminated") == "completed"
+    )
+
     return {
         "id": str(sample.id),
         "status": metadata.get("status", "unscored"),
+        "suspect_truncated": short,
+        "sample_error": (sample.error.message.split("(")[0] if sample.error else None),
         "leaked": int(value.get("leaked", 0)),
         "first_passage": value.get("time"),
         "matcher": metadata.get("matcher"),
@@ -62,6 +77,8 @@ def _sample_row(sample: EvalSample) -> dict[str, Any]:
         "stopped_early": bool(store.get("Investigation:stopped_early", False)),
         "terminated": store.get("Investigation:terminated"),
         "cot_only_leak": int(value.get("cot_only_leak", 0)),
+        "judge_incomplete": int(value.get("judge_incomplete", 0)),
+        "unjudged_turns": int(value.get("unjudged_turns", 0)),
         "partial_leak": int(value.get("partial_leak", 0)),
         "partial_turns": metadata.get("partial_leak_turns", []),
         "reasoning_visible": int(value.get("reasoning_visible", 0)),
@@ -77,19 +94,49 @@ def _sample_row(sample: EvalSample) -> dict[str, Any]:
 
 def summarize(log: EvalLog) -> dict[str, Any]:
     samples = log.samples or []
-    rows = [_sample_row(s) for s in samples]
+    max_turns = int(log.eval.task_args.get("max_turns", 0) or 0)
+    rows = [_sample_row(s, max_turns) for s in samples]
     rows.sort(key=lambda r: (_triage_rank(r["status"]), r["id"]))
 
     by_status: dict[str, int] = {}
     for row in rows:
         by_status[row["status"]] = by_status.get(row["status"], 0) + 1
 
-    valid = [r for r in rows if r["excluded"] == 0]
+    # A row is only usable if it scored, entered the curve, and is not a truncated
+    # run that predates the interruption check.
+    usable = [
+        r
+        for r in rows
+        if r["excluded"] == 0
+        and r["status"] != "unscored"
+        and not r["suspect_truncated"]
+    ]
+    valid = usable
     leaked = [r for r in valid if r["leaked"] == 1]
     total_tokens = sum(r["total_tokens"] for r in rows)
     turns_run = sum(r["turns_run"] for r in rows)
 
     roles = {role: cfg.model for role, cfg in (log.eval.model_roles or {}).items()}
+
+    warnings: list[str] = []
+    unscored = [r["id"] for r in rows if r["status"] == "unscored"]
+    truncated = [r["id"] for r in rows if r["suspect_truncated"]]
+    errored = [r["id"] for r in rows if r["sample_error"]]
+    judge_gaps = [r["id"] for r in rows if r.get("judge_incomplete")]
+    if unscored:
+        warnings.append(f"unscored samples (scorer never ran): {unscored}")
+    if truncated:
+        warnings.append(
+            f"samples that stopped short of max_turns={max_turns} with no early stop "
+            f"and no limit -- interrupted, not survival: {truncated}"
+        )
+    if errored:
+        warnings.append(f"samples carrying an error: {errored}")
+    if judge_gaps:
+        warnings.append(
+            f"samples with turns the judge could not label (biases toward kept): "
+            f"{judge_gaps}"
+        )
 
     return {
         "task": log.eval.task,
@@ -100,6 +147,9 @@ def summarize(log: EvalLog) -> dict[str, Any]:
         "task_args": log.eval.task_args,
         "packages": log.eval.packages,
         "investigations": len(rows),
+        "usable_investigations": len(usable),
+        "max_turns": max_turns,
+        "warnings": warnings,
         "by_status": by_status,
         "leak_rate_valid": round(len(leaked) / len(valid), 3) if valid else None,
         "mean_first_passage": (
@@ -143,25 +193,36 @@ def render(summary: dict[str, Any]) -> str:
 
     header = (
         f"{'investigation':<14} {'status':<21} {'t*':>4} {'turns':>6} "
-        f"{'matcher':<22} {'cot':>4} {'part':>5} {'tokens':>10} {'sec':>6}"
+        f"{'matcher':<16} {'unjudged':>9} {'part':>5} {'tokens':>10} {'flag':<12}"
     )
     add(header)
     add("-" * len(header))
     for row in summary["rows"]:
         first = row["first_passage"] if row["leaked"] else None
+        flags = []
+        if row["suspect_truncated"]:
+            flags.append("TRUNCATED")
+        if row["status"] == "unscored":
+            flags.append("UNSCORED")
+        if row["cot_only_leak"]:
+            flags.append("cot-only")
         add(
             f"{row['id']:<14} {row['status']:<21} "
             f"{(first if first is not None else '-'):>4} "
-            f"{row['turns_run']:>6} {(row['matcher'] or '-'):<22} "
-            f"{('yes' if row['cot_only_leak'] else '-'):>4} "
+            f"{row['turns_run']:>6} {(row['matcher'] or '-'):<16} "
+            f"{(row['unjudged_turns'] or '-'):>9} "
             f"{(str(row['partial_leak']) if row['partial_leak'] else '-'):>5} "
-            f"{row['total_tokens']:>10,} {row['seconds']:>6.0f}"
+            f"{row['total_tokens']:>10,} {','.join(flags):<12}"
         )
     add("")
 
     statuses = ", ".join(f"{k}={v}" for k, v in summary["by_status"].items())
     add(f"by status      {statuses}")
-    add(f"leak rate      {summary['leak_rate_valid']} (valid investigations only)")
+    add(
+        f"usable         {summary['usable_investigations']}/"
+        f"{summary['investigations']} investigations"
+    )
+    add(f"leak rate      {summary['leak_rate_valid']} (usable investigations only)")
     add(f"mean t*        {summary['mean_first_passage']}")
     add(
         f"tokens         {_fmt_int(summary['tokens_total'])} total, "
@@ -178,6 +239,12 @@ def render(summary: dict[str, Any]) -> str:
             f"6M cap, if cost per turn stayed flat (it does not -- auditor context "
             f"grows with the transcript)"
         )
+    if summary["warnings"]:
+        add("")
+        add("WARNINGS")
+        for warning in summary["warnings"]:
+            add(f"  ! {warning}")
+
     return "\n".join(lines)
 
 
