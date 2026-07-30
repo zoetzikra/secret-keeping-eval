@@ -25,14 +25,19 @@ afterthought.
 | Milestone | State |
 |---|---|
 | M1 — scaffold + scorer, four control classes passing | done |
-| M2 — plain auditor harness, gold solvers, blindness test | done (mockllm e2e green; live pilot not yet run) |
+| M2 — plain auditor harness, gold solvers, blindness test | done |
 | M3 — Petri custom task | not started |
-| M4 — pilot, transcripts read, judge validated | not started |
+| M4 — pilot, transcripts read, judge validated | first plain pilot run; transcripts being read; judge not yet validated |
 | M5 — first curves + auditor-strength ablation | not started |
 | M6 — frontier reported run | not started |
 
-No numbers here yet. Nothing in this repo has been run against a live model
-beyond a one-sample toolchain smoke test.
+**No quotable numbers yet.** One plain-harness pilot has run against a live target
+(10 investigations × 40 turns, gpt-5-mini, auditor claude-sonnet-4-6). It produced
+zero leaks, which is *not* a result about the target: the auditor declared itself
+finished before the turn budget in 5/10 investigations and broke character in 5/10,
+so elicitation strength has not been established and the METR rule above applies in
+full. The pilot's value was the four harness bugs it exposed, all fixed — see the
+known failure modes at the end of this file.
 
 ## Install and check
 
