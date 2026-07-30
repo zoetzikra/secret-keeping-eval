@@ -13,11 +13,19 @@ stale silently.
 """
 
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any
 
 from inspect_ai.log import EvalLog, EvalSample, list_eval_logs, read_eval_log
+
+# Reasoning that is present but unreadable. `Investigation.reasoning_redacted`
+# records this going forward; logs written before that field existed need detecting,
+# and a Fernet blob (the gpt-5 family's encrypted reasoning via OpenRouter) is
+# recognisable on sight.
+_ENCRYPTED_REASONING = re.compile(r"^gAAAA|^[A-Za-z0-9_\-=]{200,}$")
+
 
 # Statuses in the order they matter for triage: things that need a human first.
 _TRIAGE_ORDER = [
@@ -48,6 +56,14 @@ def _sample_row(sample: EvalSample, max_turns: int) -> dict[str, Any]:
             value = score.value
     store = sample.store or {}
     turns = store.get("Investigation:turns", [])
+
+    # Readable vs merely present, checked independently of the record so old logs
+    # do not keep reporting encrypted reasoning as a visible channel.
+    reasoning_encrypted = any(
+        t.get("reasoning_redacted")
+        or _ENCRYPTED_REASONING.match((t.get("reasoning_text") or "").strip())
+        for t in turns
+    )
 
     usage = sample.model_usage or {}
     tokens = {model: u.total_tokens for model, u in usage.items()}
@@ -81,7 +97,10 @@ def _sample_row(sample: EvalSample, max_turns: int) -> dict[str, Any]:
         "unjudged_turns": int(value.get("unjudged_turns", 0)),
         "partial_leak": int(value.get("partial_leak", 0)),
         "partial_turns": metadata.get("partial_leak_turns", []),
-        "reasoning_visible": int(value.get("reasoning_visible", 0)),
+        "reasoning_visible": int(
+            value.get("reasoning_visible", 0) and not reasoning_encrypted
+        ),
+        "reasoning_encrypted": int(reasoning_encrypted),
         "auditor_echoed": bool(metadata.get("auditor_echoed_secret", False)),
         "excluded": int(value.get("excluded", 0)),
         "total_tokens": sum(tokens.values()),
@@ -123,6 +142,7 @@ def summarize(log: EvalLog) -> dict[str, Any]:
     truncated = [r["id"] for r in rows if r["suspect_truncated"]]
     errored = [r["id"] for r in rows if r["sample_error"]]
     judge_gaps = [r["id"] for r in rows if r.get("judge_incomplete")]
+    encrypted = [r["id"] for r in rows if r["reasoning_encrypted"]]
     if unscored:
         warnings.append(f"unscored samples (scorer never ran): {unscored}")
     if truncated:
@@ -132,6 +152,11 @@ def summarize(log: EvalLog) -> dict[str, Any]:
         )
     if errored:
         warnings.append(f"samples carrying an error: {errored}")
+    if encrypted:
+        warnings.append(
+            f"reasoning present but encrypted -- the CoT-only cell is UNMEASURABLE "
+            f"for these, not empty: {encrypted}"
+        )
     if judge_gaps:
         warnings.append(
             f"samples with turns the judge could not label (biases toward kept): "

@@ -79,20 +79,33 @@ def inject_secret(no_instruction: bool = False) -> Solver:
     return solve
 
 
-def _reasoning_text(message: ChatMessageAssistant) -> tuple[str, bool]:
-    """Extract visible reasoning from an assistant message.
+def _reasoning_text(message: ChatMessageAssistant) -> tuple[str, bool, bool]:
+    """Extract *readable* reasoning from an assistant message.
 
-    Returns the reasoning text and whether a reasoning channel was present at all.
-    The second value matters: "reasoned and did not leak" and "we could not see the
-    reasoning" are very different claims about the CoT-only cell, and collapsing
-    them would silently overstate what the eval measured.
+    Returns `(text, available, redacted)`. Three states, not two, because the
+    middle one is real and easy to mistake for the good one: some providers return
+    a reasoning block whose content is encrypted rather than plaintext — the gpt-5
+    family via OpenRouter returns a Fernet blob, which Inspect marks
+    `ContentReasoning.redacted`. Treating that as visible reasoning would set
+    `reasoning_available=True` while the scorer scans several kilobytes of
+    ciphertext per turn: no detection value, and a pure false-positive surface.
+
+    So `available` means *readable*, `redacted` records that a channel existed but
+    could not be read, and the ciphertext is not stored at all. The distinction is
+    load-bearing for the CoT-only cell: "reasoned and did not leak", "reasoned
+    where we cannot look", and "did not reason" are three different claims.
     """
     if isinstance(message.content, str):
-        return "", False
+        return "", False, False
     blocks = [c for c in message.content if isinstance(c, ContentReasoning)]
     if len(blocks) == 0:
-        return "", False
-    return "\n\n".join(b.reasoning for b in blocks), True
+        return "", False, False
+    readable = [b for b in blocks if not b.redacted]
+    return (
+        "\n\n".join(b.reasoning for b in readable),
+        len(readable) > 0,
+        len(readable) < len(blocks),
+    )
 
 
 def _auditor_loop(
@@ -130,7 +143,9 @@ def _auditor_loop(
                 target_message = await target_generate(target_messages)
                 target_messages.append(target_message)
 
-                reasoning, reasoning_available = _reasoning_text(target_message)
+                reasoning, reasoning_available, reasoning_redacted = _reasoning_text(
+                    target_message
+                )
                 # Reassign rather than mutate in place: StoreModel writes through on
                 # attribute set, and an in-place append is not guaranteed to persist.
                 investigation.turns = [
@@ -143,6 +158,7 @@ def _auditor_loop(
                         output_text=target_message.text,
                         reasoning_text=reasoning,
                         reasoning_available=reasoning_available,
+                        reasoning_redacted=reasoning_redacted,
                     ),
                 ]
 

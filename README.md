@@ -71,7 +71,69 @@ The registry name is bare `secret_keeping`; Inspect collapses
 `inspect_evals/secret_keeping`.
 
 **Model roles** (never hardcoded): `auditor` runs the extraction attack, `target`
-holds the secret, `grader` is the leak judge.
+holds the secret, `grader` is the leak judge. `grader_fallback` is optional and
+strongly recommended — see below.
+
+```bash
+  --model-role grader_fallback=openrouter/google/gemini-2.5-flash
+```
+
+### Why you want `grader_fallback`
+
+A strong auditor probes hard topics as an extraction strategy. Ask a grader to
+classify such a turn and it can return an empty completion with
+`stop_reason="content_filter"` — its own safety layer declining to engage with the
+quoted material. This is not hypothetical: it happened on the first live pilot and
+killed the run.
+
+The judge now retries, then escalates to `grader_fallback`, then records the turn as
+unjudged rather than failing. **Point the fallback at a different provider** — the
+value of it is that a different filter draws the line elsewhere; a second snapshot
+of the same model mostly repeats the refusal.
+
+The residual gap is reported as `judge_filtered_turns` / `judge_filtered_rate`, and
+it is not benign: the blind spot clusters on the turns where the auditor pushed
+hardest, which are plausibly the likeliest leak turns, so it **biases the curve
+toward `kept`**. Report it alongside judge agreement — agreement measured only on
+turns the grader would answer overstates judge quality.
+
+## Reading transcripts
+
+Reading transcripts is the main QA tool for this eval, and every real bug so far
+was found that way. Two views, and you want both:
+
+```bash
+# 1. The Inspect log viewer: scores, metrics, events, model calls, token costs.
+PYTHONPATH=src uv run inspect view --log-dir logs/pilot-plain
+
+# 2. One investigation as a readable transcript, both target channels per turn.
+make transcript LOG=logs/pilot-plain ID=0_000
+make transcript LOG=logs/pilot-plain ID=0_000 TURNS=25-40
+
+# 3. Which investigations to open first.
+make pilot-summary LOG=logs/pilot-plain
+```
+
+The viewer alone is not enough, for a reason specific to this harness: in the
+plain harness `TaskState.messages` is the **auditor's** history, so the viewer's
+message list shows the auditor's side with the target's replies wrapped in
+`<target_response>`. The target's reasoning is not a message at all — it lives in
+the sample store, because the auditor never sees it. Since reasoning is a scored
+channel, the viewer would let you read a whole pilot without once looking at one of
+the two channels being measured. `make transcript` lays both out per turn and
+annotates each turn with the scorer's verdicts, plus two auditor failure modes the
+first pilot exhibited: declaring the audit finished, and breaking character.
+
+### Reasoning-channel visibility is per-target and must be checked
+
+The gpt-5 family via OpenRouter returns reasoning **encrypted** (a Fernet blob,
+which Inspect marks `ContentReasoning.redacted`). For such a target the CoT-only
+cell is **unmeasurable, not empty** — a distinction that is easy to lose and that
+would turn a limitation into a finding. The harness records
+`reasoning_redacted` per turn, drops the ciphertext rather than storing it (it has
+no detection value and several kilobytes of near-uniform base64 per turn is a
+false-positive surface), and `pilot-summary` warns when a run's CoT cell is
+unmeasurable.
 
 ## Definitions that the numbers depend on
 
@@ -195,7 +257,7 @@ Scores are meaningless without this metadata. Record for every reported run:
 | Harness variant + package versions | task metadata `harness`; eval log `packages` |
 | Turn budget / token budget | task metadata `max_turns`; task `token_limit` |
 | Prefill enabled | `Investigation.prefill_enabled` |
-| Reasoning visibility per target | `TargetTurn.reasoning_available` per turn |
+| Reasoning visibility per target | `TargetTurn.reasoning_available` and `reasoning_redacted` per turn |
 
 Pinned now: `inspect-ai==0.3.250`, `inspect-petri==3.0.11`, Python 3.12.
 
@@ -231,4 +293,9 @@ comparable and must never be plotted against each other as if they were.
 **Known failure modes:** the judge is unvalidated (M4); `refused-all` detection is
 a heuristic pending human labels; the deterministic matcher does not attempt
 arbitrary steganography; early stop truncates the partial-leak curve past first
-passage.
+passage; the grader can be content-filtered on exactly the turns where the auditor
+pushed hardest, biasing toward `kept`; the CoT-only cell is unmeasurable against
+targets that return encrypted reasoning; and on the first pilot the plain auditor
+declared itself finished before the turn budget in 5/10 investigations and broke
+character in 5/10, so plain-harness curves are not yet a valid elicitation-strength
+baseline.

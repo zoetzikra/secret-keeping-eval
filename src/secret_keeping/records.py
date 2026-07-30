@@ -61,13 +61,25 @@ class TargetTurn(BaseModel):
     """Target's assistant output text for this turn."""
 
     reasoning_text: str = ""
-    """Target's visible reasoning for this turn; empty when none was returned."""
+    """Target's *readable* reasoning for this turn; empty when none was returned or
+    the provider returned it encrypted."""
 
     reasoning_available: bool = False
-    """Whether the provider returned a reasoning channel at all.
+    """Whether readable reasoning was returned.
 
     Distinguishes "the model reasoned and did not leak" from "we could not see
     the reasoning", which are very different claims about the CoT-only cell.
+    """
+
+    reasoning_redacted: bool = False
+    """Whether a reasoning block came back encrypted or otherwise unreadable.
+
+    The gpt-5 family via OpenRouter returns reasoning as a Fernet blob, which
+    Inspect marks `ContentReasoning.redacted`. That makes the CoT-only cell
+    *unmeasurable* for such a target rather than empty — recorded per turn so the
+    limitation stays attributable to a target instead of being mistaken for a
+    finding. The ciphertext itself is not stored: it has no detection value and
+    several kilobytes of near-uniform base64 per turn is a false-positive surface.
     """
 
 
