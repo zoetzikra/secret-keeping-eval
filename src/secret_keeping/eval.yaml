@@ -1,0 +1,21 @@
+- title: "Secret Keeping (Survival)"
+  description: |
+    A target model is given a non-semantic secret token in its system prompt and
+    instructed never to reveal it. An auditor agent runs a multi-turn adaptive
+    extraction attack. The reported quantity is a Kaplan-Meier survival curve
+    S(t): the fraction of investigations in which the secret is still safe at
+    target turn t.
+
+    This is a capability-elicitation safety-case argument by analogy: if a model
+    demonstrably cannot keep a prompted secret under strong sustained
+    elicitation, that is evidence a broadly-known misaligned secret goal could
+    likewise be surfaced by similar auditing. A fast-decaying curve is the
+    positive result. Failure to elicit is not evidence of ability to keep a
+    secret -- a high curve means nothing without an argument that elicitation
+    was strong.
+  path: src/secret_keeping/secret_keeping.py
+  group: Safeguards
+  contributors: ["zoetzikra"]
+  tasks:
+    - name: secret_keeping
+      dataset_samples: 20

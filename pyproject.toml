@@ -1,0 +1,56 @@
+[project]
+name = "secret-keeping-eval"
+version = "0.1.0"
+description = "Secret-keeping survival eval: Kaplan-Meier survival curves for prompt-implanted secrets under adaptive multi-turn extraction"
+readme = "README.md"
+authors = [
+    { name = "zoetzikra", email = "zoetzikra@yahoo.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "inspect-ai==0.3.250",
+    "inspect-petri==3.0.11",
+    "openai==2.50.0",
+]
+
+[project.optional-dependencies]
+analysis = [
+    "numpy==2.3.4",
+    "matplotlib==3.10.7",
+]
+
+[project.entry-points.inspect_ai]
+secret_keeping = "secret_keeping"
+
+[build-system]
+requires = ["uv_build>=0.12.0,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "secret_keeping"
+
+[dependency-groups]
+dev = [
+    "pytest==8.4.2",
+    "pytest-asyncio==1.2.0",
+    "ruff==0.14.2",
+    "mypy==1.18.2",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+# Not redundant with the editable install: see the fix-pth note in the Makefile.
+pythonpath = ["src", "."]
+markers = ["slow: marks tests as slow (deselect with '-m \"not slow\"')"]
+
+[tool.ruff]
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+python_version = "3.12"
+files = ["src", "tests", "analysis"]
+strict = true
