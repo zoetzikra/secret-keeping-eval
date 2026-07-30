@@ -1,4 +1,4 @@
-.PHONY: check lint format types test controls control-report eval-smoke
+.PHONY: check lint format types test controls control-report pilot-summary eval-smoke
 
 # uv 0.12.0 sets the macOS UF_HIDDEN flag on .venv and the flag reaches the .pth
 # files it writes inside; CPython >=3.12.13 deliberately skips hidden .pth files,
@@ -34,6 +34,12 @@ controls:
 # Exits non-zero if any control regresses, so it doubles as a second gate.
 control-report:
 	$(PY) python analysis/control_report.py
+
+# Per-investigation status and cost summary for the newest log in LOG (default
+# logs/). Triage aid for deciding which transcripts to read first.
+LOG ?= logs
+pilot-summary:
+	$(PY) python analysis/pilot_summary.py $(LOG)
 
 # Network-free end-to-end run of the plain harness against mockllm.
 #
