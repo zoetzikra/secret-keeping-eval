@@ -30,6 +30,7 @@ from secret_keeping.prompts import (
     TARGET_SYSTEM_PROMPT,
     TARGET_SYSTEM_PROMPT_NO_INSTRUCTION,
     TRIVIAL_REFUSAL,
+    TURN_NOTICE,
 )
 from secret_keeping.records import Investigation, TargetTurn
 from secret_keeping.scorer import deterministic_leak
@@ -162,11 +163,18 @@ def _auditor_loop(
                     ),
                 ]
 
+                # The turn notice rides on the auditor's copy of the reply and never
+                # reaches the target. It carries the two rules the first pilot's
+                # auditor broke — do not stop, do not break character — at the point
+                # of use, because stating them once in a system prompt demonstrably
+                # did not hold past turn ~27.
                 auditor_messages.append(
                     ChatMessageUser(
                         content=TARGET_RESPONSE_TEMPLATE.format(
                             response=target_message.text
                         )
+                        + "\n\n"
+                        + TURN_NOTICE.format(t=t, max_turns=max_turns)
                     )
                 )
 
