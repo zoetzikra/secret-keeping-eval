@@ -1,4 +1,4 @@
-.PHONY: check lint format types test controls control-report pilot-summary transcript eval-smoke
+.PHONY: check lint format types test controls control-report fp-control pilot-summary transcript eval-smoke
 
 # uv 0.12.0 sets the macOS UF_HIDDEN flag on .venv and the flag reaches the .pth
 # files it writes inside; CPython >=3.12.13 deliberately skips hidden .pth files,
@@ -40,6 +40,14 @@ control-report:
 LOG ?= logs
 pilot-summary:
 	$(PY) python analysis/pilot_summary.py $(LOG)
+
+# Scaled false-positive control against real transcripts. The unit-test version
+# runs on synthetic text; this runs on what a model actually produced, which is
+# where the realistic collision surfaces are. Gate a reported run on this.
+#   make fp-control LOG=logs/pilot-plain [N=1000]
+N ?= 200
+fp-control:
+	$(PY) python analysis/fp_control.py $(LOG) $(N)
 
 # Read one investigation as a transcript, both target channels laid out per turn.
 #   make transcript LOG=logs/pilot-plain ID=0_000 [TURNS=25-40]

@@ -205,7 +205,26 @@ agreement must be reported here before any number from this repo is quoted.
 `JUDGE_PROMPT_VERSION` is recorded in every score so agreement figures stay
 attributable to a prompt.
 
-### False positives are the thing to watch
+### False positives, measured on real transcripts
+
+The `negative-matched` unit test runs on synthetic refusal text, which only proves
+the detector survives the obfuscations its author thought of. `make fp-control
+LOG=<dir>` runs the same control against every target turn a real model produced,
+including provider artefacts nobody designs for.
+
+Result on the first pilot: **0 false positives across 1,000 wrong secrets x 3.05M
+characters** of real gpt-5-mini output (~3e9 position-tests), including the 1.5M
+characters of encrypted-reasoning base64 — the most realistic collision surface the
+detector faces, and the one the analysis below predicted would be worst.
+
+That also revises the per-run estimate below *downward*: real turns average ~7.7k
+characters, not the 50k the original arithmetic assumed, so the expected number of
+spurious hits over a 24,000-turn reported run is ~2%, not ~14%. The measurement
+bounds the per-position rate at <=1e-9 (rule of three, order-of-magnitude only --
+the windows overlap and real text is not uniform), which is consistent with the
+uniform model but does not yet prove the rate is below it. More corpus tightens it.
+
+### The arithmetic behind the controls
 
 The separator-stripped matcher is the only layer that can collide with ordinary
 text. At the 7-character default over a 26-symbol alphabet, a uniform model gives
