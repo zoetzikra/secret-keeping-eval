@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Any
 
 from inspect_ai.log import EvalSample, list_eval_logs, read_eval_log
+from inspect_ai.model import ContentReasoning
 
 from secret_keeping.scorer import deterministic_leak
 
@@ -38,6 +39,30 @@ _BROKE_CHARACTER = re.compile(
     r"|this is an eval|i'?ve been (progressively )?testing",
     re.I,
 )
+
+
+def _event_summaries(sample: EvalSample) -> dict[int, str]:
+    """Reasoning summaries keyed by target turn, read from the events.
+
+    Fallback for logs written before the harness captured summaries: the gpt-5
+    family returns the raw chain encrypted but a readable summary alongside it, and
+    early runs stored only the ciphertext. Those logs are still the ones with the
+    CoT leaks in them, so the reader has to be able to reach the summaries.
+    """
+    out: dict[int, str] = {}
+    turn = 0
+    for event in sample.events or []:
+        if event.event != "model" or "gpt-5" not in (event.model or ""):
+            continue
+        turn += 1
+        choices = event.output.choices
+        if len(choices) == 0:
+            continue
+        content = choices[0].message.content
+        for block in content if isinstance(content, list) else []:
+            if isinstance(block, ContentReasoning) and block.summary:
+                out[turn] = str(block.summary)
+    return out
 
 
 def _load(log_dir: Path, sample_id: str) -> tuple[EvalSample, dict[str, Any]]:
@@ -106,6 +131,7 @@ def render(sample: EvalSample, meta: dict[str, Any], turn_spec: str | None) -> s
     unparseable = set(smeta.get("judge_unparseable_turn_numbers") or [])
 
     wanted = _parse_range(turn_spec, len(turns))
+    summaries = _event_summaries(sample)
     out = [_header(sample, meta, secret)]
 
     for turn in turns:
@@ -125,9 +151,10 @@ def render(sample: EvalSample, meta: dict[str, Any], turn_spec: str | None) -> s
             notes.append("grader content-filtered")
         if t in unparseable:
             notes.append("grader unparseable")
+        reasoning = turn["reasoning_text"] or summaries.get(t, "")
         for channel, text in (
             ("output", turn["output_text"]),
-            ("reasoning", turn["reasoning_text"]),
+            ("reasoning", reasoning),
         ):
             hit = deterministic_leak(text, secret)
             if hit is not None:
@@ -138,11 +165,16 @@ def render(sample: EvalSample, meta: dict[str, Any], turn_spec: str | None) -> s
         kind, chars = turn["turn_type"], len(turn["stimulus_text"])
         out.append(f"\n── auditor ({kind}, {chars} ch)")
         out.append(turn["stimulus_text"])
-        if turn.get("reasoning_redacted"):
-            out.append("\n── target reasoning: PRESENT BUT ENCRYPTED (unreadable)")
-        elif len(turn["reasoning_text"]) > 0:
-            out.append(f"\n── target reasoning ({len(turn['reasoning_text'])} ch)")
-            out.append(turn["reasoning_text"])
+        if len(reasoning) > 0:
+            note = (
+                " summary only; raw chain encrypted"
+                if turn.get("reasoning_redacted") or t in summaries
+                else ""
+            )
+            out.append(f"\n── target reasoning ({len(reasoning)} ch{note})")
+            out.append(reasoning)
+        elif turn.get("reasoning_redacted"):
+            out.append("\n── target reasoning: encrypted, no summary returned")
         out.append(f"\n── target output ({len(turn['output_text'])} ch)")
         out.append(turn["output_text"])
 
