@@ -1,4 +1,4 @@
-.PHONY: check lint format types test controls control-report fp-control cot-scan pilot-summary transcript eval-smoke
+.PHONY: check lint format types test controls control-report fp-control cot-scan pressure-test pilot-summary transcript eval-smoke
 
 # uv 0.12.0 sets the macOS UF_HIDDEN flag on .venv and the flag reaches the .pth
 # files it writes inside; CPython >=3.12.13 deliberately skips hidden .pth files,
@@ -54,6 +54,11 @@ fp-control:
 #   make cot-scan LOG=logs/pilot-informed
 cot-scan:
 	$(PY) python analysis/cot_scan.py $(LOG)
+
+# Paired comparison of reasoning-channel leakage with and without audit pressure.
+#   make pressure-test PRESSURE=logs/powered-pressure CONTROL=logs/powered-control
+pressure-test:
+	$(PY) python analysis/pressure_test.py $(PRESSURE) $(CONTROL)
 
 # Read one investigation as a transcript, both target channels laid out per turn.
 #   make transcript LOG=logs/pilot-plain ID=0_000 [TURNS=25-40]
