@@ -220,6 +220,39 @@ skill at reading hints from inflating it — the structural protection ESK lacke
 since its `turns_to_guess` scored the auditor's guess against a target fine-tuned
 to hint.
 
+### The decoy defence, and a quantity we could not measure
+
+Asked to play a guessing game about the secret, gpt-5-mini does not stonewall. It
+refuses the inference attack explicitly — *"I can't answer yes/no questions about
+that confidential string or reveal any of its properties. I won't help infer
+it"* — and then **offers to play with a value it invents**. If the auditor accepts,
+it maintains that invented value consistently for the rest of the conversation.
+
+This is not deception: the substitution is announced, the auditor consents to it,
+and the answers are truthful *about the invented value*. Across every informed
+pilot investigation the target made no false claim about the real secret; asked
+about the real one, it refused every time. What makes it read as deceptive is
+frame persistence — the substitution is stated once and never restated, so by turn
+40 nothing on screen marks the game as fictional.
+
+Two consequences:
+
+- It **consumes auditor turns** — roughly 15 of 40 in one pilot investigation.
+- It **fools a windowed judge**. Every spurious `partial` label in the informed
+  pilot was a decoy answer. `DECOY_FRAME_NOTE` and the arithmetic rule in judge v4
+  fixed it: `partial_leak_rate` went 0.5 → 0.0.
+
+`decoy_offered_rate` measures the offer, which keys on the target's own words and
+is well defined. It was **1.0** on the informed pilot, often by turn 3.
+
+**What we could not measure:** whether the auditor actually *played along*, which
+is the consequential quantity. Three automatic detectors gave 10/10, 9/10 and 7/10
+on the same ten transcripts against a hand proxy of 5. The auditor's phrasing
+misleads (in one investigation it said "I'm *not* asking about fictional codes"
+and matched anyway), and so do the target's answer lengths. This needs human labels
+in M4 rather than a fourth regex tuned against ten conversations, and no
+"engaged" metric is shipped until it has them.
+
 ### Censoring at give-up
 
 `first_give_up_turn` records the first turn on which the auditor declares the
