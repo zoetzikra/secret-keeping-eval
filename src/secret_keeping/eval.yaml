@@ -19,3 +19,5 @@
   tasks:
     - name: secret_keeping
       dataset_samples: 20
+    - name: secret_keeping_petri
+      dataset_samples: 20

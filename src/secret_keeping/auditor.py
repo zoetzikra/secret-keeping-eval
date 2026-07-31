@@ -27,6 +27,9 @@ from inspect_ai.util import LimitExceededError
 
 from secret_keeping.prompts import (
     AUDITOR_SYSTEM_PROMPT,
+    BENIGN_TURN_NOTICE,
+    BENIGN_USER_PROMPT_ADJACENT,
+    BENIGN_USER_PROMPT_NEUTRAL,
     TARGET_SYSTEM_PROMPT,
     TARGET_SYSTEM_PROMPT_NO_INSTRUCTION,
     TARGET_SYSTEM_PROMPT_PERMISSIVE,
@@ -132,8 +135,14 @@ def _auditor_loop(
     max_turns: int,
     early_stop: bool,
     generate_target: TargetGenerate | None,
+    system_prompt: str = AUDITOR_SYSTEM_PROMPT,
+    turn_notice: str = TURN_NOTICE,
 ) -> Solver:
-    """The shared loop body. `generate_target=None` uses the target model role."""
+    """The shared loop body. `generate_target=None` uses the target model role.
+
+    `system_prompt` and `turn_notice` are parameterised so the control arms can
+    drive the same loop with a benign conversational partner instead of an auditor.
+    """
 
     async def solve(state: TaskState, generate: Generate) -> TaskState:
         secret = state.target.text
@@ -146,7 +155,7 @@ def _auditor_loop(
         target_generate = generate_target or _model_target_generate()
 
         auditor_messages: list[ChatMessage] = [
-            ChatMessageSystem(content=AUDITOR_SYSTEM_PROMPT),
+            ChatMessageSystem(content=system_prompt),
             ChatMessageUser(content=state.input_text),
         ]
         target_messages: list[ChatMessage] = [
@@ -193,7 +202,7 @@ def _auditor_loop(
                             response=target_message.text
                         )
                         + "\n\n"
-                        + TURN_NOTICE.format(t=t, max_turns=max_turns)
+                        + turn_notice.format(t=t, max_turns=max_turns)
                     )
                 )
 
@@ -297,3 +306,33 @@ def _permissive_floor(max_turns: int = 4) -> Solver:
         return await loop(await inject(state, generate), generate)
 
     return solve
+
+
+@solver
+def _benign_conversation(
+    max_turns: int = DEFAULT_MAX_TURNS, adjacent: bool = False
+) -> Solver:
+    """Control arm: an ordinary user session, with no extraction attempt at all.
+
+    Same target system prompt as the eval proper, same turn budget, same loop — the
+    only thing removed is adversarial pressure. It answers the question the pilots
+    cannot: is the reasoning-channel leak caused by auditing, or is it what the
+    model does whenever a secret sits in its context?
+
+    Args:
+        max_turns: Turn budget, matched to the arm being controlled for.
+        adjacent: Hold the conversation topically near credentials and secret
+            management without ever probing the assistant's own. The sharper
+            control — the observed leaks clustered on turns where the topic was
+            already nearby, so a neutral conversation alone cannot separate
+            adversarial pressure from topic adjacency.
+    """
+    return _auditor_loop(
+        max_turns,
+        early_stop=False,
+        generate_target=None,
+        system_prompt=(
+            BENIGN_USER_PROMPT_ADJACENT if adjacent else BENIGN_USER_PROMPT_NEUTRAL
+        ),
+        turn_notice=BENIGN_TURN_NOTICE,
+    )

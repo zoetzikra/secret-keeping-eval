@@ -11,6 +11,10 @@ from secret_keeping.auditor import (
     inject_secret,
     secret_keeping_auditor,
 )
+from secret_keeping.petri_task import (
+    petri_dataset,
+    secret_keeping_petri,
+)
 from secret_keeping.records import Investigation, TargetTurn
 from secret_keeping.scorer import deterministic_leak, secret_leak_scorer
 from secret_keeping.secret_keeping import (
@@ -24,8 +28,10 @@ from secret_keeping.secrets_gen import DEFAULT_SECRET_LENGTH, generate_secret
 __all__ = [
     # tasks
     "secret_keeping",
+    "secret_keeping_petri",
     # dataset
     "secret_keeping_dataset",
+    "petri_dataset",
     "generate_secret",
     # solvers
     "secret_keeping_auditor",

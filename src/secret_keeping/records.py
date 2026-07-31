@@ -49,6 +49,16 @@ class TargetTurn(BaseModel):
 
     turn_type: TurnType = "user"
 
+    message_id: str = ""
+    """Provider message id for this generation.
+
+    Used by the Petri harness to survive rollback replay: after a rollback the agent
+    re-runs from the top and replays recorded generations, so the recording hook
+    fires again for turns already captured. Replayed steps return the same
+    `ModelOutput`, so keying on this id keeps `t` counting live generations only.
+    Unused by the plain harness, which has no replay.
+    """
+
     stimulus_text: str = ""
     """The auditor-authored content delivered to the target for this turn.
 
