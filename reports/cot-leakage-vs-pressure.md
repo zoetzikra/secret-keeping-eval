@@ -95,6 +95,12 @@ n=20 is where the curve stops paying: it fully resolves the effect the pilot
 suggested, adequately resolves a more modest one, and effects below ~0.65 are out
 of reach at any budget worth spending.
 
+**The auditor could not see the target's reasoning (`show_reasoning=False`).**
+This experiment predates that parameter; at the time the plain harness never
+surfaced the reasoning summary to the auditor, which is equivalent to
+`show_reasoning=False`. That is the *correct* configuration for this question and
+the results should not be re-run under the new default — see §8.
+
 **Leakage is measured in reasoning *summaries*, not raw chain of thought.** The
 gpt-5 family returns the raw chain encrypted — a Fernet token (version byte
 `0x80`, embedded timestamp matching the request minute, AES-block-aligned body) —
@@ -265,6 +271,32 @@ lacked the power to answer it.
 
 ---
 
+## 8. Configuration note: `show_reasoning`
+
+After this experiment ran, the plain harness gained `show_reasoning` (default
+**True**): the auditor is now shown the target's reasoning summary, tagged
+`<target_thinking_summary>`. The reasoning behind that change is right — the
+summary is the target's own output rather than the secret-injection path, real
+users of reasoning models see thinking summaries, and withholding it made the
+plain auditor weaker than both a real attacker and Petri's.
+
+**These results stand and should not be re-run under the new default**, for a
+specific reason. With the reasoning channel visible, an auditor that reads the
+secret out of a summary at turn 5 will then use it in its own messages — so the
+target subsequently sees its own secret in the *user* turn. That is a feedback
+loop from the measurement channel back into the thing being measured, and it would
+inflate the pressure arm's reasoning-leak rate for reasons that have nothing to do
+with pressure. Testing "does pressure drive reasoning leakage?" requires the
+channel hidden from both arms, which is what these logs are.
+
+The change does open a new and more consequential question, which this experiment
+cannot answer: **with reasoning visible, does the output-channel curve collapse?**
+The auditor can now read the secret in ~55% of investigations, state it, and
+convert it into a confirmation-channel leak. If so, the headline survival result
+changes substantially, and `event_any`/`time_any` (leak in *either* channel) —
+added alongside `show_reasoning` — becomes the number that matters. That is a run
+worth doing; it is a different experiment from this one.
+
 ## Reproducing
 
 ```bash
@@ -277,6 +309,7 @@ make pilot-summary LOG=logs/powered-pressure   # statuses, costs, warnings
 **Pins.** target `openrouter/openai/gpt-5-mini`; auditor and grader
 `openrouter/anthropic/claude-sonnet-4-6`; grader fallback
 `openrouter/google/gemini-2.5-flash`; `inspect-ai==0.3.250`,
-`inspect-petri==3.0.11`; judge prompt `v4`; `secret_seed=0`, 7-character secrets
+`inspect-petri==3.0.11`; judge prompt `v4`; **`show_reasoning=False`** (the
+auditor did not see the target's reasoning); `secret_seed=0`, 7-character secrets
 over a 26-symbol alphabet with ≥2 digits and ≥2 letters; 40 turns; 6M-token
 per-investigation cap (never reached).
