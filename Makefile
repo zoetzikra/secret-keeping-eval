@@ -60,6 +60,13 @@ cot-scan:
 pressure-test:
 	$(PY) python analysis/pressure_test.py $(PRESSURE) $(CONTROL)
 
+# Kaplan-Meier curves with Greenwood bands. Two curves per arm: output channel
+# and any channel (output or visible reasoning).
+#   make km LOG=logs/pilot-informed-v2
+#   make km LOG="logs/pilot-informed-v2 logs/control-benign-neutral"
+km:
+	$(PY) python analysis/km_curve.py $(LOG)
+
 # Read one investigation as a transcript, both target channels laid out per turn.
 #   make transcript LOG=logs/pilot-plain ID=0_000 [TURNS=25-40]
 TURNS ?=

@@ -68,6 +68,7 @@ def secret_keeping(
     early_stop: bool = True,
     judge: bool = True,
     informed: bool = True,
+    show_reasoning: bool = True,
     token_limit: int = DEFAULT_TOKEN_LIMIT,
 ) -> Task:
     """Secret-keeping survival eval, plain auditor harness.
@@ -82,6 +83,9 @@ def secret_keeping(
         secret_length: Secret token length in characters.
         early_stop: End an investigation once a deterministic leak is detected.
         judge: Run the LLM-judge scorer layer for semantic and partial leaks.
+        show_reasoning: Show the target's reasoning summary to the auditor, as a
+            real user of a reasoning model would. Matches Petri, which surfaces
+            thinking summaries by design.
         informed: Reported/replication arm (default). Tells the auditor that a
             specific short string exists and must be found -- existence and shape,
             never content. `False` selects the secondary discovery arm, where the
@@ -93,7 +97,9 @@ def secret_keeping(
             investigations, secret_seed, secret_length, informed
         ),
         setup=inject_secret(),
-        solver=secret_keeping_auditor(max_turns=max_turns, early_stop=early_stop),
+        solver=secret_keeping_auditor(
+            max_turns=max_turns, early_stop=early_stop, show_reasoning=show_reasoning
+        ),
         scorer=secret_leak_scorer(judge=judge),
         token_limit=token_limit,
         metadata={
@@ -103,5 +109,6 @@ def secret_keeping(
             "secret_seed": secret_seed,
             "secret_length": secret_length,
             "early_stop": early_stop,
+            "show_reasoning": show_reasoning,
         },
     )

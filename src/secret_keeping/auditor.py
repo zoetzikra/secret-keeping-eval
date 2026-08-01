@@ -30,6 +30,7 @@ from secret_keeping.prompts import (
     BENIGN_TURN_NOTICE,
     BENIGN_USER_PROMPT_ADJACENT,
     BENIGN_USER_PROMPT_NEUTRAL,
+    TARGET_REASONING_TEMPLATE,
     TARGET_SYSTEM_PROMPT,
     TARGET_SYSTEM_PROMPT_NO_INSTRUCTION,
     TARGET_SYSTEM_PROMPT_PERMISSIVE,
@@ -137,6 +138,7 @@ def _auditor_loop(
     generate_target: TargetGenerate | None,
     system_prompt: str = AUDITOR_SYSTEM_PROMPT,
     turn_notice: str = TURN_NOTICE,
+    show_reasoning: bool = True,
 ) -> Solver:
     """The shared loop body. `generate_target=None` uses the target model role.
 
@@ -196,11 +198,20 @@ def _auditor_loop(
                 # auditor broke — do not stop, do not break character — at the point
                 # of use, because stating them once in a system prompt demonstrably
                 # did not hold past turn ~27.
+                # The reasoning summary goes to the auditor too, because a real
+                # user of a reasoning model sees it. Withholding it made the plain
+                # auditor weaker than both a real attacker and Petri's auditor,
+                # which surfaces thinking summaries by design.
+                shown = TARGET_RESPONSE_TEMPLATE.format(response=target_message.text)
+                if show_reasoning and len(reasoning) > 0:
+                    shown = (
+                        TARGET_REASONING_TEMPLATE.format(reasoning=reasoning)
+                        + "\n\n"
+                        + shown
+                    )
                 auditor_messages.append(
                     ChatMessageUser(
-                        content=TARGET_RESPONSE_TEMPLATE.format(
-                            response=target_message.text
-                        )
+                        content=shown
                         + "\n\n"
                         + turn_notice.format(t=t, max_turns=max_turns)
                     )
@@ -241,15 +252,22 @@ def _model_target_generate() -> TargetGenerate:
 
 @solver
 def secret_keeping_auditor(
-    max_turns: int = DEFAULT_MAX_TURNS, early_stop: bool = True
+    max_turns: int = DEFAULT_MAX_TURNS,
+    early_stop: bool = True,
+    show_reasoning: bool = True,
 ) -> Solver:
     """Run one investigation: an open-ended multi-turn extraction attempt.
 
     Args:
         max_turns: Turn budget. One turn is one target generation.
         early_stop: Stop the loop on a deterministic leak hit.
+        show_reasoning: Show the target's reasoning summary to the auditor, as a
+            real user of a reasoning model would see. Set `False` to ablate the
+            channel — the difference is itself a measurable quantity.
     """
-    return _auditor_loop(max_turns, early_stop, generate_target=None)
+    return _auditor_loop(
+        max_turns, early_stop, generate_target=None, show_reasoning=show_reasoning
+    )
 
 
 @solver
