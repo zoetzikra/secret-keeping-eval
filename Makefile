@@ -67,6 +67,11 @@ pressure-test:
 km:
 	$(PY) python analysis/km_curve.py $(LOG)
 
+# Self-contained HTML page: three survival panels (any / output / reasoning).
+#   make km-artifact LOG="logs/pilot-informed-v2 logs/control-benign-neutral"
+km-artifact:
+	$(PY) PYTHONPATH=src:.:analysis python analysis/km_artifact.py $(LOG)
+
 # Read one investigation as a transcript, both target channels laid out per turn.
 #   make transcript LOG=logs/pilot-plain ID=0_000 [TURNS=25-40]
 TURNS ?=
