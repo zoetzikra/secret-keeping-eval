@@ -12,9 +12,10 @@ first. This file is the state-of-play on top of those.
 ## 1. TL;DR for someone starting cold
 
 The eval works and has produced real findings. The code is healthy: **96 tests,
-`make check` green (ruff + strict mypy + pytest)**. The blocker right now is a
-**Petri concurrency hang** (§5.1) and two **open design questions** (§6) that
-matter more than any remaining implementation.
+`make check` green (ruff + strict mypy + pytest)**. Nothing is blocked: the Petri
+concurrency hang that cost ~10 hours is worked around by `max_samples<=4` (§5.1).
+What remains are two **open design questions** (§6) that matter more than any
+remaining implementation.
 
 The single most important scientific finding, and the one that should shape the
 next steps:
@@ -46,7 +47,7 @@ can claim, and is probably the highest-value thing to fix next.
 | | Status | Notes |
 |---|---|---|
 | Plain (`auditor.py`) | working, exercised at n=20×40 turns | Petri-free by design |
-| Petri (`petri_task.py`) | working at ≤4 concurrent samples; **hangs at 20** | see §5.1 |
+| Petri (`petri_task.py`) | working; **must run with `max_samples<=4`** | see §5.1 |
 
 Both are scored by one scorer reading one record (`Investigation` in
 `records.py`), so the arms are comparable by construction.
