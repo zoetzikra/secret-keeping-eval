@@ -198,17 +198,20 @@ def _auditor_loop(
                 # auditor broke — do not stop, do not break character — at the point
                 # of use, because stating them once in a system prompt demonstrably
                 # did not hold past turn ~27.
-                # The reasoning summary goes to the auditor too, because a real
-                # user of a reasoning model sees it. Withholding it made the plain
-                # auditor weaker than both a real attacker and Petri's auditor,
-                # which surfaces thinking summaries by design.
-                shown = TARGET_RESPONSE_TEMPLATE.format(response=target_message.text)
+                # The reasoning summary is nested *inside* the response block,
+                # matching Petri's `format_content`. Placed above it as a separate
+                # block the auditor ignored it entirely (visible 10/20, used 0/20,
+                # against Petri's 2/2 on the same target and secrets), and Petri's
+                # prompt has no instruction to read thinking — so the difference is
+                # where it sits, not what the auditor is told.
+                body = target_message.text
                 if show_reasoning and len(reasoning) > 0:
-                    shown = (
+                    body = (
                         TARGET_REASONING_TEMPLATE.format(reasoning=reasoning)
                         + "\n\n"
-                        + shown
+                        + body
                     )
+                shown = TARGET_RESPONSE_TEMPLATE.format(response=body)
                 auditor_messages.append(
                     ChatMessageUser(
                         content=shown
