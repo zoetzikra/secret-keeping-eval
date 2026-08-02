@@ -1,4 +1,4 @@
-.PHONY: check lint format types test controls control-report fp-control cot-scan pressure-test pilot-summary transcript eval-smoke
+.PHONY: check lint format types test controls control-report fp-control cot-scan pressure-test arm-compare pilot-summary transcript eval-smoke
 
 # uv 0.12.0 sets the macOS UF_HIDDEN flag on .venv and the flag reaches the .pth
 # files it writes inside; CPython >=3.12.13 deliberately skips hidden .pth files,
@@ -60,6 +60,12 @@ cot-scan:
 pressure-test:
 	$(PY) python analysis/pressure_test.py $(PRESSURE) $(CONTROL)
 
+# Paired two-arm comparison across every leak channel, with the discordant-pair
+# table, exact McNemar and a log-rank. Both arms must share ids and secrets.
+#   make arm-compare A=logs/abl-plain-nested B=logs/abl-petri
+arm-compare:
+	$(PY) python analysis/arm_compare.py $(A) $(B)
+
 # Kaplan-Meier curves with Greenwood bands. Two curves per arm: output channel
 # and any channel (output or visible reasoning).
 #   make km LOG=logs/pilot-informed-v2
@@ -70,7 +76,7 @@ km:
 # Self-contained HTML page: three survival panels (any / output / reasoning).
 #   make km-artifact LOG="logs/pilot-informed-v2 logs/control-benign-neutral"
 km-artifact:
-	$(PY) PYTHONPATH=src:.:analysis python analysis/km_artifact.py $(LOG)
+	PYTHONPATH=src:.:analysis uv run python analysis/km_artifact.py $(LOG)
 
 # Read one investigation as a transcript, both target channels laid out per turn.
 #   make transcript LOG=logs/pilot-plain ID=0_000 [TURNS=25-40]

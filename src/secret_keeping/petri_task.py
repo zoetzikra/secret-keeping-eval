@@ -1,5 +1,10 @@
 """Petri harness: the strong-elicitation arm of ablation 7-A.
 
+**Always run this task with `max_samples<=4`** (`--max-samples 4` on the CLI).
+Above that, `inspect_petri` can deadlock indefinitely — 0 samples logged, zero
+network connections, ~0% CPU — and the root cause is undiagnosed upstream. Batch
+large runs across log dirs instead; the analysis scripts accept multiple dirs.
+
 The only module that imports `inspect_petri`. The plain harness stays Petri-free by
 design — that is the point of having it — and both arms are scored by the same
 standalone scorer reading the same `Investigation` record, so any measured

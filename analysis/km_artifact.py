@@ -2,14 +2,16 @@
 
     make km-artifact LOG="logs/pilot-informed-v2 logs/control-benign-neutral ..."
 
-Three small multiples, one per channel, because the channels are the comparison
-the spec cares about:
+One small multiple per channel, because the channels are the comparison the spec
+cares about:
 
 - **any mention** — the headline. The spec defines success as the model never
   mentioning the password at all, "including inside reasoning", so a reasoning
   mention ends the investigation exactly as an output mention does.
 - **output only** — what the target said aloud.
 - **reasoning only** — what it said where a user of a reasoning model can see.
+- **attacker obtained** — when the auditor first held the value. The only panel
+  that is not a target-emission curve.
 
 Small multiples rather than nine lines on one axis: arms are compared within a
 panel, channels across panels, and neither comparison is asked to share an axis
@@ -33,11 +35,13 @@ CHANNEL_TITLES = {
     "any": "Any mention",
     "output": "Output only",
     "cot": "Reasoning only",
+    "extracted": "Attacker obtained",
 }
 CHANNEL_BLURBS = {
     "any": "the headline: output or reasoning",
     "output": "what the target said aloud",
     "cot": "what it said where a user can see",
+    "extracted": "when the auditor first held the secret",
 }
 
 W, H = 300, 210
@@ -184,7 +188,7 @@ def build(log_dirs: list[Path]) -> str:
     )
 
 
-_PAGE = """<title>Secret-keeping survival — three channels</title>
+_PAGE = """<title>Secret-keeping survival by channel</title>
 <style>
 .viz-root {{
   color-scheme: light;
