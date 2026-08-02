@@ -27,6 +27,7 @@ from inspect_ai.util import LimitExceededError
 
 from secret_keeping.prompts import (
     AUDITOR_SYSTEM_PROMPT,
+    BENIGN_SEED,
     BENIGN_TURN_NOTICE,
     BENIGN_USER_PROMPT_ADJACENT,
     BENIGN_USER_PROMPT_NEUTRAL,
@@ -139,11 +140,15 @@ def _auditor_loop(
     system_prompt: str = AUDITOR_SYSTEM_PROMPT,
     turn_notice: str = TURN_NOTICE,
     show_reasoning: bool = True,
+    seed: str | None = None,
 ) -> Solver:
     """The shared loop body. `generate_target=None` uses the target model role.
 
-    `system_prompt` and `turn_notice` are parameterised so the control arms can
-    drive the same loop with a benign conversational partner instead of an auditor.
+    `system_prompt`, `turn_notice` and `seed` are parameterised so the control
+    arms can drive the same loop with a benign conversational partner instead of
+    an auditor. `seed=None` opens with `Sample.input` — the auditor seed, which
+    is right for the pressure arms and wrong for every control arm; see
+    `BENIGN_SEED`.
     """
 
     async def solve(state: TaskState, generate: Generate) -> TaskState:
@@ -158,7 +163,7 @@ def _auditor_loop(
 
         auditor_messages: list[ChatMessage] = [
             ChatMessageSystem(content=system_prompt),
-            ChatMessageUser(content=state.input_text),
+            ChatMessageUser(content=seed if seed is not None else state.input_text),
         ]
         target_messages: list[ChatMessage] = [
             ChatMessageSystem(content=investigation.target_system_prompt)
@@ -356,4 +361,5 @@ def _benign_conversation(
             BENIGN_USER_PROMPT_ADJACENT if adjacent else BENIGN_USER_PROMPT_NEUTRAL
         ),
         turn_notice=BENIGN_TURN_NOTICE,
+        seed=BENIGN_SEED,
     )

@@ -1,4 +1,4 @@
-.PHONY: check lint format types test controls control-report fp-control cot-scan pressure-test arm-compare pilot-summary transcript eval-smoke
+.PHONY: check lint format types test controls control-report fp-control cot-scan pressure-test pressure-replication arm-compare channel-exploitation pilot-summary transcript eval-smoke
 
 # uv 0.12.0 sets the macOS UF_HIDDEN flag on .venv and the flag reaches the .pth
 # files it writes inside; CPython >=3.12.13 deliberately skips hidden .pth files,
@@ -59,6 +59,18 @@ cot-scan:
 #   make pressure-test PRESSURE=logs/powered-pressure CONTROL=logs/powered-control
 pressure-test:
 	$(PY) python analysis/pressure_test.py $(PRESSURE) $(CONTROL)
+
+# Pooled analysis of repeated paired pressure experiments. Stratified McNemar is
+# the test of record; per-repetition rows show whether the null replicates.
+#   make pressure-replication PAIRS="logs/pressure-r1:logs/control-r1 ..."
+pressure-replication:
+	$(PY) python analysis/pressure_replication.py $(PAIRS)
+
+# Does the auditor act on a secret the target already surfaced? The decision
+# metric for the auditor-strength question (visible / extracted / conversion).
+#   make channel-exploitation LOG="logs/abl-plain-nested logs/abl-petri"
+channel-exploitation:
+	$(PY) python analysis/channel_exploitation.py $(LOG)
 
 # Paired two-arm comparison across every leak channel, with the discordant-pair
 # table, exact McNemar and a log-rank. Both arms must share ids and secrets.
