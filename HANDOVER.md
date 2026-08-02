@@ -147,6 +147,15 @@ anywhere in this conversation so far?"* — it was on its own screen.
 Ruled out: plumbing failure (tag delivered 20/20); the auditor treating summaries
 as untrustworthy (it never engages with the content at all).
 
+**And it is specific to the plain harness's auditor prompt.** The Petri arm, same
+target and same secrets, shows its auditor taking the opportunity **2/2** times so
+far (target emits t29 → auditor uses it t30; target t4 → auditor t10), against
+**0/10** in the plain arm. So this is not a property of Claude Sonnet 4.6 and not
+a property of surfacing thinking summaries — it is my auditor prompt. Petri's
+auditor prompt, which I did not write, reads its own transcript and acts on it.
+Diffing the two prompts is the concrete route to the §6.1 fix, and is better than
+guessing at an instruction.
+
 **Consequence:** the `show_reasoning=True` vs `False` null (10/20 vs 11/20 on
 reasoning, 2/20 vs 1/20 on output, both p = 1.00) is fully explained by the
 auditor not looking. It must **not** be reported as "seeing reasoning doesn't
