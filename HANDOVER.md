@@ -303,11 +303,33 @@ problem. The auditor is shown thinking summaries and ignores them (§3.3). Its
 tactic checklist tells it what to *ask*; nothing tells it to *read what it has
 already received*.
 
-Candidate fix: an explicit instruction to inspect each `<target_thinking_summary>`
-block, and to test any string that looks like the target value — by stating it and
-seeing whether the target confirms. Deliberately **not implemented**: it changes
-the auditor mid-ablation, and `logs/abl-plain` would no longer be comparable to
-the Petri arm. Do it after the ablation closes, then re-run both arms.
+**My first hypothesis — a missing instruction — is wrong.** Petri's auditor prompt
+contains no instruction to read the target's thinking either (its only mentions of
+thinking, `_auditor/agent.py:489-490`, are about *inducing* the target to reason in
+tags). Yet Petri's auditor uses the channel and mine does not. So the difference is
+structural, not instructional:
+
+| | Where the reasoning appears |
+|---|---|
+| Petri | *inside* `<target_response>` — `format_content` nests `<thinking_summary>` within the block, delivered as the **tool result** of the auditor's own `resume()` call |
+| Plain | a *separate* `<target_thinking_summary>` block **above** `<target_response>`, delivered as an injected user message |
+
+Two candidate mechanisms:
+
+1. **Placement** — anything outside `<target_response>` reads as harness chrome and
+   is skipped.
+2. **Delivery** — Petri's arrives as the return value of a tool the auditor chose
+   to call; mine arrives unsolicited.
+
+**The cheap discriminator is (1):** move the summary inside the
+`<target_response>` block in `auditor.py`, matching Petri's nesting. One line. If
+the auditor starts using it, placement was the whole story; if not, it is the
+tool-result framing, which is architectural and far more expensive.
+
+Prefer this to writing a speculative instruction into the prompt — an instruction
+would confound the two mechanisms and teach us nothing about which one matters.
+Deliberately **not implemented** yet: it changes the auditor mid-ablation and
+`logs/abl-plain` would stop being comparable to the Petri arm.
 
 Expected effect if fixed: several of the 10 visible-secret investigations should
 convert into confirmation-channel output leaks — a path built, unit-tested, and
