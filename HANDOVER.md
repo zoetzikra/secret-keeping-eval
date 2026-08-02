@@ -250,17 +250,24 @@ Listed because the failure modes recur, not as penance.
 | `logs/petri-live` | 3 | default | success |
 | `logs/petri-m3` | 4 | default | success |
 | `logs/abl-petri` (1st) | 20 | default | **hung 9h52m at 0 samples** |
-| `logs/abl-petri` (2nd) | 20 | `max_samples=4` | **in flight at time of writing** |
+| `logs/abl-petri` (2nd) | 20 | `max_samples=4` | **progressing** — 3/20 and counting |
 
 **Not** caused by multiple `inspect_eval` calls per process — the second hang was
-a lone call. Concurrency is the variable that tracks. Root cause **not diagnosed**
-— I did not open Petri's controller/channel code to look for the deadlock.
+a lone call. Concurrency is the variable that tracks, and **capping
+`max_samples=4` resolves it**: the same n=20 job that hung for 9h52m at default
+concurrency runs normally when capped.
 
-**Next step if the capped run also hangs:** stop trying to make n=20 work in one
-call. Run four batches of five into separate log dirs and merge at analysis time —
-the analysis scripts already take multiple dirs. That sidesteps the issue rather
-than fixing it, which is the right trade unless someone wants to debug
-`inspect_petri`'s anyio task group.
+Root cause **not diagnosed** — I did not open Petri's controller/channel code to
+look for the deadlock. The practical rule is: **run Petri with `max_samples<=4`**.
+If a future run hangs anyway, batch it (five investigations per log dir, merged at
+analysis time — the analysis scripts already accept multiple dirs) rather than
+debugging `inspect_petri`'s anyio task group.
+
+**Diagnosing a suspected hang:** count *samples*, not file size, and give it
+several minutes before concluding. A healthy Petri run can sit at 0 samples for
+10+ minutes because a 40-turn investigation is slow; the hang signature is 0
+samples with **zero established network connections** and ~0% CPU, which is
+distinguishable from slow within about one `lsof` call.
 
 ### 5.2 Ablation 7-A is half-finished
 
