@@ -17,7 +17,11 @@ import sys
 import time
 from pathlib import Path
 
-from inspect_ai.log import list_eval_logs, read_eval_log
+from inspect_ai.log import (
+    list_eval_logs,
+    read_eval_log,
+    read_eval_log_sample_summaries,
+)
 
 # Expected batch order; anything else found under logs/ is listed after these.
 EXPECTED = [
@@ -50,7 +54,15 @@ def status(log_dir: Path) -> dict[str, object] | None:
     header = read_eval_log(newest, header_only=True)
     args = header.eval.task_args or {}
     total = int(args.get("investigations", 0) or 0)
-    done = header.results.completed_samples if header.results else 0
+    # `results.completed_samples` is only populated once the run *finishes*, so
+    # reading it showed 0/20 for the entire life of an in-flight run -- silence
+    # indistinguishable from failure, which is the thing this tool exists to
+    # prevent. The per-sample summaries are written incrementally and are cheap
+    # (no events, no messages), so they report true live progress.
+    try:
+        done = len(read_eval_log_sample_summaries(newest))
+    except Exception:
+        done = (header.results.completed_samples if header.results else 0) or 0
     age = time.time() - (newest.mtime or 0)
     return {
         "status": header.status,
