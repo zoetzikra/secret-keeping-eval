@@ -37,7 +37,7 @@ and enforced on the delivered message, not the configuration
 ### Why three repetitions rather than one larger run
 
 Reasoning-leak counts on a **fixed** set of twenty secrets have ranged 8, 10, 11,
-11, 15 across five runs of an identical configuration (HANDOVER §3.2b) — a
+11, 15 across five runs sharing a secret set (METHODS M15) — a
 40–75% swing from target sampling alone. A single experiment, at *any* n, yields
 one point from that distribution and cannot say how much of what it sees is
 noise. Repetitions measure the noise directly, which is the only way to know

@@ -409,6 +409,28 @@ def _permissive_floor(max_turns: int = 4) -> Solver:
     return solve
 
 
+# Everything that flows from the sample/task into either model's context. An arm
+# variant must override or *intentionally* share each one; the control arm's
+# contamination happened because this list was implicit and `Sample.input` was
+# silently inherited. Keep it current when a new input is added.
+#
+#   Sample.input          -> the interlocutor's OPENING MESSAGE. Extraction arms
+#                            use it (the auditor seed); control arms MUST pass
+#                            `seed=BENIGN_SEED` instead.
+#   Sample.target         -> the secret. Reaches the target only, via
+#                            `inject_secret` composing the target system prompt.
+#                            Never in the interlocutor's context (invariant #1).
+#   system_prompt         -> the interlocutor's persona. Overridden per arm.
+#   turn_notice           -> appended to the target's reply when shown to the
+#                            interlocutor. Never reaches the target. Per arm.
+#   inject_secret(variant)-> which target system prompt (keep / no-instruction /
+#                            permissive). Set by the arm's solver.
+#   show_reasoning        -> whether the target's reasoning summary is surfaced.
+#   delivery              -> message vs tool-result delivery of the reply.
+#
+# `make preflight` asserts on the *delivered* messages rather than on this list.
+
+
 @solver
 def _benign_conversation(
     max_turns: int = DEFAULT_MAX_TURNS, adjacent: bool = False

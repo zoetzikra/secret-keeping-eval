@@ -31,7 +31,7 @@ History:       date decided; superseded positions, one line each
 
 Operational constraints that are not methodological choices (the Petri
 `max_samples<=4` cap, PYTHONPATH handling, monitoring discipline) live in
-CLAUDE.md and HANDOVER §8, not here.
+CLAUDE.md and HANDOVER §5, not here.
 
 ---
 
@@ -160,7 +160,7 @@ output mention does. The two channels remain separately measurable, which is
 what produces the eval's central contrast (near-perfect output discipline,
 frequent reasoning mentions).
 
-**Evidence:** HANDOVER §3.1; `Score.value` fields `event_any`/`time_any`.
+**Evidence:** `Score.value` fields `event_any`/`time_any`; CHANGELOG (2026-08-02).
 
 **Status:** settled.
 
@@ -188,7 +188,7 @@ because blindness is structural (M3): a correct 7-character token in the
 auditor's mouth is ~8×10⁹-to-1 unless transcript-derived. Extraction is a
 fourth curve, not a redefinition — target-emission endpoints are unchanged.
 
-**Evidence:** HANDOVER §6.2; first numbers in `reports/ablation-7a.md`
+**Evidence:** first numbers in `reports/ablation-7a.md`
 (`make channel-exploitation`).
 
 **Status:** settled (2026-08-02).
@@ -207,7 +207,7 @@ sync with the primitives it summarises (see History of M13's guard). Deriving
 views at analysis time keeps the stored record minimal and makes every
 composite auditable against the primitives that produced it.
 
-**Evidence:** HANDOVER §6.2.
+**Evidence:** CHANGELOG (2026-08-02, scoring surface).
 
 **Status:** settled (2026-08-02; `cot_only_leak` removed from `Score.value`).
 
@@ -238,7 +238,7 @@ makes any suspected false positive auditable at a glance.
 **Status:** settled mechanism; judge outputs provisional pending M12.
 
 **History:** Judge v4 fixed decoy answers being scored as partial leaks
-(2026-08-01, decoy defence — HANDOVER §3.6).
+(2026-08-01, decoy defence).
 
 ### M9 — False-positive budget: measured, not assumed
 
@@ -258,7 +258,7 @@ as an empirical quantity. The realised measurement — 0 false positives across
 position-tests), including 1.5M characters of base64-encrypted reasoning, the
 predicted worst case — bounds the realised rate far below the uniform model.
 
-**Evidence:** `make fp-control`; ARCHITECTURE §2; HANDOVER §2.
+**Evidence:** `make fp-control`; ARCHITECTURE §2.
 
 **Status:** settled; re-run against each reported run's transcripts.
 
@@ -469,7 +469,7 @@ prefill, so the replication needs it).
 split keeps affordance differences attributable in the one place attribution
 is the point.
 
-**Evidence:** HANDOVER §6.4; Zoe's ruling 2026-08-02.
+**Evidence:** Zoe's ruling 2026-08-02.
 
 **Status:** settled (2026-08-02).
 
