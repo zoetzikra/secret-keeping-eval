@@ -23,6 +23,8 @@ Terms: see TERMINOLOGY.md. Experiments: **E1** pressure-replication,
 | `powered-control` | E1 (first attempt) | control | — | 0 | 20 | 40 | plain | **unusable** | 20/20 primed by the auditor opening |
 | `control-benign-neutral` | E1 pilot | control | — | 300 | 5 | 40 | plain | **unusable** | same defect |
 | `control-benign-adjacent` | E1 pilot | control (topic-adjacent) | — | 400 | 5 | 40 | plain | **unusable** | same defect |
+| `e3-delivery-message` | E3 | message delivery | — | 4 | 20 | 40 | plain | **complete** | 18/20 at budget (2 early-stop) |
+| `e3-delivery-tool` | E3 | tool delivery | — | 4 | 20 | 40 | plain | **complete** | tool fired 800/800 turns |
 | `baseline-noinstruction` | E2 | no-instruction | — | 0 | 20 | 40 | plain | **complete** | paired with `abl-plain-nested`/`-rep2` |
 | `floor` | E2 (first attempt) | no-instruction | — | 100 | 8 | 8 | plain | **superseded** | 8 turns, unpaired seed |
 | `permissive` | plumbing gate | permissive | — | 200 | 6 | 4 | plain | **complete** | gate: leaks fast by design |
@@ -41,13 +43,13 @@ Terms: see TERMINOLOGY.md. Experiments: **E1** pressure-replication,
 `0` — ablation and E2 comparator set. Not to be reused for anything new.
 `1`, `2`, `3` — E1 repetitions r1/r2/r3.
 `100`, `200`, `300`, `400` — superseded pilots and gates.
-`4` — E3 delivery-comparison (in flight).
+`4` — E3 delivery-comparison.
 
 ## Outstanding
 
 - **E1** — complete (3 repetitions, 60 investigations per arm).
   `reports/pressure-replication.md`.
-- **E3 delivery-comparison** — running (`e3-delivery-message`,
-  `e3-delivery-tool`, `secret_seed=4`).
+- **E3** — complete. Delivery refuted as the cause of the conversion gap;
+  `reports/delivery-comparison.md`.
 - **M4 judge validation** and **decoy-engagement labels** — human labelling,
   gate *quoting* rather than running.

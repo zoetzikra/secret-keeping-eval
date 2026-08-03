@@ -475,32 +475,42 @@ is the point.
 
 ### M19 — Delivery isolated from prompt content
 
-**Decision:** To test whether *how* the target's reply reaches the auditor
-explains the auditor-conversion gap, the plain harness gained
-`delivery="tool"`: the auditor calls a single tool, the harness executes it,
-and the reply returns as a tool result (the Petri shape). The tool description
-deliberately says nothing about reading the reply.
+**Decision:** How the target's reply reaches the interlocutor is a task
+parameter (`delivery="message"|"tool"`), so it can be varied while prompt
+content is held fixed. The tool's description deliberately says nothing about
+attending to the reply.
 
-**Alternatives:** Adding an instruction to attend to the reply (rejected: it
-would confound delivery with prompt content, which is the variable being
-isolated); accepting the gap as a harness property without mechanism
-(rejected: it caps every elicitation-strength claim, so its cause matters).
+**Alternatives:** Adding an instruction to read the target's thinking (rejected:
+it confounds the structural variable with prompt content, and Petri's auditor
+prompt contains no such instruction yet its auditor uses the channel).
 
-**Why:** The candidate mechanisms were separated empirically: nesting the
-reasoning summary inside `<target_response>` (placement) moved latency but not
-conversion; prompt content was ruled out because Petri's auditor prompt
-contains no read-your-transcript instruction either. Delivery — solicited tool
-result vs unsolicited injection — is the remaining structural difference, and
-the comparison that tests it holds everything else fixed.
+**Why:** The plain harness's auditor acts on an already-surfaced secret in 8 of
+27 opportunities against Petri's 7 of 9. Isolating delivery tests whether the
+gap comes from the reply arriving as the return value of a call the auditor
+chose to make, rather than unsolicited.
 
-**Evidence:** `reports/ablation-7a.md` (conversion 8/27 vs 7/9, Fisher
-p = 0.019; placement result); `delivery` parameter in `auditor.py`.
+**Result: the hypothesis is refuted for rate and confirmed for speed.** Tool
+delivery left conversion unchanged (3/9 vs 5/14, Fisher p = 1.00) and far from
+Petri, while collapsing latency from a median of 26 turns to 1. This is the
+second structural intervention to show that pattern -- nesting the reasoning
+summary inside `<target_response>` did the same -- so presentation governs how
+quickly the interlocutor notices, not whether it acts. Petri's remaining
+differences are rollback, multi-conversation structure, and a longer, more
+prescriptive auditor system prompt; the prompt is the next hypothesis and is not
+yet tested.
 
-**Status:** **provisional** — implemented and unit-tested; mechanism unconfirmed
-until the live tool-vs-message comparison runs (E3). The gap it seeks to explain
-is itself now established rather than suspected: it survived an independent
-same-configuration repeat (5/15 and 3/12, agreeing at p = 0.70; pooled 8/27
-against Petri's 7/9, Fisher p = 0.019).
+The parameter is kept. It is the cheapest known way to reduce time-to-act, and
+retaining it costs nothing.
+
+**Evidence:** `logs/e3-delivery-message` vs `logs/e3-delivery-tool`,
+`secret_seed=4`, n=20 per arm, paired, with the tool path firing on 800/800
+turns. `reports/delivery-comparison.md`.
+
+**Status:** settled -- delivery is not the cause of the conversion gap.
+
+**History:** 2026-08-03 built after the gap survived repetition (8/27 vs 7/9,
+p = 0.019); tested the same day and the hypothesis did not survive contact with
+the measurement.
 
 ### M20 — Baseline-protection arm
 

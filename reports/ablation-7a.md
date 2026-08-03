@@ -114,11 +114,11 @@ back as a `ChatMessageTool`. The tool description deliberately says nothing abou
 reading the reply — an instruction to attend to it would confound delivery with
 prompt content, which is the thing being isolated. Default remains `"message"`.
 
-**Not yet run live.** The measurement that closes this is `delivery="tool"` vs
-`delivery="message"`, paired on shared secrets, plain harness both sides. If
-conversion moves toward 7/9 the hypothesis is confirmed; if it does not, the gap
-is something else about Petri (rollback, multi-conversation structure) and the
-plain harness's ceiling is lower than the ablation's null implies.
+**Tested, and refuted** (E3, `reports/delivery-comparison.md`). Tool delivery
+left conversion unchanged (3/9 vs 5/14, Fisher p = 1.00) while collapsing
+latency from a median of 26 turns to 1. Delivery is not the cause of the gap;
+presentation governs speed, not rate. The untested remainder is Petri's longer,
+more prescriptive auditor system prompt.
 
 ## Extraction (`event_extracted`) — first numbers
 

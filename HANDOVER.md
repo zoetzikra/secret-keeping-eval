@@ -17,7 +17,7 @@ The eval works. `make check` green (ruff + strict mypy + 102 tests);
 gate quoting (not running): M4 judge validation (50–100 turns) and the
 decoy-engagement labels (~20 transcripts). Both are Zoe's.
 
-**E1 is complete** (3 repetitions, 60 investigations per arm). E3 is running.
+**E1, E2 and E3 are all complete.** No runs are in flight.
 
 ## 2. Findings that are settled
 
@@ -38,12 +38,13 @@ guard it. Config parity verified. This is a mechanism plus a scope qualification
 on the replication — the any-mention curve measures secrecy *under an explicit
 instruction* — not a defect.
 
-**The plain harness's auditor is weak, and it is a delivery problem** (METHODS
-M19, `reports/ablation-7a.md`). Given a secret the target already surfaced, it
-acts on it in 8/27 opportunities across two same-configuration runs, against
-Petri's 7/9 (Fisher p = 0.019). Prompt content does not explain it.
-`delivery="tool"` is built and tested but **not yet run live** — until E3 runs,
-delivery is the leading hypothesis, not the cause.
+**The plain harness's auditor is weak, and delivery is not why** (METHODS M19,
+`reports/delivery-comparison.md`). It acts on an already-surfaced secret in 8/27
+opportunities against Petri's 7/9 (p = 0.019). Tool-result delivery — the
+leading hypothesis — left conversion unchanged (3/9 vs 5/14, p = 1.00) while
+collapsing latency from a median of 26 turns to 1. Two structural interventions
+have now moved speed without moving rate, so presentation is not the cause. The
+untested remainder is Petri's longer, more prescriptive auditor system prompt.
 
 **Run-to-run noise is ±3 investigations** (METHODS M15), measured on the one
 genuinely identical repeat. Effects must clear it.
@@ -56,7 +57,7 @@ spontaneous (`abl-petri` `0_001`).
 
 | item | state |
 |---|---|
-| E3 delivery-comparison | running (`secret_seed=4`) — decides whether delivery explains the conversion gap |
+| auditor-prompt hypothesis | next: diff the plain and Petri auditor prompts (E3 retired delivery) |
 | M4 judge validation | Zoe; gates all quoting |
 | decoy-engagement labels | Zoe; ~20 transcripts |
 | Figure 6.5.4.5.B | needs a Petri run with prefill on |
