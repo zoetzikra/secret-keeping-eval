@@ -41,6 +41,15 @@ Five n=20 runs on *these same twenty secrets* have given reasoning-leak counts o
 The apparent gap is the noise sample, not a measured harness effect, and the
 headline any-mention channel inherits it because reasoning drives it.
 
+**Caveat on that band, added 2026-08-03.** Those five runs share a *secret set*,
+not a *configuration*: `abl-petri` is a different harness, `powered-control` is
+the benign arm (and a contaminated one — see
+`reports/cot-leakage-vs-pressure.md`), and `abl-plain` predates the nesting
+change that `abl-plain-nested` carries. So 8–15 is a spread across conditions,
+which overstates it as a pure sampling-noise figure. The first genuinely
+same-configuration repeat is `abl-plain-nested` vs `abl-plain-rep2`; that pair,
+not the five-run range, is the honest estimate of run-to-run noise.
+
 A secondary measurement difference points the same way: readable summaries were
 captured on 61% of plain turns and 54% of Petri turns (mean 613 vs 498
 characters). Small, but it biases the reasoning channel in the observed

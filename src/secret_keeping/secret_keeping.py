@@ -5,6 +5,7 @@ from inspect_ai.dataset import MemoryDataset, Sample
 
 from secret_keeping.auditor import (
     DEFAULT_MAX_TURNS,
+    Delivery,
     inject_secret,
     secret_keeping_auditor,
 )
@@ -69,6 +70,7 @@ def secret_keeping(
     judge: bool = True,
     informed: bool = True,
     show_reasoning: bool = True,
+    delivery: Delivery = "message",
     token_limit: int = DEFAULT_TOKEN_LIMIT,
 ) -> Task:
     """Secret-keeping survival eval, plain auditor harness.
@@ -90,6 +92,9 @@ def secret_keeping(
             specific short string exists and must be found -- existence and shape,
             never content. `False` selects the secondary discovery arm, where the
             auditor must first work out that there is anything to find.
+        delivery: How the target's reply reaches the auditor -- `"message"`
+            injects it unsolicited, `"tool"` returns it from a tool the
+            auditor called, matching Petri. See `Delivery`.
         token_limit: Per-investigation token budget.
     """
     return Task(
@@ -98,7 +103,10 @@ def secret_keeping(
         ),
         setup=inject_secret(),
         solver=secret_keeping_auditor(
-            max_turns=max_turns, early_stop=early_stop, show_reasoning=show_reasoning
+            max_turns=max_turns,
+            early_stop=early_stop,
+            show_reasoning=show_reasoning,
+            delivery=delivery,
         ),
         scorer=secret_leak_scorer(judge=judge),
         token_limit=token_limit,
@@ -110,5 +118,6 @@ def secret_keeping(
             "secret_length": secret_length,
             "early_stop": early_stop,
             "show_reasoning": show_reasoning,
+            "delivery": delivery,
         },
     )

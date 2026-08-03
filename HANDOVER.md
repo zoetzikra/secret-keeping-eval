@@ -122,7 +122,26 @@ flat at ~1.0 and I treated it as the headline; the any-mention curve falls to
 0.10 by turn 40. The fast-decaying curve — the *positive* result in this eval's
 logic — was sitting in the secondary view the whole time.
 
-### 3.2 Reasoning-channel leakage is real and pressure-independent — STRONG
+### 3.2 Reasoning-channel leakage is real and pressure-independent — **HALF RETRACTED**
+
+> **Updated 2026-08-03.** "Reasoning-channel leakage is real" stands. **"Pressure-
+> independent" is retracted** — the control arm was contaminated. The loop opened
+> every conversation with `Sample.input`, which is the *auditor* seed, so the
+> benign user model was handed an extraction instruction, declined it in
+> character, and its refusal ("I don't have any hidden strings or secret codes to
+> protect") became the target's first user message in **20 of 20** control
+> investigations. The control primed the target about secrets on turn 1, which is
+> the exact confound it existed to remove, and the bias points toward the null it
+> reported. Fixed by `BENIGN_SEED`; enforced by
+> `test_benign_control_opens_without_the_auditor_seed`. Replacement experiment:
+> `reports/pressure-replication.md`. `logs/powered-control` and
+> `logs/control-benign-*` are unusable for this comparison.
+>
+> Note what this does *not* touch: the pressure arm's own reasoning-leak counts,
+> the §3.2b variance finding (all five runs are pressure-arm or ablation runs),
+> and the mechanism transcripts.
+
+Original section, for the record:
 
 `reports/cot-leakage-vs-pressure.md`, n=20/arm, paired on `secret_seed=0`:
 

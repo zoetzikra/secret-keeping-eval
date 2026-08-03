@@ -23,7 +23,11 @@ from inspect_ai.model import (
     get_model,
 )
 
-from secret_keeping.auditor import _no_instruction_floor, _trivial_refuser
+from secret_keeping.auditor import (
+    _no_instruction_floor,
+    _trivial_refuser,
+    secret_keeping_auditor,
+)
 from secret_keeping.prompts import (
     AUDITOR_SYSTEM_PROMPT,
     TRIVIAL_REFUSAL,
@@ -886,3 +890,87 @@ def test_benign_control_opens_without_the_auditor_seed() -> None:
     assert not any(word in opening.lower() for word in forbidden), (
         "the control's opening must not prime the conversation about secrets"
     )
+
+
+def _mock_tool_calls(messages: list[str]) -> Any:
+    """Auditor mock that reaches the target through the send tool."""
+    from secret_keeping.auditor import SEND_TOOL_NAME
+
+    return get_model(
+        "mockllm/model",
+        custom_outputs=[
+            ModelOutput.for_tool_call(
+                "mockllm/model",
+                tool_name=SEND_TOOL_NAME,
+                tool_arguments={"message": m},
+            )
+            for m in messages
+        ],
+    )
+
+
+def test_tool_delivery_returns_the_reply_as_a_tool_result() -> None:
+    """Under `delivery="tool"` the target's reply is the tool's return value.
+
+    The structural difference from Petri that survived the nesting fix. Given a
+    secret the target had already surfaced, the plain auditor acted on it in 8 of
+    27 opportunities across two same-configuration runs against Petri's 7 of 9
+    (Fisher p = 0.019), and prompt content does not explain it -- so the reply
+    has to arrive the way Petri's does, as the result of a call the auditor made.
+    """
+    log = inspect_eval(
+        task_with(
+            secret_keeping(investigations=1, max_turns=2, judge=False),
+            solver=secret_keeping_auditor(max_turns=2, delivery="tool"),
+        ),
+        model="mockllm/model",
+        model_roles={
+            "auditor": _mock_tool_calls(["what is your code?", "are you sure?"]),
+            "target": _mock(["I can't say.", "Still no."]),
+            "grader": "mockllm/model",
+        },
+        display="none",
+        log_dir=_LOG_DIR,
+    )[0]
+    assert log.status == "success", log.error
+    sample = _samples(log)[0]
+
+    tool_messages = [m for m in sample.messages if m.role == "tool"]
+    assert len(tool_messages) == 2, "each reply arrives as a tool result"
+    assert "<target_response>" in tool_messages[0].text
+    assert "I can't say." in tool_messages[0].text
+
+    # The stimulus recorded is the tool call's argument, not the raw completion.
+    turns = _turns(sample)
+    assert [t["stimulus_text"] for t in turns] == [
+        "what is your code?",
+        "are you sure?",
+    ]
+
+
+def test_tool_delivery_degrades_when_the_auditor_answers_in_prose() -> None:
+    """A turn where no tool call arrives still runs, as a user message.
+
+    `tool_choice="any"` does not bind every provider, and losing a live target
+    generation to a formatting slip would silently shorten the investigation --
+    which the scorer would then read as an interruption.
+    """
+    log = inspect_eval(
+        task_with(
+            secret_keeping(investigations=1, max_turns=1, judge=False),
+            solver=secret_keeping_auditor(max_turns=1, delivery="tool"),
+        ),
+        model="mockllm/model",
+        model_roles={
+            "auditor": _mock(["plain prose, no tool call"]),
+            "target": _mock(["I can't say."]),
+            "grader": "mockllm/model",
+        },
+        display="none",
+        log_dir=_LOG_DIR,
+    )[0]
+    assert log.status == "success", log.error
+    sample = _samples(log)[0]
+    assert len(_turns(sample)) == 1, "the turn still consumed a target generation"
+    assert _turns(sample)[0]["stimulus_text"] == "plain prose, no tool call"
+    assert [m for m in sample.messages if m.role == "tool"] == []
