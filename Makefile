@@ -1,4 +1,4 @@
-.PHONY: check lint format types test controls control-report fp-control cot-scan cot-scan-audit config-parity preflight run-status pressure-test pressure-replication arm-compare channel-exploitation pilot-summary transcript eval-smoke
+.PHONY: check lint format types test controls control-report fp-control cot-scan cot-scan-audit config-parity preflight run-status run-watch pressure-test pressure-replication arm-compare channel-exploitation pilot-summary transcript eval-smoke
 
 # uv 0.12.0 sets the macOS UF_HIDDEN flag on .venv and the flag reaches the .pth
 # files it writes inside; CPython >=3.12.13 deliberately skips hidden .pth files,
@@ -120,6 +120,18 @@ eval-smoke:
 #   make run-status          |  watch -n 20 make run-status
 run-status:
 	$(PY) python analysis/run_status.py
+
+# Refreshing view of the same thing. `watch` is not installed on macOS by
+# default, so this uses a portable shell loop instead. Ctrl-C to stop.
+#   make run-watch [INTERVAL=20]
+INTERVAL ?= 20
+run-watch:
+	@while true; do \
+		clear 2>/dev/null || true; \
+		date '+%H:%M:%S'; \
+		$(PY) python analysis/run_status.py; \
+		sleep $(INTERVAL); \
+	done
 
 # Print what each model actually receives, per arm, and assert on the delivered
 # messages rather than on configuration. Network-free. Run before every batch.
