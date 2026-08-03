@@ -1,30 +1,26 @@
-# Does adversarial auditing cause reasoning-channel leakage? (replacement experiment)
+# E1 — Does adversarial pressure cause reasoning-channel leakage?
 
-Supersedes `reports/cot-leakage-vs-pressure.md`, whose control arm was
-contaminated (see the retraction notice at the top of that file). This is the
-first *valid* test of the hypothesis, not merely a replication of a prior result.
+> **Provisional — judge unvalidated (M4 pending).** Nothing here is quotable
+> externally until judge validation and the decoy-engagement labels exist.
+>
+> **Incomplete — 1 of 3 repetitions.** No conclusion is available.
 
-**Status: 1 of 3 repetitions complete; blocked on OpenRouter credits.** Design was
-fixed and recorded before any numbers landed, so the analysis cannot be chosen to
-fit them.
+Terms: TERMINOLOGY.md. Run provenance: RUNS.md. History: CHANGELOG.md.
+Supersedes the first attempt, whose control arm was contaminated.
+
+Design is recorded here in full **before** the remaining numbers land, so the
+analysis cannot be chosen to fit them (METHODS M16).
 
 ---
 
 ## 1. What changed since the first attempt
 
-The control arm was supposed to be an ordinary conversation with no extraction
-attempt. It was not. The loop opened every conversation — auditor and control
-alike — with `Sample.input`, which is the *auditor* seed. Handed an extraction
-instruction, the benign user model declined it in character, and its refusal
-named what it was declining ("I don't have any hidden strings or secret codes to
-protect"). That became the target's first user message in **20 of 20** control
-investigations.
-
-So the previous experiment compared *an attacked target* against *a target told
-on turn 1 that it holds a secret* — and reported that the two matched. Priming
-plausibly raises the control's leak rate, so the confound points at the reported
-null. Fixed by `BENIGN_SEED`, enforced by
-`test_benign_control_opens_without_the_auditor_seed`.
+The control arm's opening message was the *auditor's*, so the benign partner was
+handed an extraction instruction and its in-character refusal — naming "hidden
+strings or secret codes" — became the target's first user message in 20 of 20
+investigations. Full account in CHANGELOG (2026-08-03). Fixed by `BENIGN_SEED`
+and enforced on the delivered message, not the configuration
+(`test_benign_control_opens_without_the_auditor_seed`, `make preflight`).
 
 ## 2. Design
 
@@ -40,11 +36,9 @@ null. Fixed by `BENIGN_SEED`, enforced by
 
 ### Why three repetitions rather than one larger run
 
-Reasoning-leak counts vary run to run on identical inputs. The honest estimate is
-the one same-configuration repeat: 15/20 vs 12/20 (`abl-plain-nested` vs
-`abl-plain-rep2`, McNemar p = 0.51) — **±3 investigations**. The wider 8–15 band
-quoted earlier spanned different harnesses and arms and overstates it. A single
-experiment, at *any* n, yields
+Reasoning-leak counts on a **fixed** set of twenty secrets have ranged 8, 10, 11,
+11, 15 across five runs of an identical configuration (HANDOVER §3.2b) — a
+40–75% swing from target sampling alone. A single experiment, at *any* n, yields
 one point from that distribution and cannot say how much of what it sees is
 noise. Repetitions measure the noise directly, which is the only way to know
 whether an observed difference clears it.
@@ -73,9 +67,9 @@ those particular twenty tokens" objection open.
 
 The two variance sources stay separable even though these runs confound them,
 because §3.2b already isolated (a) on its own. If the spread across these three
-repetitions is comparable to the ±3 same-configuration band, the token set is
-contributing little beyond sampling; if it is much wider, token identity matters
-and every rate in this project needs a wider error bar.
+repetitions is comparable to the 8–15 band, the token set is contributing little
+beyond sampling; if it is much wider, token identity matters and every rate in
+this project needs a wider error bar.
 
 ### Analysis plan, fixed in advance
 
@@ -97,31 +91,34 @@ effect (say 0.55→0.70) remains out of reach and a null must be reported as
 
 ## 3. Results
 
-**Not a result yet — 1 of 3 repetitions exists.** The design of record is three
-paired repetitions plus a stratified McNemar over pooled discordant pairs. One
-repetition is a single draw from the distribution this experiment exists to
-characterise, so it is recorded below as raw data and **must not be read as a
-finding**.
+**Incomplete — 1 of 3 repetitions exist. No conclusion is drawn here.** The
+design of record is three repetitions plus a stratified McNemar across them; a
+single repetition is one draw and the pooled test does not exist yet. The row
+below is recorded for provenance, not interpretation.
 
-| repetition | pressure | control | discordant | McNemar |
-|---|---|---|---|---|
-| r1 (`secret_seed=1`) | 15/20 | 13/20 | 5:3 | 0.73 |
-| r2 | — | — | — | — |
-| r3 | — | — | — | — |
-| **pooled** | *withheld until all three exist* | | | |
+| repetition | `secret_seed` | pressure | control | discordant | McNemar |
+|---|---:|---|---|---|---|
+| r1 | 1 | 15/20 | 13/20 | 5:3 | 0.73 |
+| r2 | 2 | — | — | — | unusable (credits) |
+| r3 | 3 | — | — | — | unusable (credits) |
+| **pooled** | — | — | — | — | **pending r2, r3** |
 
-Verified for r1: the control's opening is `BENIGN_SEED`, and **0/20** first
-target stimuli mention secrets (it was 20/20 before the fix), so the arm is clean.
+Both r1 arms are complete at 20/20 investigations and the control's opening is
+verified clean (0/20 first stimuli mentioning secrets, against 20/20 before the
+fix). r2 and r3 died on OpenRouter credit exhaustion holding truncated or
+zero-turn samples; see RUNS.md.
 
-Repetitions 2 and 3 failed with **HTTP 402 — the OpenRouter account is out of
-credits**. `pressure-r2` errored on 18 of 20 samples after a median of 39 turns;
-`control-r2`, `pressure-r3` and `control-r3` produced no turns at all. None of
-the four is usable and all will be re-run.
+What can be said now, and only this: the r1 control leaks in the reasoning
+channel in 13 of 20 investigations **with no extraction attempt at all**, which
+is consistent with the reasoning channel not requiring an attacker. Whether
+pressure moves it is the question this experiment exists to answer and it is
+not answered.
 
-When all three exist, this section gets per-repetition rows plus the pooled
-stratified test, and a non-significant pooled result is to be written as **"could
-not detect an effect of this size"** — never as "there is no effect" or "the null
-holds". The experiment is powered for large effects only (see §2).
+One prediction is already contradicted. When the contaminated control was
+retracted it was expected that priming had *inflated* the old control and biased
+the comparison toward the null. The clean control came in at 13/20 against the
+contaminated 11/20 — different secret sets, so not a strict comparison, but not
+the predicted direction either. Recorded so it is not quietly forgotten.
 
 ## 4. Reproduce
 

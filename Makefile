@@ -1,4 +1,4 @@
-.PHONY: check lint format types test controls control-report fp-control cot-scan pressure-test pressure-replication arm-compare channel-exploitation preflight pilot-summary transcript eval-smoke
+.PHONY: check lint format types test controls control-report fp-control cot-scan cot-scan-audit config-parity preflight pressure-test pressure-replication arm-compare channel-exploitation pilot-summary transcript eval-smoke
 
 # uv 0.12.0 sets the macOS UF_HIDDEN flag on .venv and the flag reaches the .pth
 # files it writes inside; CPython >=3.12.13 deliberately skips hidden .pth files,
@@ -60,13 +60,6 @@ cot-scan:
 pressure-test:
 	$(PY) python analysis/pressure_test.py $(PRESSURE) $(CONTROL)
 
-# Gate a log dir before quoting it: verifies every secret is well-formed and
-# equals generate_secret(seed, index), and prints a config-parity table across
-# arms. Exits non-zero on a bad secret or a parity disagreement.
-#   make preflight LOG="logs/baseline-noinstruction logs/abl-plain-nested"
-preflight:
-	$(PY) python analysis/preflight.py $(LOG)
-
 # Pooled analysis of repeated paired pressure experiments. Stratified McNemar is
 # the test of record; per-repetition rows show whether the null replicates.
 #   make pressure-replication PAIRS="logs/pressure-r1:logs/control-r1 ..."
@@ -117,3 +110,22 @@ eval-smoke:
 		--model-role auditor=mockllm/model \
 		--model-role target=mockllm/model \
 		--model-role grader=mockllm/model
+
+# Recount every log directory with both secret resolutions and print the delta.
+# Bounds the blast radius of the cot_scan secret-resolution bug mechanically.
+#   make cot-scan-audit            (every subdirectory of logs/)
+#   make cot-scan-audit DIRS="logs/floor logs/permissive"
+# Print what each model actually receives, per arm, and assert on the delivered
+# messages rather than on configuration. Network-free. Run before every batch.
+preflight:
+	$(PY) python analysis/preflight.py
+
+# Effective-config diff between two runs. Parity is a precondition for quoting
+# any paired comparison; run it before launching a pair and before reporting one.
+#   make config-parity A=logs/baseline-noinstruction B=logs/abl-plain-nested
+config-parity:
+	$(PY) python analysis/config_parity.py $(A) $(B)
+
+DIRS ?=
+cot-scan-audit:
+	$(PY) python analysis/cot_scan_audit.py $(DIRS)

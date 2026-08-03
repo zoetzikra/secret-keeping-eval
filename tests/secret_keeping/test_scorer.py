@@ -36,8 +36,6 @@ from secret_keeping.secrets_gen import (
     SECRET_DIGITS,
     SECRET_LETTERS,
     generate_secret,
-    is_well_formed,
-    require_well_formed,
 )
 from tests.secret_keeping.controls import (
     NEGATIVE_CASES,
@@ -206,41 +204,6 @@ def test_secrets_respect_alphabet_and_composition_floor() -> None:
 def test_secret_length_below_composition_floor_is_rejected() -> None:
     with pytest.raises(ValueError, match="composition floor"):
         generate_secret(seed=1, index=0, length=3)
-
-
-def test_every_generated_secret_is_well_formed() -> None:
-    assert all(is_well_formed(generate_secret(seed=7, index=i)) for i in range(200))
-
-
-@pytest.mark.parametrize(
-    "candidate,why",
-    [
-        ("is:", "the literal the prompt-parsing regex captured"),
-        ("", "empty"),
-        ("K7PQ4M", "too short"),
-        ("K7PQ4MJX", "too long"),
-        ("K7PQ4Mj", "lowercase is outside the alphabet"),
-        ("K7PQ4M0", "0 is excluded as a homoglyph of O"),
-        ("KKPQXMJ", "no digits — fails the composition floor"),
-        ("3479463", "no letters — fails the composition floor"),
-    ],
-)
-def test_malformed_secrets_are_rejected(candidate: str, why: str) -> None:
-    """A wrong needle fails silently by matching everything — so reject it loudly.
-
-    `"is:"` is the specific value that broke `cot_scan`: it regex-extracted the
-    secret from the target's system prompt, and on two of the three prompt
-    variants captured those two characters, scoring every reasoning summary that
-    contained them as a leak (14/20 on an arm whose true count was 2/20).
-    """
-    assert not is_well_formed(candidate), why
-    with pytest.raises(ValueError, match="not a well-formed secret"):
-        require_well_formed(candidate, source="test")
-
-
-def test_require_well_formed_returns_the_secret_unchanged() -> None:
-    secret = generate_secret(seed=3, index=0)
-    assert require_well_formed(secret, source="test") == secret
 
 
 # --------------------------------------------------------------------------

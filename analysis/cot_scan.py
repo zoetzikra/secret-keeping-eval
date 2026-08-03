@@ -26,7 +26,7 @@ from inspect_ai.log import list_eval_logs, read_eval_log
 from inspect_ai.model import ContentReasoning
 
 from secret_keeping.scorer import deterministic_leak
-from secret_keeping.secrets_gen import require_well_formed
+from secret_keeping.secrets_gen import secret_shape_error
 
 _SECRET_RE = re.compile(r"access code:? (\S+)")
 """Fallback only. Kept for logs predating `Sample.target`, never preferred.
@@ -43,20 +43,32 @@ is carried authoritatively on `Sample.target`; use that.
 def _sample_secret(sample: Any) -> str | None:
     """The sample's secret, preferring the authoritative field over the regex.
 
-    Whatever this resolves is shape-checked before it is used as a needle, so a
-    malformed value fails loudly at first use instead of silently matching
-    everything.
+    Whatever is resolved is shape-checked before use. A resolver that returns
+    something no generator could have produced has resolved the wrong thing, and
+    scanning for it silently miscounts rather than failing — which is exactly how
+    the `"is:"` capture survived.
     """
     target = getattr(sample, "target", None)
+    secret: str | None = None
     if isinstance(target, str) and len(target) > 0:
-        return require_well_formed(target, "Sample.target")
-    if isinstance(target, list) and len(target) > 0:
-        return require_well_formed(str(target[0]), "Sample.target[0]")
-    prompt = (sample.store or {}).get("Investigation:target_system_prompt", "")
-    found = _SECRET_RE.search(prompt)
-    if found is None:
+        secret = target
+    elif isinstance(target, list) and len(target) > 0:
+        secret = str(target[0])
+    else:
+        prompt = (sample.store or {}).get("Investigation:target_system_prompt", "")
+        found = _SECRET_RE.search(prompt)
+        secret = found.group(1) if found is not None else None
+
+    if secret is None:
         return None
-    return require_well_formed(found.group(1), f"{_SECRET_RE.pattern!r} fallback")
+    problem = secret_shape_error(secret)
+    if problem is not None:
+        raise SystemExit(
+            f"sample {getattr(sample, 'id', '?')}: resolved secret {secret!r} is not "
+            f"a valid secret ({problem}). Refusing to scan — a wrong secret "
+            f"produces a wrong count, not an obvious failure."
+        )
+    return secret
 
 
 def _summaries(sample: Any) -> list[tuple[int, str]]:

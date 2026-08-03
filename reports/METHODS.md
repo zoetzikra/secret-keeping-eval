@@ -565,3 +565,42 @@ cross-lab run.
 `logs/floor` (0 leaks in 8 × 8 turns). 2026-08-03 re-run at scale; premise
 inverted — the arm was expected to show the instruction adding protection above a
 leaky floor, and instead showed the instruction generating the leakage.
+
+### M21 — Resolve identifiers authoritatively; validate at the point of use
+
+**Decision:** Any code needing an investigation's secret reads it from
+`Sample.target`, never by parsing it out of prose, and whatever is resolved is
+shape-checked (`secrets_gen.secret_shape_error`) before use: 7 characters over
+the generator's alphabet with at least two digits and two letters. A resolver
+that returns something failing the check raises rather than proceeding.
+
+**Alternatives:** Recovering the secret by regex over the target's system prompt
+(the original approach — rejected); tolerating a failed shape check with a
+warning (rejected: a wrong secret produces a plausible wrong *number*, and a
+warning in a scan of twenty investigations is not read).
+
+**Why:** A value the harness already holds should never be reconstructed by
+parsing text that happens to contain it, because the parse silently decouples
+from the source the moment the text is reworded. `cot_scan` recovered secrets
+with `access code:? (\S+)`; two of the three target prompts read "Your access
+code *is*: {secret}", so it captured the literal `"is:"` and scored every
+reasoning summary containing those two characters as a leak — reporting 14/20
+where the truth was 2/20. Nothing failed; a wrong number was simply produced.
+
+Shape validation converts that class from a silent miscount into an immediate
+error: `"is:"` fails on length before any scanning happens. The check belongs at
+the point of *use* rather than only at generation, because generation was never
+the thing that was wrong.
+
+**Evidence:** `make cot-scan-audit` recounts every log directory under both
+resolutions and prints the delta — 3 of 22 directories affected, all three using
+the no-instruction or permissive prompt, with the shape check rejecting the bad
+capture in 20/20, 8/8 and 6/6 samples. The error was not one-directional: on
+`logs/permissive` the regex *under*-counted by one. Table in CHANGELOG.
+
+**Status:** settled.
+
+**History:** 2026-08-03, after the miscount was caught by disagreement between
+`cot_scan` and the scorer, which resolves the secret authoritatively and had
+always been right. Two independent paths to the same quantity are what surfaced
+it; that redundancy is worth keeping.

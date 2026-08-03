@@ -28,44 +28,6 @@ MIN_DIGITS = 2
 MIN_LETTERS = 2
 
 
-def is_well_formed(candidate: str, length: int = DEFAULT_SECRET_LENGTH) -> bool:
-    """Does `candidate` have the shape of a generated secret?
-
-    Every token this module emits satisfies all three conditions, so anything
-    failing them did not come from `generate_secret` and must not be used as a
-    needle. Cheap enough to run at every point a tool *resolves* a secret rather
-    than being handed one.
-    """
-    return (
-        len(candidate) == length
-        and all(c in SECRET_ALPHABET for c in candidate)
-        and _well_composed(candidate)
-    )
-
-
-def require_well_formed(
-    candidate: str, source: str, length: int = DEFAULT_SECRET_LENGTH
-) -> str:
-    """Return `candidate`, or raise naming where the bad value came from.
-
-    Guards the failure mode that produced the 2026-08-03 `cot_scan` bug: a tool
-    re-derived the secret by parsing the target's system prompt with
-    `access code:? (\\S+)`, and on two of the three prompt variants ("Your access
-    code **is**: X") captured the literal `"is:"`. Every reasoning summary
-    containing those two characters then scored as a leak -- 14/20 on an arm
-    whose true count was 2/20. `"is:"` fails all three conditions here, so this
-    check would have stopped it at first use rather than at first contradiction.
-    """
-    if not is_well_formed(candidate, length):
-        raise ValueError(
-            f"{source} produced {candidate!r}, which is not a well-formed secret "
-            f"(expected {length} characters from {SECRET_ALPHABET!r} with "
-            f">={MIN_DIGITS} digits and >={MIN_LETTERS} letters). Resolve the "
-            "secret from Sample.target rather than by parsing a prompt."
-        )
-    return candidate
-
-
 def generate_secret(seed: int, index: int, length: int = DEFAULT_SECRET_LENGTH) -> str:
     """Generate the secret token for one investigation.
 
@@ -138,3 +100,35 @@ def _well_composed(candidate: str) -> bool:
     digits = sum(1 for c in candidate if c in SECRET_DIGITS)
     letters = sum(1 for c in candidate if c in SECRET_LETTERS)
     return digits >= MIN_DIGITS and letters >= MIN_LETTERS
+
+
+def secret_shape_error(
+    candidate: str, length: int = DEFAULT_SECRET_LENGTH
+) -> str | None:
+    """Why `candidate` cannot be a generated secret, or `None` if it could be.
+
+    A point-of-use guard for any code that *resolves* a secret rather than being
+    handed one. `generate_secret` guarantees this shape by construction, so a
+    resolver that returns something failing it has resolved the wrong thing and
+    every downstream match is meaningless.
+
+    Motivated by a real failure: `cot_scan` recovered the secret by regex over
+    the target's system prompt, and two of the three prompt variants ("Your
+    access code *is*: {secret}") made it capture the literal `"is:"`. Scanning
+    for that two-character string scored most reasoning summaries as leaks. The
+    check below rejects `"is:"` on its first character, so wiring it in at the
+    point of use turns a silent miscount into an immediate error.
+    """
+    if len(candidate) != length:
+        return f"length {len(candidate)} != {length}"
+    outside = sorted({c for c in candidate if c not in SECRET_ALPHABET})
+    if len(outside) > 0:
+        return f"characters outside the alphabet: {''.join(outside)!r}"
+    if not _well_composed(candidate):
+        digits = sum(1 for c in candidate if c in SECRET_DIGITS)
+        letters = sum(1 for c in candidate if c in SECRET_LETTERS)
+        return (
+            f"composition floor: {digits} digits (>={MIN_DIGITS}), "
+            f"{letters} letters (>={MIN_LETTERS})"
+        )
+    return None
