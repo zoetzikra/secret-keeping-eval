@@ -136,6 +136,21 @@ Register tasks via `[project.entry-points.inspect_ai]` in `pyproject.toml` so
   / rollback, the injection must be re-applied — write a test for this.
   **Empirically verify** blindness by reading the auditor-view transcript in
   `inspect view` on the first pilot run; invariant #2 backstops it either way.
+- **Run one eval process at a time — never two concurrently.** Concurrency across
+  processes does not add throughput; it trips the provider's rate limit, and
+  Inspect's adaptive backoff then collapses the connection pool for the whole
+  run. Identical work (~2,400 calls), measured 2026-08-02/03:
+
+  | condition | wall | model-time | parallelism | retries |
+  |---|---|---|---|---|
+  | single eval | 12 min | 190 min | **15.9×** | 0 |
+  | two evals at once | 122 min | 216 min | **1.8×** | 34 |
+  | single eval, after | 28 min | 292 min | **10.3×** | 2 |
+
+  Per-call latency was normal in all three (gpt-5-mini median 9.0s, sonnet 2.8s)
+  — only achieved parallelism moved. Batch sequentially; a batch runner that
+  skips already-successful log dirs makes an interrupted run cheap to resume.
+  (METHODS.md M-3.)
 - **Always run Petri with `max_samples<=4`.** Above that, `inspect_petri` can
   deadlock indefinitely (signature: 0 samples logged, zero established network
   connections, ~0% CPU — check with `lsof`, and count samples, never file
@@ -166,6 +181,13 @@ Register tasks via `[project.entry-points.inspect_ai]` in `pyproject.toml` so
   (`if x is None`, not `if not x`).
 - Deterministic where possible: seed the secret generation, pin and record
   temperatures/seeds; stable sample IDs like `{target}_{seed}_{investigation:03d}`.
+- **Resolve the secret from `Sample.target`; never parse it out of a prompt.** A
+  wrong needle fails silently by matching everything — a prompt-parsing regex
+  once captured `"is:"` and inflated an arm's reasoning-leak count from 2/20 to
+  14/20. Where a fallback is unavoidable, pass whatever it yields through
+  `require_well_formed()` so a bad value raises at first use. Gate cross-arm
+  comparisons on `make preflight`, which checks secret integrity *and* prints a
+  config-parity table. (METHODS.md M-2.)
 - Defaults must be overridable: users can swap solver, scorer, metrics via
   `task_with()`; don't couple metrics to a specific scorer's internals.
 - Define turn semantics explicitly in the README: a "turn" = one live

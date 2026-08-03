@@ -4,8 +4,9 @@ Supersedes `reports/cot-leakage-vs-pressure.md`, whose control arm was
 contaminated (see the retraction notice at the top of that file). This is the
 first *valid* test of the hypothesis, not merely a replication of a prior result.
 
-**Status: runs in flight, results not yet written.** Design is fixed and recorded
-here before the numbers land, so the analysis cannot be chosen to fit them.
+**Status: 1 of 3 repetitions complete; blocked on OpenRouter credits.** Design was
+fixed and recorded before any numbers landed, so the analysis cannot be chosen to
+fit them.
 
 ---
 
@@ -39,9 +40,11 @@ null. Fixed by `BENIGN_SEED`, enforced by
 
 ### Why three repetitions rather than one larger run
 
-Reasoning-leak counts on a **fixed** set of twenty secrets have ranged 8, 10, 11,
-11, 15 across five runs of an identical configuration (HANDOVER §3.2b) — a
-40–75% swing from target sampling alone. A single experiment, at *any* n, yields
+Reasoning-leak counts vary run to run on identical inputs. The honest estimate is
+the one same-configuration repeat: 15/20 vs 12/20 (`abl-plain-nested` vs
+`abl-plain-rep2`, McNemar p = 0.51) — **±3 investigations**. The wider 8–15 band
+quoted earlier spanned different harnesses and arms and overstates it. A single
+experiment, at *any* n, yields
 one point from that distribution and cannot say how much of what it sees is
 noise. Repetitions measure the noise directly, which is the only way to know
 whether an observed difference clears it.
@@ -70,9 +73,9 @@ those particular twenty tokens" objection open.
 
 The two variance sources stay separable even though these runs confound them,
 because §3.2b already isolated (a) on its own. If the spread across these three
-repetitions is comparable to the 8–15 band, the token set is contributing little
-beyond sampling; if it is much wider, token identity matters and every rate in
-this project needs a wider error bar.
+repetitions is comparable to the ±3 same-configuration band, the token set is
+contributing little beyond sampling; if it is much wider, token identity matters
+and every rate in this project needs a wider error bar.
 
 ### Analysis plan, fixed in advance
 
@@ -94,7 +97,31 @@ effect (say 0.55→0.70) remains out of reach and a null must be reported as
 
 ## 3. Results
 
-*Pending — runs in flight.*
+**Not a result yet — 1 of 3 repetitions exists.** The design of record is three
+paired repetitions plus a stratified McNemar over pooled discordant pairs. One
+repetition is a single draw from the distribution this experiment exists to
+characterise, so it is recorded below as raw data and **must not be read as a
+finding**.
+
+| repetition | pressure | control | discordant | McNemar |
+|---|---|---|---|---|
+| r1 (`secret_seed=1`) | 15/20 | 13/20 | 5:3 | 0.73 |
+| r2 | — | — | — | — |
+| r3 | — | — | — | — |
+| **pooled** | *withheld until all three exist* | | | |
+
+Verified for r1: the control's opening is `BENIGN_SEED`, and **0/20** first
+target stimuli mention secrets (it was 20/20 before the fix), so the arm is clean.
+
+Repetitions 2 and 3 failed with **HTTP 402 — the OpenRouter account is out of
+credits**. `pressure-r2` errored on 18 of 20 samples after a median of 39 turns;
+`control-r2`, `pressure-r3` and `control-r3` produced no turns at all. None of
+the four is usable and all will be re-run.
+
+When all three exist, this section gets per-repetition rows plus the pooled
+stratified test, and a non-significant pooled result is to be written as **"could
+not detect an effect of this size"** — never as "there is no effect" or "the null
+holds". The experiment is powered for large effects only (see §2).
 
 ## 4. Reproduce
 

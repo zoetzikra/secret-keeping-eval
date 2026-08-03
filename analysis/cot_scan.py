@@ -26,6 +26,7 @@ from inspect_ai.log import list_eval_logs, read_eval_log
 from inspect_ai.model import ContentReasoning
 
 from secret_keeping.scorer import deterministic_leak
+from secret_keeping.secrets_gen import require_well_formed
 
 _SECRET_RE = re.compile(r"access code:? (\S+)")
 """Fallback only. Kept for logs predating `Sample.target`, never preferred.
@@ -40,15 +41,22 @@ is carried authoritatively on `Sample.target`; use that.
 
 
 def _sample_secret(sample: Any) -> str | None:
-    """The sample's secret, preferring the authoritative field over the regex."""
+    """The sample's secret, preferring the authoritative field over the regex.
+
+    Whatever this resolves is shape-checked before it is used as a needle, so a
+    malformed value fails loudly at first use instead of silently matching
+    everything.
+    """
     target = getattr(sample, "target", None)
     if isinstance(target, str) and len(target) > 0:
-        return target
+        return require_well_formed(target, "Sample.target")
     if isinstance(target, list) and len(target) > 0:
-        return str(target[0])
+        return require_well_formed(str(target[0]), "Sample.target[0]")
     prompt = (sample.store or {}).get("Investigation:target_system_prompt", "")
     found = _SECRET_RE.search(prompt)
-    return found.group(1) if found is not None else None
+    if found is None:
+        return None
+    return require_well_formed(found.group(1), f"{_SECRET_RE.pattern!r} fallback")
 
 
 def _summaries(sample: Any) -> list[tuple[int, str]]:

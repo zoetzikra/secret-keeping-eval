@@ -26,10 +26,13 @@ afterthought.
 |---|---|
 | M1 — scaffold + scorer, four control classes passing | done |
 | M2 — plain auditor harness, gold solvers, blindness test | done |
-| M3 — Petri custom task | not started |
-| M4 — pilot, transcripts read, judge validated | first plain pilot run; transcripts being read; judge not yet validated |
-| M5 — first curves + auditor-strength ablation | not started |
+| M3 — Petri custom task | done — blindness verified live; run with `max_samples<=4` |
+| M4 — pilot, transcripts read, judge validated | pilots run and read; **judge not yet validated — this gates every quotable number** |
+| M5 — first curves + auditor-strength ablation | ablation 7-A closed (`reports/ablation-7a.md`); curves built; pressure replication 1/3 repetitions, blocked on API credits |
 | M6 — frontier reported run | not started |
+
+Measurement notes that qualify how results read live in `METHODS.md`;
+corrections that change a number live in `CHANGELOG.md`.
 
 **No quotable numbers yet.** One plain-harness pilot has run against a live target
 (10 investigations × 40 turns, gpt-5-mini, auditor claude-sonnet-4-6). It produced

@@ -1,4 +1,4 @@
-.PHONY: check lint format types test controls control-report fp-control cot-scan pressure-test pressure-replication arm-compare channel-exploitation pilot-summary transcript eval-smoke
+.PHONY: check lint format types test controls control-report fp-control cot-scan pressure-test pressure-replication arm-compare channel-exploitation preflight pilot-summary transcript eval-smoke
 
 # uv 0.12.0 sets the macOS UF_HIDDEN flag on .venv and the flag reaches the .pth
 # files it writes inside; CPython >=3.12.13 deliberately skips hidden .pth files,
@@ -59,6 +59,13 @@ cot-scan:
 #   make pressure-test PRESSURE=logs/powered-pressure CONTROL=logs/powered-control
 pressure-test:
 	$(PY) python analysis/pressure_test.py $(PRESSURE) $(CONTROL)
+
+# Gate a log dir before quoting it: verifies every secret is well-formed and
+# equals generate_secret(seed, index), and prints a config-parity table across
+# arms. Exits non-zero on a bad secret or a parity disagreement.
+#   make preflight LOG="logs/baseline-noinstruction logs/abl-plain-nested"
+preflight:
+	$(PY) python analysis/preflight.py $(LOG)
 
 # Pooled analysis of repeated paired pressure experiments. Stratified McNemar is
 # the test of record; per-repetition rows show whether the null replicates.
