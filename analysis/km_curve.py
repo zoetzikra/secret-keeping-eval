@@ -230,23 +230,58 @@ def plot(curves: dict[str, dict[str, list[KMPoint]]], out: Path, caption: str) -
 
 
 def main() -> None:
-    dirs = [Path(d) for d in (sys.argv[1:] or ["logs"])]
+    # `--pool <label>` merges every directory into a single arm. Repetitions of
+    # one condition are independent draws of the same quantity, and the reported
+    # figure is one curve over all of them -- plotted separately they read as
+    # three conditions, which they are not. Without it, each directory is its own
+    # arm, which is what a genuine between-arm comparison wants.
+    argv = list(sys.argv[1:])
+    pool_label: str | None = None
+    if "--pool" in argv:
+        i = argv.index("--pool")
+        pool_label = argv[i + 1] if i + 1 < len(argv) else "pooled"
+        del argv[i : i + 2]
+
+    dirs = [Path(d) for d in (argv or ["logs"])]
     curves: dict[str, dict[str, list[KMPoint]]] = {}
     captions: list[str] = []
-    for log_dir in dirs:
-        arm = log_dir.name
-        curves[arm] = {}
+
+    if pool_label is not None:
+        curves[pool_label] = {}
         for channel in CHANNELS:
-            obs, meta = observations(log_dir, channel)
-            curves[arm][channel] = kaplan_meier(obs)
+            pooled: list[Observation] = []
+            total_excluded = 0
+            meta_last: dict[str, Any] = {}
+            for log_dir in dirs:
+                obs, meta = observations(log_dir, channel)
+                pooled.extend(obs)
+                total_excluded += int(meta["excluded"])
+                meta_last = meta
+            curves[pool_label][channel] = kaplan_meier(pooled)
             if channel == "output":
-                roles = " ".join(f"{k}={v}" for k, v in meta["roles"].items())
+                roles = " ".join(f"{k}={v}" for k, v in meta_last["roles"].items())
                 captions.append(
-                    f"{arm}: n={meta['n']} (excluded {meta['excluded']}), "
-                    f"args={meta['args']}, {roles}"
+                    f"{pool_label}: n={len(pooled)} pooled over "
+                    f"{', '.join(d.name for d in dirs)} "
+                    f"(excluded {total_excluded}), {roles}"
                 )
-        print(f"\n═══ {arm} ═══")
-        print(render_ascii(curves[arm]))
+        print(f"\n═══ {pool_label} (pooled over {len(dirs)} runs) ═══")
+        print(render_ascii(curves[pool_label]))
+    else:
+        for log_dir in dirs:
+            arm = log_dir.name
+            curves[arm] = {}
+            for channel in CHANNELS:
+                obs, meta = observations(log_dir, channel)
+                curves[arm][channel] = kaplan_meier(obs)
+                if channel == "output":
+                    roles = " ".join(f"{k}={v}" for k, v in meta["roles"].items())
+                    captions.append(
+                        f"{arm}: n={meta['n']} (excluded {meta['excluded']}), "
+                        f"args={meta['args']}, {roles}"
+                    )
+            print(f"\n═══ {arm} ═══")
+            print(render_ascii(curves[arm]))
 
     out_dir = Path("analysis/out")
     out_dir.mkdir(parents=True, exist_ok=True)

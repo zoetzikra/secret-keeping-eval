@@ -82,8 +82,10 @@ arm-compare:
 # and any channel (output or visible reasoning).
 #   make km LOG=logs/pilot-informed-v2
 #   make km LOG="logs/pilot-informed-v2 logs/control-benign-neutral"
+#   make km LOG="logs/pressure-r1 logs/pressure-r2" POOL=E1-pressure
+POOL ?=
 km:
-	$(PY) python analysis/km_curve.py $(LOG)
+	$(PY) python analysis/km_curve.py $(LOG) $(if $(POOL),--pool $(POOL),)
 
 # Self-contained HTML page: three survival panels (any / output / reasoning).
 #   make km-artifact LOG="logs/pilot-informed-v2 logs/control-benign-neutral"
