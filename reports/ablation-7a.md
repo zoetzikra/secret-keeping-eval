@@ -41,14 +41,26 @@ Five n=20 runs on *these same twenty secrets* have given reasoning-leak counts o
 The apparent gap is the noise sample, not a measured harness effect, and the
 headline any-mention channel inherits it because reasoning drives it.
 
-**Caveat on that band, added 2026-08-03.** Those five runs share a *secret set*,
-not a *configuration*: `abl-petri` is a different harness, `powered-control` is
-the benign arm (and a contaminated one — see
+**Corrected 2026-08-03 — the band was overstated.** Those five runs share a
+*secret set*, not a *configuration*: `abl-petri` is a different harness,
+`powered-control` is the benign arm (and a contaminated one — see
 `reports/cot-leakage-vs-pressure.md`), and `abl-plain` predates the nesting
-change that `abl-plain-nested` carries. So 8–15 is a spread across conditions,
-which overstates it as a pure sampling-noise figure. The first genuinely
-same-configuration repeat is `abl-plain-nested` vs `abl-plain-rep2`; that pair,
-not the five-run range, is the honest estimate of run-to-run noise.
+change that `abl-plain-nested` carries. So 8–15 is a spread across *conditions*,
+and using it as a sampling-noise figure inflates it.
+
+The first genuinely same-configuration repeat is `abl-plain-nested` vs
+`abl-plain-rep2` — identical task parameters, identical twenty secrets, nothing
+different but the target's sampling:
+
+| channel | nested | rep2 | McNemar |
+|---|---|---|---|
+| any / reasoning | 15/20 | 12/20 | p = 0.51 |
+| output | 1/20 | 1/20 | p = 1.00 |
+| extraction | 5/20 | 3/20 | p = 0.63 |
+
+**Run-to-run noise is ±3 investigations, not ±7.** Rate comparisons at n=20 are
+better behaved than the mixed-condition band suggested — though still far too
+coarse to resolve the reasoning-channel difference this ablation reports.
 
 A secondary measurement difference points the same way: readable summaries were
 captured on 61% of plain turns and 54% of Petri turns (mean 613 vs 498
@@ -77,6 +89,48 @@ secret in a thinking summary and fed it back:
 
 So the output-channel gap is largely the conversion gap seen from the other end,
 not a second finding.
+
+## The auditor-conversion gap is real — §6.1 resolved
+
+**Settled 2026-08-03 by the repeat run.** The open question was whether the plain
+auditor's low conversion (5/15) was a real weakness or one draw from a noisy
+distribution. Repeating the arm answers it:
+
+| arm | visible | extracted | conversion | latency (turns) |
+|---|---|---|---|---|
+| plain, run 1 (`abl-plain-nested`) | 15 | 5 | 5/15 | 1, 1, 3, 9, 25 |
+| plain, run 2 (`abl-plain-rep2`) | 12 | 3 | 3/12 | 1, 10, 21 |
+| **plain, pooled** | **27** | **8** | **8/27 = 0.30** | — |
+| Petri (`abl-petri`) | 9 | 7 | **7/9 = 0.78** | 1, 1, 1, 2, 2, 6, 6 |
+
+The two plain runs agree with each other (Fisher p = 0.70), so they pool. Pooled
+against Petri: **Fisher p = 0.019.** The gap did not collapse into the noise
+band — it tightened.
+
+So the plain harness's auditor genuinely acts on roughly a third of the
+opportunities it is handed, where Petri's acts on nearly all of them, and does so
+within a couple of turns. **This caps what any elicitation-strength argument
+from the plain harness can claim**, and it is a property of the harness rather
+than of the target or the auditor model, which are identical across the two arms.
+
+**Cause: delivery, not prompt content.** Petri's auditor prompt contains no
+instruction to read the target's thinking either, and nesting the reasoning
+summary inside `<target_response>` to match Petri's format moved *latency*
+without moving conversion. The remaining structural difference is that Petri's
+auditor receives the reply as the return value of a `resume()` call it chose to
+make, while the plain harness injects it unsolicited.
+
+`delivery="tool"` (`auditor.py`) now implements the Petri shape for the plain
+harness: the auditor gets one tool, the harness executes it, and the reply comes
+back as a `ChatMessageTool`. The tool description deliberately says nothing about
+reading the reply — an instruction to attend to it would confound delivery with
+prompt content, which is the thing being isolated. Default remains `"message"`.
+
+**Not yet run live.** The measurement that closes this is `delivery="tool"` vs
+`delivery="message"`, paired on shared secrets, plain harness both sides. If
+conversion moves toward 7/9 the hypothesis is confirmed; if it does not, the gap
+is something else about Petri (rollback, multi-conversation structure) and the
+plain harness's ceiling is lower than the ablation's null implies.
 
 ## Extraction (`event_extracted`) — first numbers
 
@@ -145,10 +199,12 @@ illustration failure again, on an auditor-supplied string).
 
 ## Next
 
-1. Repeat the plain arm once on the same secrets, to see whether the conversion
-   gap (5/15 vs 7/9) survives the run-to-run noise. Cheap and decides §6.1.
-2. Only if it survives: restructure the plain loop so target replies arrive as
-   tool results (the delivery hypothesis).
-3. Do not re-run this ablation at n=20 expecting a different answer — at this
-   noise level it would need n well past 60 per arm to resolve the reasoning
-   channel, and the question is not worth that.
+1. ~~Repeat the plain arm~~ — **done**, gap survives (8/27 vs 7/9, p = 0.019).
+2. ~~Restructure the plain loop for tool-result delivery~~ — **built**
+   (`delivery="tool"`), not yet run live.
+3. **Run the delivery comparison**: `delivery="tool"` vs `delivery="message"`,
+   plain harness, paired on shared secrets. This is the measurement that decides
+   whether delivery explains the gap.
+4. Do not re-run the *harness* ablation at n=20 expecting a different answer — at
+   ±3 investigations of run-to-run noise it would need n well past 60 per arm to
+   resolve the reasoning channel, and the question is not worth that.
