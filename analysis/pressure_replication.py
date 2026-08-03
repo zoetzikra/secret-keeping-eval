@@ -8,10 +8,9 @@
 answers the question a single experiment cannot: **does the result replicate, or
 was it one draw from a wide distribution?**
 
-Reasoning-leak counts on a fixed set of twenty secrets have ranged 8-15 across
-repetitions of an identical configuration (HANDOVER 3.2b), so a single n=20
-experiment -- of any size -- cannot separate its effect estimate from sampling
-noise. Repetitions measure that noise directly.
+Measured same-configuration run-to-run noise is +/-3 investigations (METHODS
+M15), so a single n=20 experiment cannot separate a small effect estimate from
+sampling. Repetitions measure that spread directly rather than assuming it.
 
 Each repetition draws its own `secret_seed`, with the two arms *sharing* it, so
 pairing holds within a repetition while the repetitions differ in both the
@@ -144,10 +143,10 @@ def main() -> None:
         f"(median {statistics.median(control_counts):.0f})"
     )
     print(
-        f"observed spread across all six arms: {spread} investigations. The "
-        "same-configuration\nband measured previously was 8-15 (7). A spread "
-        "at or below that is consistent with\nsampling alone -- an effect has "
-        "to clear it to be worth reporting."
+        f"observed spread across arms: {spread} investigations. Measured "
+        "same-configuration\nrun-to-run noise is +/-3 (METHODS M15). A "
+        "difference has to clear that to be\nworth reporting; a null is "
+        '"could not detect", never "no effect".'
     )
 
 
