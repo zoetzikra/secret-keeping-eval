@@ -150,7 +150,7 @@ Register tasks via `[project.entry-points.inspect_ai]` in `pyproject.toml` so
   Per-call latency was normal in all three (gpt-5-mini median 9.0s, sonnet 2.8s)
   — only achieved parallelism moved. Batch sequentially; a batch runner that
   skips already-successful log dirs makes an interrupted run cheap to resume.
-  (METHODS.md M-3.)
+  Operational constraint: belongs here, not in `reports/METHODS.md`.
 - **Always run Petri with `max_samples<=4`.** Above that, `inspect_petri` can
   deadlock indefinitely (signature: 0 samples logged, zero established network
   connections, ~0% CPU — check with `lsof`, and count samples, never file
@@ -187,7 +187,7 @@ Register tasks via `[project.entry-points.inspect_ai]` in `pyproject.toml` so
   14/20. Where a fallback is unavoidable, pass whatever it yields through
   `require_well_formed()` so a bad value raises at first use. Gate cross-arm
   comparisons on `make preflight`, which checks secret integrity *and* prints a
-  config-parity table. (METHODS.md M-2.)
+  config-parity table.
 - Defaults must be overridable: users can swap solver, scorer, metrics via
   `task_with()`; don't couple metrics to a specific scorer's internals.
 - Define turn semantics explicitly in the README: a "turn" = one live

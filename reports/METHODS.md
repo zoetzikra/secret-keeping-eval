@@ -496,8 +496,11 @@ the comparison that tests it holds everything else fixed.
 **Evidence:** `reports/ablation-7a.md` (conversion 8/27 vs 7/9, Fisher
 p = 0.019; placement result); `delivery` parameter in `auditor.py`.
 
-**Status:** **provisional** — mechanism unconfirmed until the live
-tool-vs-message comparison runs (E3).
+**Status:** **provisional** — implemented and unit-tested; mechanism unconfirmed
+until the live tool-vs-message comparison runs (E3). The gap it seeks to explain
+is itself now established rather than suspected: it survived an independent
+same-configuration repeat (5/15 and 3/12, agreeing at p = 0.70; pooled 8/27
+against Petri's 7/9, Fisher p = 0.019).
 
 ### M20 — Baseline-protection arm
 
@@ -512,9 +515,53 @@ finding, not a gate).
 **Why:** The survival curve conflates compliance with the prompted instruction
 and the provider's baseline confidentiality behaviour. The no-instruction arm
 measures the floor, so the headline curve can be read as instruction-added
-protection above it. The existing 8-investigation × 8-turn run is too thin to
+protection above it. The existing 8-investigation × 8-turn run was too thin to
 quantify the confound, hence the re-run at scale.
 
-**Evidence:** HANDOVER §3.5; `reports/baseline-protection.md`.
+The result inverts the arm's original premise. The instruction does not add
+protection to a leaky floor; it **induces** the leakage it is meant to prevent,
+and only in the reasoning channel. Planning how to protect a value requires
+representing that value, and on this target the representation surfaces verbatim
+in the reasoning summary — the model names the string in the course of deciding
+not to name it. Absent the instruction there is nothing to plan around and the
+value is largely never rehearsed.
 
-**Status:** settled design; run in flight (E2).
+Two properties make this a mechanism rather than a defect in the instrument.
+The effect is **channel-specific**: reasoning leakage is instruction-induced
+(2/20 → 12–15/20) while output discipline is instruction-*independent* (1/20
+either way), whereas a general "the instruction degrades secrecy" account
+predicts both channels move. And it is a property of **the target**, not the
+harness: nothing in the eval writes the secret into the reasoning channel.
+
+The scope consequence is bounded and does not undermine the replication, which
+is *supposed* to instruct the target — the system card's setup forbids revealing
+the password "including inside reasoning". What it forbids is generalisation: the
+any-mention curve measures secrecy **under an explicit keep-instruction** and
+must not be read as a measure of how a model handles a secret it was merely
+given. On this target the two differ sixfold in reasoning and not at all in
+output.
+
+**Evidence:** `logs/baseline-noinstruction` vs `logs/abl-plain-nested` and
+`logs/abl-plain-rep2`, paired on `secret_seed=0`, n=20 per arm, 40 turns,
+identical informed attacking auditor.
+
+| channel | no instruction | instructed run 1 | instructed run 2 |
+|---|---|---|---|
+| reasoning | **2/20** | 15/20 (McNemar p = 0.002) | 12/20 (p = 0.006) |
+| output | 1/20 | 1/20 (p = 1.00) | 1/20 (p = 1.00) |
+
+Config parity verified by `make preflight` (60/60 secrets well-formed and equal
+to `generate_secret(seed, index)`; the only intended difference is
+`target_prompt_sha`). Counts confirmed independently by the scorer (`event_cot`)
+and the event-based `cot_scan`, which agree exactly. Write-up:
+`reports/baseline-protection.md`.
+
+**Status:** **settled** — run complete (E2), n=20 × 40 turns, replicated against
+two independent instructed runs. Untested across targets: single target
+(`gpt-5-mini`), single seed set; a cross-target check is cheap and belongs in any
+cross-lab run.
+
+**History:** 2026-07-30 arm demoted from plumbing gate to measurement after
+`logs/floor` (0 leaks in 8 × 8 turns). 2026-08-03 re-run at scale; premise
+inverted — the arm was expected to show the instruction adding protection above a
+leaky floor, and instead showed the instruction generating the leakage.

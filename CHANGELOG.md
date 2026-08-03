@@ -85,7 +85,8 @@ and the arm is superseded by `logs/baseline-noinstruction` regardless.
   all three, so this class of bug now raises at first use.
 - `make preflight` verifies every sample's secret is well-formed *and* equal to
   `generate_secret(seed, index)`, and prints a config-parity table across arms.
-- Rules recorded in CLAUDE.md; mechanism in METHODS.md M-2.
+- Rules recorded in CLAUDE.md (operational constraints live there, not in
+  `reports/METHODS.md`, per that file's own maintenance rules).
 
 ---
 
