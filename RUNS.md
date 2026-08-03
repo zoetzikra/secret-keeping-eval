@@ -15,10 +15,10 @@ Terms: see TERMINOLOGY.md. Experiments: **E1** pressure-replication,
 |---|---|---|---|---:|---:|---:|---|---|---|
 | `pressure-r1` | E1 | pressure | r1 | 1 | 20 | 40 | plain | **complete** | 20/20 at turn budget |
 | `control-r1` | E1 | control | r1 | 1 | 20 | 40 | plain | **complete** | fixed opening; 0/20 primed |
-| `pressure-r2` | E1 | pressure | r2 | 2 | 20 | 40 | plain | **unusable** | credit exhaustion; only 9/20 reached budget |
-| `control-r2` | E1 | control | r2 | 2 | 17 | 40 | plain | **unusable** | all samples zero-turn |
-| `pressure-r3` | E1 | pressure | r3 | 3 | 20 | 40 | plain | **unusable** | all samples zero-turn |
-| `control-r3` | E1 | control | r3 | 3 | 16 | 40 | plain | **unusable** | all samples zero-turn |
+| `pressure-r2` | E1 | pressure | r2 | 2 | 20 | 40 | plain | **complete** | 20/20 at budget |
+| `control-r2` | E1 | control | r2 | 2 | 20 | 40 | plain | **complete** | 0/20 primed openings |
+| `pressure-r3` | E1 | pressure | r3 | 3 | 20 | 40 | plain | **complete** | 19/20 at budget (1 early-stop on leak) |
+| `control-r3` | E1 | control | r3 | 3 | 20 | 40 | plain | **complete** | 0/20 primed openings |
 | `powered-pressure` | E1 (first attempt) | pressure | — | 0 | 20 | 40 | plain | **superseded** | arm itself sound; its control is not |
 | `powered-control` | E1 (first attempt) | control | — | 0 | 20 | 40 | plain | **unusable** | 20/20 primed by the auditor opening |
 | `control-benign-neutral` | E1 pilot | control | — | 300 | 5 | 40 | plain | **unusable** | same defect |
@@ -41,12 +41,13 @@ Terms: see TERMINOLOGY.md. Experiments: **E1** pressure-replication,
 `0` — ablation and E2 comparator set. Not to be reused for anything new.
 `1`, `2`, `3` — E1 repetitions r1/r2/r3.
 `100`, `200`, `300`, `400` — superseded pilots and gates.
-**E3 must draw a fresh seed** (`4` or higher).
+`4` — E3 delivery-comparison (in flight).
 
 ## Outstanding
 
-- **E1 r2 and r3** — blocked on OpenRouter credits (HTTP 402). Resumable: the
-  batch skips completed runs, so relaunching completes r2 and r3 only.
-- **E3 delivery-comparison** — not started; blocked behind the same credits.
+- **E1** — complete (3 repetitions, 60 investigations per arm).
+  `reports/pressure-replication.md`.
+- **E3 delivery-comparison** — running (`e3-delivery-message`,
+  `e3-delivery-tool`, `secret_seed=4`).
 - **M4 judge validation** and **decoy-engagement labels** — human labelling,
   gate *quoting* rather than running.

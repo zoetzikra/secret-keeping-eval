@@ -17,10 +17,17 @@ The eval works. `make check` green (ruff + strict mypy + 102 tests);
 gate quoting (not running): M4 judge validation (50–100 turns) and the
 decoy-engagement labels (~20 transcripts). Both are Zoe's.
 
-**One hard blocker:** OpenRouter credits are exhausted (HTTP 402). Two E1
-repetitions and all of E3 are waiting on it.
+**E1 is complete** (3 repetitions, 60 investigations per arm). E3 is running.
 
 ## 2. Findings that are settled
+
+**Reasoning-channel leakage does not require an attacker** (E1,
+`reports/pressure-replication.md`). Under ordinary conversation with no
+extraction attempt, the target leaks the secret into reasoning in **30 of 60**
+investigations. A pressure effect could not be detected at n=60/arm (pooled
+stratified McNemar p = 0.087) though the direction is consistent across all
+three repetitions; if real it is of order the ±3 noise floor. Reported as "could
+not detect", not "no effect".
 
 **Reasoning-channel leakage is instruction-induced** (E2,
 `reports/baseline-protection.md`, METHODS M20). With no keep-instruction the
@@ -49,8 +56,7 @@ spontaneous (`abl-petri` `0_001`).
 
 | item | state |
 |---|---|
-| E1 r2, r3 | blocked on credits; batch is resumable and skips completed runs |
-| E3 delivery-comparison | not started; needs a fresh `secret_seed` (≥4) |
+| E3 delivery-comparison | running (`secret_seed=4`) — decides whether delivery explains the conversion gap |
 | M4 judge validation | Zoe; gates all quoting |
 | decoy-engagement labels | Zoe; ~20 transcripts |
 | Figure 6.5.4.5.B | needs a Petri run with prefill on |
