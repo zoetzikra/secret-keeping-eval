@@ -1,4 +1,4 @@
-.PHONY: check lint format types test controls control-report fp-control cot-scan cot-scan-audit config-parity preflight pressure-test pressure-replication arm-compare channel-exploitation pilot-summary transcript eval-smoke
+.PHONY: check lint format types test controls control-report fp-control cot-scan cot-scan-audit config-parity preflight run-status pressure-test pressure-replication arm-compare channel-exploitation pilot-summary transcript eval-smoke
 
 # uv 0.12.0 sets the macOS UF_HIDDEN flag on .venv and the flag reaches the .pth
 # files it writes inside; CPython >=3.12.13 deliberately skips hidden .pth files,
@@ -115,6 +115,12 @@ eval-smoke:
 # Bounds the blast radius of the cot_scan secret-resolution bug mechanically.
 #   make cot-scan-audit            (every subdirectory of logs/)
 #   make cot-scan-audit DIRS="logs/floor logs/permissive"
+# Live progress across a batch of runs (done / running / queued), read from the
+# .eval logs so it works for a detached batch.
+#   make run-status          |  watch -n 20 make run-status
+run-status:
+	$(PY) python analysis/run_status.py
+
 # Print what each model actually receives, per arm, and assert on the delivered
 # messages rather than on configuration. Network-free. Run before every batch.
 preflight:
