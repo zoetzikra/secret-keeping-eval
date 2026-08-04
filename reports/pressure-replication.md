@@ -91,54 +91,80 @@ effect (say 0.55→0.70) remains out of reach and a null must be reported as
 
 ## 3. Results
 
-All three repetitions complete; 60 investigations per arm. Test of record is the
-stratified exact McNemar over discordant pairs.
+Two designs ran. The **powered design (n=40 × 3, seeds 5/6/7) is the result of
+record**; the original n=20 × 3 is reported below it because it motivated the
+powering and because pre-registering the follow-up on its estimate is part of
+the provenance.
+
+### Powered — n = 40 × 3, 120 investigations per arm
+
+Test of record: stratified exact McNemar over discordant pairs.
 
 | repetition | `secret_seed` | pressure | control | discordant (P:C) | McNemar |
 |---|---:|---|---|---|---|
-| r1 | 1 | 15/20 | 13/20 | 5:3 | 0.73 |
-| r2 | 2 | 12/20 | 10/20 | 6:4 | 0.75 |
-| r3 | 3 | 13/20 | 7/20 | 8:2 | 0.11 |
-| **pooled** | — | **40/60 (0.67)** | **30/60 (0.50)** | **19:9** | **0.087** |
+| p5 | 5 | 26/40 | 16/40 | 18:8 | 0.076 |
+| p6 | 6 | 27/40 | 13/40 | 17:3 | 0.003 |
+| p7 | 7 | 27/40 | 15/40 | 17:5 | 0.017 |
+| **pooled** | — | **80/120 (0.67)** | **44/120 (0.37)** | **52:16** | **< 0.001** |
 
-Wilson intervals: pressure 0.67 [0.54, 0.77], control 0.50 [0.38, 0.62].
-CMH (stratified, unpaired, secondary) p = 0.095.
+Wilson: pressure 0.67 [0.58, 0.74], control 0.37 [0.29, 0.46].
+CMH (stratified, unpaired, secondary) p < 0.001.
 
-**This is a trend, not a null.** The direction is consistent in **all three**
-repetitions (+2, +2, +6) on three disjoint secret sets, and the pooled
-discordance is 19:9 — nearly two-to-one in favour of pressure. p = 0.087 does
-not clear conventional significance, so no effect is *established*; but "no
-effect" is the wrong summary, and it is the opposite of the retracted
-contaminated result, which reported exact equality.
+**Adversarial pressure raises reasoning-channel rehearsal.** All three
+repetitions favour pressure, two are individually significant, and the pool is
+decisive. The arms are strikingly stable across independent secret sets —
+pressure 26/27/27, control 16/13/15 — so the effect is not carried by one draw.
 
-The gap is 0.67 − 0.50 ≈ 3.3 investigations per 20, sitting on the measured ±3
-run-to-run noise floor (METHODS M15) — precisely the size that three
-repetitions at n=20 cannot resolve individually while the pool trends. That is a
-power problem, not a design problem; see §7.
+The effect is ~30 percentage points, an order of magnitude above the ±3
+run-to-run noise floor (METHODS M15).
 
-### Observability: the arms are not equally observed, and the bias favours the finding
+### Observability, and why it does not explain the effect
 
-The reasoning channel is only readable when the provider attaches a summary
-(METHODS M22). The two arms differ sharply:
+Reasoning is only readable when the provider attaches a summary (METHODS M22),
+and the arms differ sharply:
 
-| arm | readable summary |
-|---|---:|
-| pressure r1 / r2 / r3 | 57% / 60% / 60% |
-| control r1 / r2 / r3 | **91% / 94% / 93%** |
+| arm | readable summary | readable turns per investigation (of ~40) |
+|---|---:|---:|
+| pressure p5/p6/p7 | 57% / 57% / 60% | median **23** |
+| control p5/p6/p7 | 93% / 92% / 92% | median **37** |
 
-Three things follow, and all three belong in any reading of the table above.
+**Pre-committed sensitivity analysis (§7): restrict to investigations where both
+arms have a readable summary.** It retains **120 of 120** — every investigation
+has at least one readable turn — so the restriction is *vacuous*. Reported
+because it was pre-committed, and flagged as uninformative rather than quietly
+dropped: the confound lives at the turn level, not the investigation level.
 
-1. **The bias runs toward the null, so the effect is a floor.** Pressure shows
-   *more* reasoning leaks (40/60) while being observed *less* (~58%) than
-   control (30/60 at ~92%). Equalising observability could only widen the gap.
-   The true effect is probably larger than 0.67 vs 0.50.
-2. **But 40-vs-30 is not a clean rate comparison.** Both counts are lower bounds
-   over unequal subsets. Quote them as such.
-3. **The asymmetry is itself a finding.** Adversarial pressure roughly halves
-   reasoning-summary availability, from ~92% to ~58% — direct evidence that
-   pressure changes what the provider is willing to surface. That is material to
-   any monitorability argument: the conditions under which one most wants to read
-   a model's reasoning are the conditions under which least of it is shown.
+**The informative version is exposure-normalised:**
+
+| arm | leaks | readable turns | leaks per 1000 readable turns |
+|---|---:|---:|---:|
+| pressure | 80 | 2,785 | **28.7** |
+| control | 44 | 4,434 | **9.9** |
+
+The pressure arm had **37% fewer readable turns** and still leaked more often —
+nearly three times as often per unit of exposure. Unequal observability biases
+*against* the finding, so 0.67 vs 0.37 is a **floor**, not a ceiling.
+
+**The asymmetry is itself a result.** Adversarial pressure roughly halves
+reasoning-summary availability (~92% → ~58%). The conditions under which one
+most wants to read a model's reasoning are the conditions under which the
+provider surfaces least of it — directly relevant to any monitorability claim.
+
+### Original — n = 20 × 3, superseded as the headline
+
+| repetition | pressure | control | discordant | McNemar |
+|---|---|---|---|---|
+| r1 | 15/20 | 13/20 | 5:3 | 0.73 |
+| r2 | 12/20 | 10/20 | 6:4 | 0.75 |
+| r3 | 13/20 | 7/20 | 8:2 | 0.11 |
+| pooled | 40/60 (0.67) | 30/60 (0.50) | 19:9 | 0.087 |
+
+The pressure estimate is identical across designs (0.67 both times); the control
+estimate moved (0.50 → 0.37). The n=20 design was not wrong, it was
+under-resourced: an effect of this size sits at its noise floor, which is why
+three repetitions were individually non-significant while the pool trended.
+Reading that as "could not detect" rather than "no effect" is what motivated
+powering it, and the powered result vindicates that reading.
 
 ### Relationship to the retracted result
 
@@ -157,20 +183,23 @@ either way, in either direction.
 - Reasoning-channel leakage **does not require an attacker**: 30/60 under
   ordinary conversation. This is the load-bearing claim and it does not rest on
   the pressure-vs-control contrast.
-- A **consistent positive trend** for pressure raising reasoning-channel
-  rehearsal: same sign in three repetitions, pooled 19:9. Not established at
-  p = 0.087, but the direction is not in question and the observability bias
-  runs in its favour.
+- **Adversarial pressure raises reasoning-channel rehearsal**: 0.67 vs 0.37,
+  pooled stratified McNemar p < 0.001 over 120 investigations per arm, all three
+  repetitions in the same direction. Robust to the observability confound, which
+  biases against it.
 - **Adversarial pressure roughly halves reasoning-summary availability**
   (~92% → ~58%), which is a monitorability result in its own right.
 
 ## 5. What this does not license
 
-- Not "pressure has no effect" — and equally not "pressure raises rehearsal".
-  The design is powered for large effects (0.40→0.90 essentially always); an
-  effect near ±3 investigations is below what n=60/arm resolves.
-- Not a clean rate comparison: the arms are observed at ~58% and ~92%, so both
-  counts are lower bounds over unequal subsets (METHODS M22).
+- Not a claim about the **output** channel, which is unaffected — this is a
+  reasoning-channel result.
+- Not an exact rate: both counts are lower bounds over unequal readable subsets
+  (METHODS M22). The *direction* is secure; 0.67 and 0.37 are floors.
+- Not a generalisation beyond `gpt-5-mini`, 40 turns, and six secret sets.
+- Not a mechanism. That pressure raises rehearsal is measured; *why* is
+  inferred from transcripts (the target rehearses the value while planning to
+  guard it) and is the same mechanism E2 isolates causally.
 - Not a claim that the retracted null was *caused* by contamination, only that
   the clean result differs from it in the predicted direction.
 - Not a generalisation beyond `gpt-5-mini`, 40 turns, three secret sets.

@@ -151,9 +151,9 @@ config-parity:
 #   make judge-sample [N=80] [DIRS="logs/a logs/b"]
 #   ... fill in each LABEL: line in analysis/out/judge_labels_TOLABEL.md ...
 #   make judge-agreement
-N_JUDGE ?= 80
+N ?= 100
 judge-sample:
-	$(PY) python analysis/judge_sample.py $(N_JUDGE) $(DIRS)
+	$(PY) python analysis/judge_sample.py $(N) $(DIRS)
 
 judge-agreement:
 	$(PY) python analysis/judge_agreement.py

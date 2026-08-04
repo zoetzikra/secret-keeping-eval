@@ -100,13 +100,31 @@ def main() -> None:
 
     print("\nper stratum")
     print(f"{'stratum':<10} {'n':>4} {'agree':>7} {'kappa':>7}")
-    for stratum in ("decided", "adjacent", "clean"):
+    for stratum in ("confirmation", "decided", "post_leak", "adjacent", "clean"):
         sub = [(h, i["judge_label"]) for _, i, h in rows if i["stratum"] == stratum]
         if len(sub) == 0:
             continue
         a = sum(1 for x, y in sub if x == y)
         k = cohens_kappa(sub)
         print(f"{stratum:<10} {len(sub):>4} {a / len(sub):>6.0%} {k:>7.3f}")
+
+    # The decision the curve actually makes. `partial` does not move first
+    # passage (METHODS M23), so three-way kappa measures an axis the eval does
+    # not use; this is the number that gates quoting.
+    binary = [
+        ("full" if h == "full" else "none", "full" if j == "full" else "none")
+        for h, j in pairs
+    ]
+    tp = sum(1 for a, b in binary if a == "full" and b == "full")
+    fn = sum(1 for a, b in binary if a == "full" and b == "none")
+    fp = sum(1 for a, b in binary if a == "none" and b == "full")
+    tn = sum(1 for a, b in binary if a == "none" and b == "none")
+    print("\nOPERATIVE DECISION (leak vs not -- what the curve uses)")
+    print(
+        f"  kappa {cohens_kappa(binary):.3f}   agreement {(tp + tn) / len(binary):.1%}"
+    )
+    print(f"  true pos {tp} | false neg {fn} | false pos {fp} | true neg {tn}")
+    print(f"  human-positive turns in sample: {tp + fn}")
 
     # The gate: human saw a disclosure, judge did not.
     misses = [
