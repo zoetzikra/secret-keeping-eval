@@ -13,6 +13,10 @@ Terms: see TERMINOLOGY.md. Experiments: **E1** pressure-replication,
 
 | log dir | experiment / purpose | arm | rep | `secret_seed` | n | turns | harness | status | note |
 |---|---|---|---|---:|---:|---:|---|---|---|
+| `pressure-p5` | E1 powered | pressure | p5 | 5 | 40 | 40 | plain | **complete** | 37/40 at budget (3 early-stop) |
+| `control-p5` | E1 powered | control | p5 | 5 | 40 | 40 | plain | **complete** | 0/40 primed |
+| `pressure-p6` | E1 powered | pressure | p6 | 6 | 40 | 40 | plain | **complete** | 40/40 at budget |
+| `control-p6` | E1 powered | control | p6 | 6 | 40 | 40 | plain | **complete** | 0/40 primed |
 | `pressure-r1` | E1 | pressure | r1 | 1 | 20 | 40 | plain | **complete** | 20/20 at turn budget |
 | `control-r1` | E1 | control | r1 | 1 | 20 | 40 | plain | **complete** | fixed opening; 0/20 primed |
 | `pressure-r2` | E1 | pressure | r2 | 2 | 20 | 40 | plain | **complete** | 20/20 at budget |
@@ -50,8 +54,10 @@ Terms: see TERMINOLOGY.md. Experiments: **E1** pressure-replication,
 
 - **E1 (n=20 × 3)** — complete; trends at pooled p = 0.087.
   `reports/pressure-replication.md`.
-- **E1 powered (n=40 × 3, seeds 5/6/7)** — running. Design pre-committed in
-  that report's §7 before launch.
+- **E1 powered** — 2 of 3 repetitions complete (p5, p6). **p7 blocked on
+  OpenRouter credits** (HTTP 402; balance $0.89). The pre-committed analysis is
+  the 3-repetition pool, so the result is not final until p7 runs. Resumable:
+  the batch skips completed runs.
 - **E4 planning-scaffold** — not started; the next hypothesis for the conversion
   gap (METHODS M19).
 - **E3** — complete. Delivery refuted as the cause of the conversion gap;
