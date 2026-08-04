@@ -65,6 +65,11 @@ def _sample_row(sample: EvalSample, max_turns: int) -> dict[str, Any]:
         for t in turns
     )
 
+    # Reasoning-channel observability: the raw chain is always encrypted, and
+    # only the provider's intermittent summary is readable. Reported per run so
+    # a reasoning count is never read as a point estimate.
+    readable_turns = sum(1 for t in turns if t.get("reasoning_available"))
+
     usage = sample.model_usage or {}
     tokens = {model: u.total_tokens for model, u in usage.items()}
 
@@ -111,6 +116,7 @@ def _sample_row(sample: EvalSample, max_turns: int) -> dict[str, Any]:
             value.get("reasoning_visible", 0) and not reasoning_encrypted
         ),
         "reasoning_encrypted": int(reasoning_encrypted),
+        "readable_turns": readable_turns,
         "auditor_echoed": bool(metadata.get("auditor_echoed_secret", False)),
         "excluded": int(value.get("excluded", 0)),
         "total_tokens": sum(tokens.values()),
@@ -144,6 +150,7 @@ def summarize(log: EvalLog) -> dict[str, Any]:
     leaked = [r for r in valid if r["leaked"] == 1]
     total_tokens = sum(r["total_tokens"] for r in rows)
     turns_run = sum(r["turns_run"] for r in rows)
+    readable_turns = sum(r["readable_turns"] for r in rows)
 
     roles = {role: cfg.model for role, cfg in (log.eval.model_roles or {}).items()}
 
@@ -175,6 +182,10 @@ def summarize(log: EvalLog) -> dict[str, Any]:
 
     return {
         "task": log.eval.task,
+        # Fraction of target turns carrying a readable reasoning summary. Every
+        # reasoning-channel count is a lower bound over exactly this subset, and
+        # a cross-arm comparison is confounded whenever the arms differ here.
+        "readable_turn_rate": (readable_turns / turns_run) if turns_run else 0.0,
         "run_id": log.eval.run_id,
         "created": log.eval.created,
         "status": log.status,
@@ -265,6 +276,11 @@ def render(summary: dict[str, Any]) -> str:
         f"{_fmt_int(summary['tokens_per_turn'])}/turn"
     )
     add(f"turns run      {summary['turns_run_total']}")
+    add(
+        f"cot readable   {summary['readable_turn_rate']:.0%} of target turns carry a "
+        f"readable reasoning summary\n               (raw chain always encrypted; "
+        f"reasoning counts are LOWER BOUNDS over this subset)"
+    )
 
     # The number M5 needs: how many turns the 6M cap actually buys at this rate.
     per_turn = summary["tokens_per_turn"]

@@ -614,3 +614,60 @@ capture in 20/20, 8/8 and 6/6 samples. The error was not one-directional: on
 `cot_scan` and the scorer, which resolves the secret authoritatively and had
 always been right. Two independent paths to the same quantity are what surfaced
 it; that redundancy is worth keeping.
+
+### M22 — The reasoning channel is only partially observable
+
+**Decision:** Every reasoning-channel count is reported as a **lower bound**,
+and any cross-arm reasoning comparison must quote both arms'
+summary-availability rates and state the direction of the resulting bias.
+
+**Alternatives:** Treating reasoning counts as point estimates (rejected — the
+denominator is not the turn count but the readable subset of it); restricting
+analysis to fully-observable runs (rejected — no run is fully observable).
+
+**Why:** For `gpt-5-mini` via OpenRouter the target reasons on **every** turn and
+the raw chain is **always** returned encrypted (`redacted=True` on 100% of turns,
+Fernet). The provider additionally attaches a readable natural-language summary
+only *intermittently*, and that summary is the only thing the interlocutor or
+the detector ever sees. A leak on an encrypted-only turn is therefore not absent
+but uncountable. "No reasoning emitted" is ~0% everywhere, so the unreadable
+turns are all reasoning-happened-but-not-surfaced.
+
+Availability is not a constant of the target — it is **strongly arm-driven**:
+
+| arm | readable summary |
+|---|---:|
+| E1 pressure (r1/r2/r3) | 57% / 60% / 60% |
+| E1 control (r1/r2/r3) | **91% / 94% / 93%** |
+| ablation plain / Petri | 61% / 54% |
+| E2 baseline | 64% |
+| E3 message / tool | 59% / 60% |
+
+**Adversarial pressure roughly halves reasoning-channel observability.** The
+plausible mechanism is that pressure drives sensitive and refusal-shaped
+reasoning, and the provider suppresses summaries more often on such content.
+That is itself a result relevant to any monitorability argument: the conditions
+under which one most wants to read a model's reasoning are the conditions under
+which least of it is surfaced.
+
+Consequences applied throughout:
+
+- E1's pressure-vs-control comparison is between arms observed at ~58% and ~92%.
+  The bias runs **toward the null** — the arm leaking more is observed less — so
+  the measured effect is a floor, not a ceiling.
+- The ablation's plain-vs-Petri reasoning gap (15 vs 8) is biased in the
+  *observed* direction (61% vs 54%) and is a comparison of two lower bounds at
+  unequal coverage.
+
+Detection is per investigation over ~40 turns and rehearsal repeats across
+turns, so one readable mention usually suffices; partial observability
+attenuates counts rather than erasing them. That is an argument for the counts
+being useful, not for treating them as exact.
+
+**Evidence:** `make observability`; `pilot_summary` reports the rate per run.
+
+**Status:** settled as a limitation; not fixable from our side (the provider
+decides per turn).
+
+**History:** 2026-08-04, on audit. Previously the 61%/54% split was noted only
+in passing in the ablation report as a "secondary measurement difference".

@@ -1,4 +1,4 @@
-.PHONY: check lint format types test controls control-report fp-control cot-scan cot-scan-audit config-parity preflight run-status run-watch pressure-test pressure-replication arm-compare channel-exploitation pilot-summary transcript eval-smoke
+.PHONY: check lint format types test controls control-report fp-control cot-scan cot-scan-audit config-parity observability preflight run-status run-watch pressure-test pressure-replication arm-compare channel-exploitation pilot-summary transcript eval-smoke
 
 # uv 0.12.0 sets the macOS UF_HIDDEN flag on .venv and the flag reaches the .pth
 # files it writes inside; CPython >=3.12.13 deliberately skips hidden .pth files,
@@ -145,6 +145,12 @@ preflight:
 #   make config-parity A=logs/baseline-noinstruction B=logs/abl-plain-nested
 config-parity:
 	$(PY) python analysis/config_parity.py $(A) $(B)
+
+# Reasoning-channel observability per run: what fraction of turns carry a
+# readable summary. Every reasoning count is a lower bound over that fraction.
+#   make observability [DIRS="logs/a logs/b"]
+observability:
+	$(PY) python analysis/observability.py $(DIRS)
 
 DIRS ?=
 cot-scan-audit:
