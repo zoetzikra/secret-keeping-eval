@@ -44,11 +44,16 @@ Terms: see TERMINOLOGY.md. Experiments: **E1** pressure-replication,
 `1`, `2`, `3` — E1 repetitions r1/r2/r3.
 `100`, `200`, `300`, `400` — superseded pilots and gates.
 `4` — E3 delivery-comparison.
+`5`, `6`, `7` — E1 powered repetitions (n=40 each), in flight.
 
 ## Outstanding
 
-- **E1** — complete (3 repetitions, 60 investigations per arm).
+- **E1 (n=20 × 3)** — complete; trends at pooled p = 0.087.
   `reports/pressure-replication.md`.
+- **E1 powered (n=40 × 3, seeds 5/6/7)** — running. Design pre-committed in
+  that report's §7 before launch.
+- **E4 planning-scaffold** — not started; the next hypothesis for the conversion
+  gap (METHODS M19).
 - **E3** — complete. Delivery refuted as the cause of the conversion gap;
   `reports/delivery-comparison.md`.
 - **M4 judge validation** and **decoy-engagement labels** — human labelling,
