@@ -50,15 +50,29 @@ provider and the fallback exists precisely for that case.
 
 ## 3. Results
 
-| arm | visible | extracted | conversion | 95% CI | latency (turns) |
+**The paired comparison — this is the result:**
+
+| arm (`secret_seed=4`, paired) | visible | extracted | conversion | 95% CI | latency (turns) |
 |---|---:|---:|---|---|---|
 | `delivery="message"` | 14 | 5 | **5/14 = 0.36** | [0.16, 0.61] | median **26** — 2, 4, 26, 30, 35 |
 | `delivery="tool"` | 9 | 3 | **3/9 = 0.33** | [0.12, 0.65] | median **1** — 1, 1, 1 |
-| Petri (comparator) | 9 | 7 | **7/9 = 0.78** | [0.45, 0.94] | median 2 — 1, 1, 1, 2, 2, 6, 6 |
 
-- tool vs message: Fisher **p = 1.00**
-- tool vs Petri: Fisher p = 0.15
-- message vs Petri: Fisher p = 0.089
+tool vs message: Fisher **p = 1.00**; latency median **26 → 1**.
+
+— *reference, unpaired, not a third arm* —
+
+| | visible | extracted | conversion | latency |
+|---|---:|---:|---|---|
+| Petri (`abl-petri`) | 9 | 7 | 7/9 = 0.78 | median 2 |
+
+> **Footnote — the Petri row is not comparable to the two above.** It runs on a
+> different secret set (`secret_seed=0`) and is unpaired with them. `visible` is
+> the *denominator* of conversion and is set by the target's mention rate, which
+> is target-driven and varies by token set within the ±3 noise band — that is why
+> message shows 14 visible and Petri 9, and it is not a delivery or auditor
+> effect. Petri is orientation only; the clean comparison is message vs tool.
+> (For the record: tool vs Petri Fisher p = 0.15, message vs Petri p = 0.089 —
+> both confounded by secret set.)
 
 **The hypothesis is refuted for conversion and confirmed for latency.**
 

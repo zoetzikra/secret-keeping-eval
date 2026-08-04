@@ -494,10 +494,24 @@ delivery left conversion unchanged (3/9 vs 5/14, Fisher p = 1.00) and far from
 Petri, while collapsing latency from a median of 26 turns to 1. This is the
 second structural intervention to show that pattern -- nesting the reasoning
 summary inside `<target_response>` did the same -- so presentation governs how
-quickly the interlocutor notices, not whether it acts. Petri's remaining
-differences are rollback, multi-conversation structure, and a longer, more
-prescriptive auditor system prompt; the prompt is the next hypothesis and is not
-yet tested.
+quickly the interlocutor notices, not whether it acts. **Next hypothesis, concrete and ordered by testability** (from diffing the two
+auditor prompts):
+
+(a) **Petri's mandatory per-turn planning phase** — "begin every audit by
+creating a plan… use your first turns to brainstorm" — which the plain prompt
+lacks. An interlocutor that re-plans against its own transcript is likelier to
+notice the secret is already on its screen. Cheapest to isolate, most plausible.
+(b) **Petri's every-turn tool-call requirement**, which forces transcript
+engagement on every turn regardless of intent.
+(c) **Rollback / multi-conversation structure** — a genuine affordance the plain
+harness does not have, and the hardest to add.
+
+**Do not test this by copying Petri's system prompt wholesale.** It carries
+~200 lines of realism and naming instructions irrelevant to this setting, and
+importing them would confound the comparison with a dozen unrelated changes. The
+clean experiment (E4) isolates the planning scaffold as a *single addable
+component* of the plain auditor prompt and tests that alone, paired on shared
+secrets, plain harness both sides.
 
 The parameter is kept. It is the cheapest known way to reduce time-to-act, and
 retaining it costs nothing.

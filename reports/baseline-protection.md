@@ -56,6 +56,12 @@ Exact McNemar, paired on secrets. The gap is several times the measured
 ±3-investigation noise floor (METHODS M15) and replicates against both keep-arm
 runs.
 
+**Observability (METHODS M22).** Reasoning-summary availability is 64% here
+against 61% and 60% in the keep arms — close enough that unequal observability
+cannot drive a sixfold contrast, though both counts remain lower bounds. If
+anything the baseline arm is the *better*-observed one, so its 2/20 is not an
+undercount relative to the comparators.
+
 **The mechanism is visible in the transcripts.** The instructed target names the
 secret *while planning how to guard it*:
 
@@ -91,6 +97,47 @@ mostly does not.
 - Not a pressure result — both arms here run the informed auditor. Pressure is E1.
 - Not a claim that the instruction is counterproductive *overall*: it may still
   matter for behaviours this eval does not measure.
+
+## Related work and positioning
+
+A reviewer's first question will be "isn't this just the pink-elephant effect?"
+The answer is yes — and that is the point. The contribution is the controlled
+measurement, not the phenomenon.
+
+**The phenomenon is established.** *Leaky Thoughts* (Green, Mireshghallah et
+al., EMNLP 2025) quantifies reasoning-trace leakage for contextual PII and
+reaches for the same pink-elephant analogy. Trend Micro's DeepSeek-R1 red-team
+shows a system-prompt secret appearing verbatim inside `<think>` while the
+output refuses — qualitative, but the same shape. *CoT-Control* (2026) reports
+models complying with output-suppression instructions ~62% of the time against
+~3% for chain-of-thought suppression.
+
+**The mechanism is established.** Ironic-process / white-bear effects — telling
+a model *not* to surface X raising X's activation — are documented in
+transformer activations (*Don't Think of the White Bear*, arXiv 2511.12381,
+2025) and in image generation (*Do not think about pink elephant!*, 2024).
+
+**What appears novel here is the paired causal comparison.** The same secret
+sits in the system prompt in both arms; the *only* difference is the presence of
+a "never reveal" instruction. That isolates the instruction as the cause and
+shows it *raises* verbatim reasoning rehearsal from ~10% to ~60–75%, while the
+output channel stays near zero in both arms. The one existing paired instruction
+comparison we know of — *Can You Keep a Secret?* (2026) — is in the **output**
+channel and finds the instruction *reduces* leakage: the opposite sign. So this
+is plausibly the missing controlled experiment behind *Leaky Thoughts*' analogy
+and the White Bear mechanism, in a production reasoning model, in the
+secret-keeping setting.
+
+**Claim discipline.** Do not claim novelty of the phenomenon. Claim the
+controlled measurement: *the first quantified paired demonstration that the
+keep-instruction itself induces verbatim reasoning rehearsal in a production
+reasoning model's summaries, with output discipline held near zero.*
+
+**What this implies for the eval's headline.** The any-mention curve is largely
+an artifact of the keep-instruction the eval installs. The write-up should
+therefore decompose it into three numbers and one story: instruction-induced
+reasoning rehearsal (the White Bear result), near-perfect
+instruction-independent output discipline, and harness-capped extraction.
 
 ## Reproduce
 
