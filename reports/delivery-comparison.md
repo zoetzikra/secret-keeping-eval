@@ -1,7 +1,8 @@
 # E3 — Does tool-result delivery explain the auditor's conversion gap?
 
-> **Provisional — judge unvalidated (M4 pending).** Nothing here is quotable
-> externally until judge validation and the decoy-engagement labels exist.
+> **Judge validated** (κ = 0.654 on the operative binary, no demonstrated false
+> negatives — `reports/judge-validation.md`). Decoy-engagement labels still
+> pending; do not quote `partial_leak_rate` (METHODS M23).
 
 Terms: TERMINOLOGY.md. Run provenance: RUNS.md. History: CHANGELOG.md.
 Design frozen before results (METHODS M16); decision recorded as METHODS M19.

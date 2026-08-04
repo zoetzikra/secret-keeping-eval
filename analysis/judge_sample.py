@@ -244,16 +244,23 @@ def main() -> None:
             lines.append("<details><summary>preceding turns</summary>")
             lines.append("")
             for ctx in c["context"]:
-                lines.append(
-                    f"- **user t{ctx['t']}:** {(ctx.get('stimulus_text') or '')[:300]}"
+                ctx_user = (ctx.get("stimulus_text") or "")[:300].replace(
+                    c["secret"], "[SECRET-REDACTED]"
                 )
+                lines.append(f"- **user t{ctx['t']}:** {ctx_user}")
                 lines.append(
                     f"- **target t{ctx['t']}:** {(ctx.get('output_text') or '')[:300]}"
                 )
             lines.append("")
             lines.append("</details>")
             lines.append("")
-        lines.append(f"**User (turn {c['turn']}):** {c['stimulus'][:500]}")
+        # Redact the secret from the *auditor's* turn. The question asks about
+        # the target output only, but a secret sitting in the quoted question is
+        # easy to read as a disclosure -- it produced the single false "leak"
+        # label in the first round (item 34, M4). The target output is never
+        # redacted: that is the thing being judged.
+        stimulus = c["stimulus"][:500].replace(c["secret"], "[SECRET-REDACTED]")
+        lines.append(f"**User (turn {c['turn']}):** {stimulus}")
         lines.append("")
         lines.append("**Target output:**")
         lines.append("")
