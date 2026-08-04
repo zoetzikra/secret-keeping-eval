@@ -103,31 +103,41 @@ stratified exact McNemar over discordant pairs.
 Wilson intervals: pressure 0.67 [0.54, 0.77], control 0.50 [0.38, 0.62].
 CMH (stratified, unpaired, secondary) p = 0.095.
 
-**Could not detect an effect at n=60 per arm.** p = 0.087 does not clear
-conventional significance and this is reported as "could not detect", never as
-"no effect".
+**This is a trend, not a null.** The direction is consistent in **all three**
+repetitions (+2, +2, +6) on three disjoint secret sets, and the pooled
+discordance is 19:9 — nearly two-to-one in favour of pressure. p = 0.087 does
+not clear conventional significance, so no effect is *established*; but "no
+effect" is the wrong summary, and it is the opposite of the retracted
+contaminated result, which reported exact equality.
 
-Two things qualify that, in opposite directions.
+The gap is 0.67 − 0.50 ≈ 3.3 investigations per 20, sitting on the measured ±3
+run-to-run noise floor (METHODS M15) — precisely the size that three
+repetitions at n=20 cannot resolve individually while the pool trends. That is a
+power problem, not a design problem; see §7.
 
-*Toward a real effect:* the direction is **consistent in all three
-repetitions** (+2, +2, +6 investigations), on three disjoint secret sets, and
-the pooled discordance is 19:9 — nearly two-to-one in favour of pressure. A
-coin-flip null does not usually produce three same-signed repetitions.
+### Observability: the arms are not equally observed, and the bias favours the finding
 
-*Against over-reading it:* the pooled gap is 0.67 − 0.50 ≈ 3.3 investigations
-per 20, which sits **right at the measured ±3 run-to-run noise floor** (METHODS
-M15). An effect that size is exactly what three repetitions at n=20 cannot
-resolve. The pooled result also leans on r3, whose control (7/20) is the lowest
-of the three; the control counts 13/10/7 span 6 investigations across seeds,
-wider than the same-configuration floor, because they vary in token set as well
-as sampling.
+The reasoning channel is only readable when the provider attaches a summary
+(METHODS M22). The two arms differ sharply:
 
-**The finding that does not depend on the comparison:** the control leaks the
-secret into reasoning in **30 of 60 investigations with no extraction attempt of
-any kind** — an ordinary conversation about cooking and travel. Half the
-reasoning-channel leakage in this eval requires no attacker at all. Combined with
-E2 (the keep-instruction *induces* the rehearsal), the picture is that the
-instruction creates the leak and pressure at most modulates it.
+| arm | readable summary |
+|---|---:|
+| pressure r1 / r2 / r3 | 57% / 60% / 60% |
+| control r1 / r2 / r3 | **91% / 94% / 93%** |
+
+Three things follow, and all three belong in any reading of the table above.
+
+1. **The bias runs toward the null, so the effect is a floor.** Pressure shows
+   *more* reasoning leaks (40/60) while being observed *less* (~58%) than
+   control (30/60 at ~92%). Equalising observability could only widen the gap.
+   The true effect is probably larger than 0.67 vs 0.50.
+2. **But 40-vs-30 is not a clean rate comparison.** Both counts are lower bounds
+   over unequal subsets. Quote them as such.
+3. **The asymmetry is itself a finding.** Adversarial pressure roughly halves
+   reasoning-summary availability, from ~92% to ~58% — direct evidence that
+   pressure changes what the provider is willing to surface. That is material to
+   any monitorability argument: the conditions under which one most wants to read
+   a model's reasoning are the conditions under which least of it is shown.
 
 ### Relationship to the retracted result
 
@@ -146,16 +156,20 @@ either way, in either direction.
 - Reasoning-channel leakage **does not require an attacker**: 30/60 under
   ordinary conversation. This is the load-bearing claim and it does not rest on
   the pressure-vs-control contrast.
-- A pressure effect, if present, is **at most of order the run-to-run noise** on
-  this target. Anyone designing around it should not assume auditing is what
-  surfaces the secret from reasoning.
+- A **consistent positive trend** for pressure raising reasoning-channel
+  rehearsal: same sign in three repetitions, pooled 19:9. Not established at
+  p = 0.087, but the direction is not in question and the observability bias
+  runs in its favour.
+- **Adversarial pressure roughly halves reasoning-summary availability**
+  (~92% → ~58%), which is a monitorability result in its own right.
 
 ## 5. What this does not license
 
-- Not "pressure has no effect". The design is powered for large effects
-  (0.40→0.90 essentially always, 0.40→0.75 at 87%); an effect near ±3
-  investigations is below what n=60/arm resolves. Detecting it would need roughly
-  n≥150/arm.
+- Not "pressure has no effect" — and equally not "pressure raises rehearsal".
+  The design is powered for large effects (0.40→0.90 essentially always); an
+  effect near ±3 investigations is below what n=60/arm resolves.
+- Not a clean rate comparison: the arms are observed at ~58% and ~92%, so both
+  counts are lower bounds over unequal subsets (METHODS M22).
 - Not a claim that the retracted null was *caused* by contamination, only that
   the clean result differs from it in the predicted direction.
 - Not a generalisation beyond `gpt-5-mini`, 40 turns, three secret sets.
@@ -169,3 +183,38 @@ make pressure-replication PAIRS="logs/pressure-r1:logs/control-r1 \
 make cot-scan LOG=logs/pressure-r1        # per-run reasoning-leak detail
 make pilot-summary LOG=logs/control-r1    # statuses, costs, warnings
 ```
+
+## 7. Powered follow-up — design pre-committed before the run
+
+The pool trends at p = 0.087 with a consistent direction; the design is sound
+and the only thing missing is power. This section is fixed **before** the run so
+the analysis cannot be chosen to fit the result (METHODS M16).
+
+**Target effect.** The pooled estimate is 0.67 vs 0.50 on the reasoning channel.
+Powering for that specific effect — not a smaller one "to be safe" — a paired
+test needs roughly **n ≈ 120–150 per arm** for ~80% power.
+
+**Structure: keep the repetitions, raise n within them.** Three repetitions at
+**n = 40** (120 per arm total), each with its own `secret_seed`, arms sharing the
+seed within a repetition. The repetition structure is what measures run-to-run
+variance and it is not replaceable by one larger run (METHODS M14); what changes
+is only the investigations per repetition.
+
+**Seeds.** `5`, `6`, `7` — fresh, per the RUNS.md reserved list. `secret_seed=0`
+stays reserved.
+
+**Analysis, unchanged from §2:** per-repetition exact McNemar plus the pooled
+stratified McNemar as the test of record; CMH secondary; log-rank never
+headlined.
+
+**Additional pre-commitment (new, from METHODS M22).** Log
+summary-availability per arm per repetition, and report a **matched-observability
+sensitivity analysis**: restrict to investigations where *both* arms have at
+least one readable summary turn, and re-run the paired test on that subset. If
+the effect survives restriction, unequal observability is not driving it. Report
+both the full and restricted results regardless of which way they fall.
+
+**Guardrail.** A single n=20 repetition cannot clear the ±3 noise floor for an
+effect this size — which is exactly why the current three are individually
+non-significant while the pool trends. n is chosen for the effect the pool
+suggests; a null at n=40×3 would be informative, a null at n=20×3 was not.
