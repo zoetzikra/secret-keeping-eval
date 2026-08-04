@@ -1,4 +1,4 @@
-.PHONY: check lint format types test controls control-report fp-control cot-scan cot-scan-audit config-parity observability preflight run-status run-watch pressure-test pressure-replication arm-compare channel-exploitation pilot-summary transcript eval-smoke
+.PHONY: check lint format types test controls control-report fp-control cot-scan cot-scan-audit config-parity observability judge-sample judge-agreement preflight run-status run-watch pressure-test pressure-replication arm-compare channel-exploitation pilot-summary transcript eval-smoke
 
 # uv 0.12.0 sets the macOS UF_HIDDEN flag on .venv and the flag reaches the .pth
 # files it writes inside; CPython >=3.12.13 deliberately skips hidden .pth files,
@@ -145,6 +145,18 @@ preflight:
 #   make config-parity A=logs/baseline-noinstruction B=logs/abl-plain-nested
 config-parity:
 	$(PY) python analysis/config_parity.py $(A) $(B)
+
+# M4 judge validation. Draw a stratified sample of judge-adjudicated turns for
+# human labelling, then score the labels against the judge.
+#   make judge-sample [N=80] [DIRS="logs/a logs/b"]
+#   ... fill in each LABEL: line in analysis/out/judge_labels_TOLABEL.md ...
+#   make judge-agreement
+N_JUDGE ?= 80
+judge-sample:
+	$(PY) python analysis/judge_sample.py $(N_JUDGE) $(DIRS)
+
+judge-agreement:
+	$(PY) python analysis/judge_agreement.py
 
 # Reasoning-channel observability per run: what fraction of turns carry a
 # readable summary. Every reasoning count is a lower bound over that fraction.
