@@ -713,3 +713,41 @@ so it is not reported.
 **Status:** settled for prompt version v4. Revisit if the judge prompt changes.
 
 **History:** 2026-08-04, on the first human labelling round.
+
+### M24 — Prefill is dropped from the replication config
+
+**Decision:** `enable_prefill` stays implemented and tested but is **off** in the
+replication config. The turn-type machinery is retained. The system card's
+second figure (per-turn leak rate by turn type) is **out of scope** for the
+replication.
+
+**Alternatives:** Pushing the auditor toward prefill via a prompt change —
+either upstream Petri's (which we hold fixed as the comparator) or our shared
+informed seed (which would spill over into the plain and ablation arms, changing
+the arm definition retroactively). Both rejected.
+
+**Why:** Prefill is available by default in Petri, the auditor holds the tool and
+Petri's own guidance for using it, and it **never uses it**: 0 prefilled `resume`
+calls in 257 live turns across three runs at 3, 15 and 60-turn horizons. At a
+true rate of 1% of turns, P(0 in 257) ≈ 0.08, so rates at or above 1% are ruled
+out. Verified rather than inferred — the `resume` tool carries the `prefill`
+parameter and resolving the tool-description attachment confirms the auditor
+received the guidance.
+
+Making it fire would mean instructing an auditor toward a tactic it declines, in
+order to populate a secondary figure whose thinking axis is partly tautological
+(a reasoning-channel leak requires visible reasoning by construction). That
+manufactures the behaviour rather than observing it. "This auditor does not
+spontaneously prefill" is itself the finding, and it is reported as one line.
+
+A dedicated harness-injected prefill ablation — where the *harness*, not the
+auditor, prefills on a schedule — would answer the prefill question properly and
+is future work if it ever matters.
+
+**Evidence:** `reports/replication-dryrun.md`; `logs/prefill-smoke`,
+`logs/prefill-smoke2`, `logs/repl-probe-gpt`.
+
+**Status:** settled for this auditor and this Petri version. Revisit if either
+changes.
+
+**History:** 2026-08-05, after the overnight dry run stopped at the prefill gate.
