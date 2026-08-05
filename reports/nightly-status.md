@@ -43,3 +43,5 @@ mid-phase. Read the summary block first.
 | 2026-08-05 02:57 | night | **complete — stopped at B by design** | Both Phase B gates failed. That is the gate working, not the night failing. |
 | 2026-08-05 11:03 | Scoping T1-3 | passed | Curve does NOT flatten (hazard flat to t=40); faithful config ~$30k/target, not $19.7k. Recommend 60x60 (~$4.1k). reports/replication-scoping.md |
 | 2026-08-05 11:03 | T4 Claude probe n=3 | **gate passed** | claude-haiku-4.5: **100% readable reasoning (80/80 turns)** vs gpt-5-mini 48-58%. Cost $1.23/investigation vs gpt's $60. Running full n=8. |
+| 2026-08-05 11:25 | T4 Claude n=8 | **passed** | 100% readable reasoning (304/304) vs gpt 48-64%. Exposure-normalised, both targets rehearse identically (19.7 vs 19.3 per 1000 readable turns). $17.44. METHODS M22 reframed. |
+| 2026-08-05 11:25 | scoping brief | **complete** | All four tasks done. reports/replication-scoping.md. Credit $694.89. No full replication launched -- awaits budget decision. |
