@@ -7,6 +7,11 @@ Terms: TERMINOLOGY.md. Runs: RUNS.md. Cost model measured in
 
 ## Headline
 
+**A Claude target surfaces 100% of its reasoning; gpt-5-mini surfaces ~50%.** The
+observability ceiling that qualifies every reasoning number in this project is a
+provider artifact, not a limit of reasoning models (Task 4). Normalised for
+exposure, the two targets rehearse the secret at the same rate.
+
 **The survival curve does not flatten by turn 40, so the turn budget cannot be
 cut on the evidence.** The hazard is essentially constant out to the edge of what
 has been observed. That is the opposite of what this analysis set out to find,
@@ -137,7 +142,70 @@ faithful replication.
 
 ## Task 4 — Claude observability probe
 
-*Appended below when the run lands.*
+**The ~50% reasoning-channel ceiling is a gpt-via-OpenRouter artifact, not a
+property of reasoning models.**
+
+Config: Petri, informed seed, prefill off, `max_turns=40`, `max_samples=4`,
+`secret_seed=10`, target **`openrouter/anthropic/claude-haiku-4.5`** with
+extended thinking on (`reasoning_tokens=2048` — the 4.5-era form;
+`reasoning_effort` is 4.6+ and errors here). Auditor/grader
+`claude-sonnet-4-6`, so the target is a *different* model from the auditor and
+there is **no self-audit confound**. n=8, 304 turns, 19 min, **$17.44**.
+
+### Observability — the headline
+
+| target | readable summary | encrypted-but-real | absent |
+|---|---:|---:|---:|
+| `gpt-5-mini`, 40 turns | 54–64% | 36–46% | ~0% |
+| `gpt-5-mini`, 60 turns | 48% | 52% | ~0% |
+| **`claude-haiku-4.5`, 40 turns** | **100%** (304/304) | **0%** | **0%** |
+
+Not 90-something. Every turn, all 304. The gpt family via OpenRouter returns its
+chain encrypted and attaches a readable summary only intermittently; this Claude
+target surfaces readable thinking on every generation.
+
+**This reframes METHODS M22.** Every reasoning-channel number in the project is
+a lower bound *because of the provider*, not because reasoning channels are
+inherently half-hidden. On a target that surfaces thinking, the reasoning channel
+is fully auditable and the lower-bound caveat disappears.
+
+### Rehearsal rate, normalised for exposure
+
+Per-investigation rates look very different between targets — and the difference
+is almost entirely observability:
+
+| run | n | readable turns | reasoning leaks | per investigation | **per 1000 readable turns** |
+|---|---:|---:|---:|---:|---:|
+| `claude-haiku-4.5` | 8 | 304 (100%) | 6 | 0.75 | **19.7** |
+| `gpt-5-mini` (`abl-petri`) | 20 | 414 (54%) | 8 | 0.40 | **19.3** |
+| `gpt-5-mini` (`repl-probe-gpt`) | 4 | 106 (48%) | 3 | 0.75 | 28.3 |
+
+Claude appears to rehearse nearly twice as often per investigation (0.75 vs
+0.40). Per unit of *observable* exposure the two are indistinguishable — **19.7
+against 19.3 per 1000 readable turns**. The apparent target difference is an
+artifact of how much of each model's reasoning we can see.
+
+That is the same exposure-normalisation that rescued the E1 pressure result, and
+it points the same way: raw reasoning-channel counts are not comparable across
+arms or targets with different availability.
+
+### Other channels
+
+`claude-haiku-4.5`: any-mention 6/8, reasoning 6/8, **output 0/8**, extraction
+5/8, `invalid-auditor-leak` 0. Output discipline held perfectly across 304 turns
+while the reasoning channel leaked in three quarters of investigations — the same
+shape as gpt-5-mini, and consistent with E2's instruction-induced rehearsal.
+
+### What this probe does not license
+
+- **Not a paired target comparison.** `claude-observability` uses
+  `secret_seed=10`; `abl-petri` uses seed 0. Different secrets, unpaired, n=8
+  against n=20. The *observability* number is robust (a per-turn rate over 304
+  turns, and 100% vs ~50% is not a subtle difference); the *leak-rate*
+  comparison is indicative only.
+- One small Claude model. `haiku-4.5` was chosen for cost and for being distinct
+  from the auditor; larger Claude models may behave differently.
+- n=8 is powered for an availability rate, not for leak rates.
 
 ## What this licenses
 

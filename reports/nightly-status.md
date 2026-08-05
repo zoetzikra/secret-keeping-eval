@@ -41,3 +41,5 @@ mid-phase. Read the summary block first.
 | 2026-08-05 02:55 | E — analysis + report | running | Analysing what landed (probe only) and writing `reports/replication-dryrun.md`. |
 | 2026-08-05 02:57 | E — analysis + report | passed | reports/replication-dryrun.md written. Figure 2 half-buildable: thinking cell 13/106 (rate 0.123), neither 0/115, prefill and both empty. |
 | 2026-08-05 02:57 | night | **complete — stopped at B by design** | Both Phase B gates failed. That is the gate working, not the night failing. |
+| 2026-08-05 11:03 | Scoping T1-3 | passed | Curve does NOT flatten (hazard flat to t=40); faithful config ~$30k/target, not $19.7k. Recommend 60x60 (~$4.1k). reports/replication-scoping.md |
+| 2026-08-05 11:03 | T4 Claude probe n=3 | **gate passed** | claude-haiku-4.5: **100% readable reasoning (80/80 turns)** vs gpt-5-mini 48-58%. Cost $1.23/investigation vs gpt's $60. Running full n=8. |

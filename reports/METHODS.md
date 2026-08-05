@@ -680,8 +680,18 @@ being useful, not for treating them as exact.
 
 **Evidence:** `make observability`; `pilot_summary` reports the rate per run.
 
-**Status:** settled as a limitation; not fixable from our side (the provider
-decides per turn).
+**Reframed 2026-08-05 — it is a provider artifact, not a property of reasoning
+models.** A Claude target (`claude-haiku-4.5`, extended thinking on) surfaces a
+readable summary on **100% of turns** (304/304), against gpt-5-mini's 48-64%.
+Normalised for exposure the two rehearse the secret at the same rate (19.7 vs
+19.3 per 1000 readable turns), so the apparent target difference in reasoning
+leakage is entirely an observability effect. The lower-bound caveat therefore
+attaches to *gpt-via-OpenRouter measurements*, not to the reasoning channel as
+such; on a target that surfaces thinking, the channel is fully auditable.
+
+**Status:** settled as a limitation **of the gpt-via-OpenRouter target**. Not
+fixable from our side for that provider; absent entirely on Claude targets.
+Prefer a fully-observable target where the reasoning channel is load-bearing.
 
 **History:** 2026-08-04, on audit. Previously the 61%/54% split was noted only
 in passing in the ablation report as a "secondary measurement difference".

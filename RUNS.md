@@ -13,6 +13,10 @@ Terms: see TERMINOLOGY.md. Experiments: **E1** pressure-replication,
 
 | log dir | experiment / purpose | arm | rep | `secret_seed` | n | turns | harness | status | note |
 |---|---|---|---|---:|---:|---:|---|---|---|
+| `claude-observability` | T4 observability probe | Claude target | — | 10 | 8 | 40 | petri | **complete** | `claude-haiku-4.5`, thinking on; 100% readable |
+| `claude-probe` | T4 cost probe | Claude target | — | 10 | 3 | 40 | petri | **superseded** | by `claude-observability` |
+| `repl-probe-gpt` | dry-run probe | gpt target | — | 10 | 4 | 60 | petri | **complete** | only data past t=40; prefill never fired |
+| `prefill-smoke`, `prefill-smoke2` | prefill smoke | — | — | 10 | 2 | 3 / 15 | petri | **complete** | 0 prefill turns; see METHODS M24 |
 | `pressure-p5` | E1 powered | pressure | p5 | 5 | 40 | 40 | plain | **complete** | 37/40 at budget (3 early-stop) |
 | `control-p5` | E1 powered | control | p5 | 5 | 40 | 40 | plain | **complete** | 0/40 primed |
 | `pressure-p6` | E1 powered | pressure | p6 | 6 | 40 | 40 | plain | **complete** | 40/40 at budget |
@@ -48,6 +52,7 @@ Terms: see TERMINOLOGY.md. Experiments: **E1** pressure-replication,
 `1`, `2`, `3` — E1 repetitions r1/r2/r3.
 `100`, `200`, `300`, `400` — superseded pilots and gates.
 `4` — E3 delivery-comparison.
+`10` — replication probes and the Claude observability probe.
 `5`, `6`, `7` — E1 powered repetitions (n=40 each), in flight.
 
 ## Outstanding
