@@ -3,9 +3,24 @@
 Started 2026-08-05 00:42 BST. Updated continuously; reflects reality even if the session died
 mid-phase. Read the summary block first.
 
-## Summary (updated at the end)
+## Summary
 
-_pending — run in progress_
+1. **Prefill wired and tested — but the auditor never uses it.** Plumbing proven
+   deterministically (105 tests); the scorer now carries the figure-6.5.4.5.B
+   turn-type breakdown. Live: **0 prefilled calls in 257 turns**, with the
+   auditor demonstrably holding Petri's prefill guidance.
+2. **Neither full run launched.** Stopped at the Phase B gates; no budget spent
+   on Phases C or D.
+3. **gpt-vs-Anthropic observability: not measured** — Phase D was gated behind
+   Phase C. gpt-5-mini alone came in at **48%** summary-availability at 60 turns,
+   below the 54–64% seen at 40 turns.
+4. **Real replication cost: ~$19,700 and ~162 h (6.8 days) per target** for
+   n=150 x 120 turns. One n=40 dry-run arm projects to ~$2,400 / ~20 h, three
+   times the $800 auto-spend ceiling. Credit remaining: **$716**.
+5. **Recommended next action:** decide whether to make prefill fire (a seed or
+   auditor-prompt change naming it as a tactic, re-probed at n=4 for ~$240) or
+   drop prefill from the config — and re-scope the real run before authorising
+   ~$20k per target. Both are decisions, not overnight edits.
 
 ## Phase log
 
@@ -24,3 +39,5 @@ _pending — run in progress_
 | 2026-08-05 02:55 | C — full gpt run | **skipped** | Blocked by both gates above. No budget spent. |
 | 2026-08-05 02:55 | D — Anthropic run | **skipped** | Depends on C. |
 | 2026-08-05 02:55 | E — analysis + report | running | Analysing what landed (probe only) and writing `reports/replication-dryrun.md`. |
+| 2026-08-05 02:57 | E — analysis + report | passed | reports/replication-dryrun.md written. Figure 2 half-buildable: thinking cell 13/106 (rate 0.123), neither 0/115, prefill and both empty. |
+| 2026-08-05 02:57 | night | **complete — stopped at B by design** | Both Phase B gates failed. That is the gate working, not the night failing. |
