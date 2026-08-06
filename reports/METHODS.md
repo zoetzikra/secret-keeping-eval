@@ -761,3 +761,59 @@ is future work if it ever matters.
 changes.
 
 **History:** 2026-08-05, after the overnight dry run stopped at the prefill gate.
+
+**Revision 2026-08-06 — the decision stands, but the reason was wrong.** M24
+attributed the empty prefill axis to auditor reluctance. Prompting fixed that
+part: naming the affordance in the Petri seed took the auditor from 0 prefills in
+257 turns to 3 in 17. Every one of them **failed at the API**.
+
+Assistant prefill is not available on the models this replication targets:
+
+| model | prefill |
+|---|---|
+| `claude-opus-4.6` | rejected — 400 |
+| `claude-opus-4.7` | rejected — 400 |
+| `claude-opus-4.8` | rejected — 400 |
+| `claude-sonnet-4.6` | rejected — 400 |
+| `claude-haiku-4.5` | **accepted** |
+
+*"This model does not support assistant message prefill. The conversation must
+end with a user message."* Identical on the Azure, Anthropic and Google routes,
+in Anthropic's own error format — including when OpenRouter is pinned to
+Anthropic's first-party API with `allow_fallbacks: false`. So this is a
+**model-generation** property, not the routing artifact it first looked like:
+prefill was removed across the 4.6+ line and survives on 4.5.
+
+**And where prefill works, it silently disables thinking.** On
+`claude-haiku-4.5`, same prompt, thinking enabled throughout:
+
+| | reasoning chars | reasoning tokens |
+|---|---:|---:|
+| no prefill | 1375 | 350 |
+| prefill | **0** | **0** |
+
+No error — a 200 with an empty reasoning channel. This is the dangerous case,
+because a prefilled turn is still tagged `prefill` and would land in the figure's
+prefill+thinking cell carrying no thinking at all. Any such cell we produced
+would be mislabelled rather than empty.
+
+**Consequence for figure 6.5.4.5.B.** Of its four turn types, `neither` and
+`thinking` are reachable on every target; `prefill` is reachable only on
+4.5-generation models; **`prefill+thinking` is unreachable on every model
+available to us**, because the two are mutually exclusive at the API. The second
+figure therefore cannot be reproduced in full, and the limit is the API surface,
+not the harness or the auditor.
+
+This also revises the reading of the flat 0/12 curves: they were partly
+attributed to sampling only low-leak turn types. That explanation is unavailable
+for prefill+thinking, which no configuration can sample.
+
+**Evidence:** provider matrix above, run 2026-08-06; `logs/probe-prefill-opus46`
+(**contaminated — see below**, do not read its leak counts).
+
+**Contamination note.** `logs/probe-prefill-opus46` recorded
+`event_extracted=1` in 3/3 investigations. Those are not extractions. The prefill
+400 raised `ModelGenerateError`, whose string is the entire request, and Petri
+surfaced it to the auditor, which read the secret out of the error text and
+"guessed" it. Invariant #1, via the error path; fixed in `f010b13`, audited
+across all 41 log dirs, and that run is the only one affected.

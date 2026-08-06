@@ -45,6 +45,11 @@ Terms: see TERMINOLOGY.md. Experiments: **E1** pressure-replication,
 | `pilot-plain` | M4 pilot | informed | — | 0 | 10 | 40 | plain | **superseded** | errored; early harness |
 | `petri-live` | M3 bring-up | Petri | — | 0 | 3 | 20 | petri | **complete** | blindness verified live |
 | `petri-m3` | M3 bring-up | Petri | — | 0 | 4 | 20 | petri | **complete** | blindness verified live |
+| `probe-opus46` | four-model cost/thinking probe | Petri | informed | 0 | 3 | 40 | petri | **complete** | 100% readable reasoning |
+| `probe-opus47` | four-model cost/thinking probe | Petri | informed | 0 | 3 | 40 | petri | **complete** | 1% readable — model declines to think |
+| `probe-opus48` | four-model cost/thinking probe | Petri | informed | 0 | 3 | 40 | petri | **complete** | 36% readable |
+| `probe-sonnet46` | four-model cost/thinking probe | Petri | informed | 0 | 3 | 40 | petri | **complete** | 100% readable; self-audit (auditor is sonnet-4-6) |
+| `probe-prefill-opus46` | prefill re-test | Petri | informed | 0 | 3 | 40 | petri | **CONTAMINATED** | invariant #1 breach via error path; leak counts void — METHODS M24 |
 
 ## Reserved seeds
 
@@ -69,3 +74,10 @@ Terms: see TERMINOLOGY.md. Experiments: **E1** pressure-replication,
   `reports/delivery-comparison.md`.
 - **M4 judge validation** and **decoy-engagement labels** — human labelling,
   gate *quoting* rather than running.
+- **Four-model n=20 run** — held. Probes done (~$398 projected at measured
+  billing, ~$503 at list). Held pending the prefill outcome, now resolved
+  against us: see METHODS M24 revision.
+- **Prefill / figure 6.5.4.5.B** — closed as far as these targets go. Prefill is
+  unavailable on 4.6+ models and mutually exclusive with thinking where it does
+  work, so the `prefill+thinking` cell is unreachable. Reopening it needs a
+  4.5-generation target, which is a different target list.
