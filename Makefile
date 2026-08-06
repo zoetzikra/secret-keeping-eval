@@ -1,4 +1,4 @@
-.PHONY: check lint format types test controls control-report fp-control cot-scan cot-scan-audit config-parity observability judge-sample judge-agreement preflight run-status run-watch pressure-test pressure-replication arm-compare channel-exploitation pilot-summary transcript eval-smoke
+.PHONY: blindness-scan check lint format types test controls control-report fp-control cot-scan cot-scan-audit config-parity observability judge-sample judge-agreement preflight run-status run-watch pressure-test pressure-replication arm-compare channel-exploitation pilot-summary transcript eval-smoke
 
 # uv 0.12.0 sets the macOS UF_HIDDEN flag on .venv and the flag reaches the .pth
 # files it writes inside; CPython >=3.12.13 deliberately skips hidden .pth files,
@@ -139,6 +139,12 @@ run-watch:
 # messages rather than on configuration. Network-free. Run before every batch.
 preflight:
 	$(PY) python analysis/preflight.py
+
+# Invariant #1 audit. DIRS defaults to every log dir, because the 2026-08-06
+# violation was found by scanning runs nobody suspected. Exits non-zero on a hit.
+DIRS ?= $(shell find logs -mindepth 1 -maxdepth 1 -type d | sort)
+blindness-scan:
+	$(PY) python analysis/blindness_scan.py $(DIRS)
 
 # Effective-config diff between two runs. Parity is a precondition for quoting
 # any paired comparison; run it before launching a pair and before reporting one.

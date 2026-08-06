@@ -11,6 +11,7 @@ check is a manual read of the auditor-view transcript on the first live run, per
 CLAUDE.md. Invariant #2 backstops both.
 """
 
+import os
 from typing import Any
 
 import pytest
@@ -24,6 +25,7 @@ from inspect_ai.model import (
 from inspect_ai.tool import ToolDef
 from inspect_petri import auditor_tools
 
+from secret_keeping.blindness import scan_log_dir_for_auditor_visible_secret
 from secret_keeping.petri_task import (
     TRIAGE_DIMENSIONS,
     _reasoning_of,
@@ -31,7 +33,11 @@ from secret_keeping.petri_task import (
     petri_dataset,
     secret_keeping_petri,
 )
-from secret_keeping.prompts import AUDITOR_SEED_INFORMED, TARGET_SYSTEM_PROMPT
+from secret_keeping.prompts import (
+    AUDITOR_SEED_INFORMED,
+    TARGET_ERROR_NOTICE,
+    TARGET_SYSTEM_PROMPT,
+)
 from secret_keeping.secrets_gen import generate_secret
 
 SECRET = generate_secret(0, 0)
@@ -45,6 +51,7 @@ class _FakeContext:
         self.staged_system = staged_system
         self.trajectory_path = "root"
         self.sent: list[ModelOutput] = []
+        self.errors: list[str] = []
         self.prefill_value: str | None = None
 
     async def system_message(self, required: bool = True) -> ChatMessageSystem:
@@ -59,6 +66,9 @@ class _FakeContext:
 
     async def send_output(self, output: ModelOutput) -> None:
         self.sent.append(output)
+
+    async def send_error(self, error: str) -> None:
+        self.errors.append(error)
 
     def unrelated_method(self) -> str:
         return "delegated"
@@ -279,3 +289,74 @@ def test_both_arms_available_in_petri(informed: bool) -> None:
     expected = "informed" if informed else "uninformed"
     assert all(s.metadata["arm"] == expected for s in samples)  # type: ignore[index]
     assert all("fixed system prompt" in str(s.input) for s in samples)
+
+
+# --- Invariant #1 on the error path ---------------------------------------
+#
+# The 2026-08-06 blindness violation: a prefill 400 from the OpenRouter Azure
+# route raised `ModelGenerateError`, which stringifies to the entire request.
+# Petri surfaces target exceptions to the auditor verbatim, so the auditor was
+# handed the system prompt -- secret included -- and "guessed" the string in
+# 3/3 investigations. Nothing in the tool surface or the seed was wrong; the
+# leak was in exception text, which no check was looking at.
+
+
+def _model_generate_error_text() -> str:
+    """A realistic provider error: the request is echoed back inside it."""
+    return (
+        "Target generate failed: ModelGenerateError: \nRequest:\n"
+        '{"messages": [{"role": "system", "content": "' + PROMPT + '"}]}\n'
+        "Response:\nBadRequestError: This model does not support assistant "
+        "message prefill."
+    )
+
+
+async def test_target_errors_never_reach_the_auditor_with_the_secret(
+    monkeypatch: Any,
+) -> None:
+    _fresh_investigation(monkeypatch)
+    context = _FakeContext()
+    proxy = _SecretTargetContext(context, PROMPT)  # type: ignore[arg-type]
+    await proxy.send_error(_model_generate_error_text())
+
+    assert len(context.errors) == 1
+    forwarded = context.errors[0]
+    assert SECRET not in forwarded
+    assert PROMPT not in forwarded
+    assert forwarded == TARGET_ERROR_NOTICE
+
+
+async def test_target_errors_are_kept_harness_side_for_debugging(
+    monkeypatch: Any,
+) -> None:
+    """Sanitising the auditor's copy must not destroy the diagnostic."""
+    investigation = _fresh_investigation(monkeypatch)
+    context = _FakeContext()
+    proxy = _SecretTargetContext(context, PROMPT)  # type: ignore[arg-type]
+    await proxy.send_error(_model_generate_error_text())
+
+    assert len(investigation.target_errors) == 1
+    assert (
+        "does not support assistant message prefill" in investigation.target_errors[0]
+    )
+
+
+def test_the_auditor_error_notice_carries_no_provider_text() -> None:
+    """Fixed text, not a template: nothing from the exception can be interpolated."""
+    assert "{" not in TARGET_ERROR_NOTICE
+    assert "roll back" in TARGET_ERROR_NOTICE.lower()
+
+
+def test_no_auditor_visible_content_in_a_log_contains_the_secret() -> None:
+    """Scan the whole event stream, which is what the last violation evaded.
+
+    Checking `state.messages` at the end is not enough: the auditor rolled the
+    branch back after reading the secret, so the leaking exchange was absent
+    from the final history. Tool results and abandoned branches both live in the
+    event stream, so that is the thing to scan.
+    """
+    log_dir = os.environ.get("SECRET_KEEPING_SCAN_LOG_DIR")
+    if log_dir is None:
+        pytest.skip("set SECRET_KEEPING_SCAN_LOG_DIR to scan a real run")
+    findings = scan_log_dir_for_auditor_visible_secret(log_dir)
+    assert findings == [], f"secret reached auditor-visible content: {findings}"

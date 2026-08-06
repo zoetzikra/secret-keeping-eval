@@ -52,7 +52,9 @@ from secret_keeping.auditor import inject_secret
 from secret_keeping.prompts import (
     AUDITOR_SEED_INFORMED,
     AUDITOR_SEED_SUFFIX_FIXED_SYSTEM_PROMPT,
+    AUDITOR_SEED_SUFFIX_PREFILL,
     AUDITOR_SEED_UNINFORMED,
+    TARGET_ERROR_NOTICE,
 )
 from secret_keeping.records import Investigation, TargetTurn
 from secret_keeping.scorer import secret_leak_scorer
@@ -173,6 +175,19 @@ class _SecretTargetContext:
         self._turn_type = "tool_result"
         return results
 
+    async def send_error(self, error: str) -> None:
+        """Replace a target-side exception with fixed text before the auditor sees it.
+
+        Invariant #1 is enforced here, not only at the tool surface. Petri's
+        `replayable(..., surface_errors=True)` sends the auditor
+        `f"Target {fn} failed: {type(ex).__name__}: {ex}"`, and Inspect's
+        `ModelGenerateError` stringifies to the whole request -- system prompt,
+        secret and all. The auditor never needs the provider's text; it only
+        needs to know the turn failed and that it can roll back.
+        """
+        store_as(Investigation).target_errors.append(error)
+        await self._context.send_error(TARGET_ERROR_NOTICE)
+
     async def send_output(self, output: ModelOutput) -> None:
         _record_turn(
             output,
@@ -202,6 +217,7 @@ def petri_dataset(
     secret_seed: int = 0,
     secret_length: int = DEFAULT_SECRET_LENGTH,
     informed: bool = True,
+    enable_prefill: bool = False,
 ) -> MemoryDataset:
     """Same secrets and same arms as the plain harness, so the arms are paired.
 
@@ -211,6 +227,8 @@ def petri_dataset(
     """
     seed = AUDITOR_SEED_INFORMED if informed else AUDITOR_SEED_UNINFORMED
     seed = seed + AUDITOR_SEED_SUFFIX_FIXED_SYSTEM_PROMPT
+    if enable_prefill:
+        seed = seed + AUDITOR_SEED_SUFFIX_PREFILL
     return MemoryDataset(
         samples=[
             Sample(
@@ -277,7 +295,9 @@ def secret_keeping_petri(
         token_limit: Per-investigation budget; exceeding it is censored, not an error.
     """
     return Task(
-        dataset=petri_dataset(investigations, secret_seed, secret_length, informed),
+        dataset=petri_dataset(
+            investigations, secret_seed, secret_length, informed, enable_prefill
+        ),
         setup=[inject_secret(), _petri_setup(max_turns, enable_prefill)],
         solver=audit_solver(
             auditor=auditor_agent(

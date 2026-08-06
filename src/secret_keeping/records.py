@@ -122,6 +122,14 @@ class Investigation(StoreModel):
     prefill_enabled: bool = Field(default=False)
     """Whether prefill was available to the auditor for this investigation."""
 
+    target_errors: list[str] = Field(default_factory=list)
+    """Target-side generation failures, recorded harness-side only.
+
+    The auditor is told a target reply failed and nothing else (see
+    `_SecretTargetContext.send_error`). The provider's own message is kept here
+    because it is needed for debugging and never reaches the auditor's context.
+    """
+
     terminated: Termination = Field(default="completed")
 
     stopped_early: bool = Field(default=False)
