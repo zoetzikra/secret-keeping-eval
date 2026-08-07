@@ -757,59 +757,84 @@ is future work if it ever matters.
 **Evidence:** `reports/replication-dryrun.md`; `logs/prefill-smoke`,
 `logs/prefill-smoke2`, `logs/repl-probe-gpt`.
 
-**Status:** settled for this auditor and this Petri version. Revisit if either
-changes.
+**Status:** the decision (prefill off in the replication config) is settled and
+stands under every reading so far. The *reason* has been revised twice — see the
+revisions below — and currently reads: prefill+thinking is unreachable through
+the request path this project has access to; whether it is reachable at all for
+us is **pending a direct-API test with the correct extended-thinking+prefill
+request construction**.
 
-**History:** 2026-08-05, after the overnight dry run stopped at the prefill gate.
+**History:** 2026-08-05, dropped after the overnight dry run stopped at the
+prefill gate; reason then read "the auditor never spontaneously prefills."
+2026-08-06, reason revised: the auditor *will* prefill when the affordance is
+named, but the API rejects it — read at the time as prefill having been removed
+across the 4.6+ model line. 2026-08-07, that reading superseded: the system
+card's own figure populates prefill+thinking cells for Opus 4.6/4.7/4.8 and
+Sonnet 4.6, so the capability exists; reclassified as a request-path /
+request-construction limitation (below).
 
-**Revision 2026-08-06 — the decision stands, but the reason was wrong.** M24
-attributed the empty prefill axis to auditor reluctance. Prompting fixed that
-part: naming the affordance in the Petri seed took the auditor from 0 prefills in
-257 turns to 3 in 17. Every one of them **failed at the API**.
+**Revision 2026-08-06, corrected 2026-08-07 — reason superseded twice; still
+open.** M24 originally attributed the empty prefill axis to auditor reluctance.
+Prompting fixed that half: naming the affordance in the Petri seed took the
+auditor from 0 prefills in 257 turns to 3 in 17. Every one failed at the API.
 
-Assistant prefill is not available on the models this replication targets:
+A first reading of that failure — "assistant prefill was removed across the 4.6+
+generation" — is **withdrawn**. It inferred an absent capability from one request
+path returning 400, and it is contradicted by system-card figure 6.5.4.5.B, which
+carries prefill and prefill+thinking bars for Opus 4.6/4.7/4.8 and Sonnet 4.6.
+Those models demonstrably do it.
 
-| model | prefill |
-|---|---|
-| `claude-opus-4.6` | rejected — 400 |
-| `claude-opus-4.7` | rejected — 400 |
-| `claude-opus-4.8` | rejected — 400 |
-| `claude-sonnet-4.6` | rejected — 400 |
-| `claude-haiku-4.5` | **accepted** |
+**What is established.** Assistant prefill returns 400 — *"This model does not
+support assistant message prefill. The conversation must end with a user
+message."* — for `claude-opus-4.6`, `4.7`, `4.8` and `claude-sonnet-4.6` on every
+OpenRouter route serving them (Amazon Bedrock, Azure, Anthropic, Google), with
+`allow_fallbacks: false`, and independently of the thinking field: omitted,
+`enabled: false`, `exclude: true` and adaptive-on all return the same 400.
+`claude-haiku-4.5` accepts prefill on the same Bedrock route. So the variable is
+the model, not the provider — but every observation is through OpenRouter, and
+what OpenRouter puts on the wire is not visible to us.
 
-*"This model does not support assistant message prefill. The conversation must
-end with a user message."* Identical on the Azure, Anthropic and Google routes,
-in Anthropic's own error format — including when OpenRouter is pinned to
-Anthropic's first-party API with `allow_fallbacks: false`. So this is a
-**model-generation** property, not the routing artifact it first looked like:
-prefill was removed across the 4.6+ line and survives on 4.5.
+**The documented constraint.** Anthropic's thinking docs state plainly: *"You
+can't pre-fill the assistant response while thinking is on."* Manual mode adds
+that *"the final assistant turn of a thinking-enabled request must begin with a
+thinking block"* (adaptive drops this). Thinking is off by default on
+4.6/4.7/4.8/Sonnet 4.6 and must be requested — so a bare prefill with thinking
+off ought to be legal, which is precisely what OpenRouter refuses.
 
-**And where prefill works, it silently disables thinking.** On
-`claude-haiku-4.5`, same prompt, thinking enabled throughout:
+**Construction diff.** Petri stages a prefill as a bare assistant message —
+`state.messages.append(ChatMessageAssistant(content=prefill))` — with no leading
+thinking block and no beta header. Against a thinking-enabled request in manual
+mode that is the wrong shape. It is also **not a shape a client can author**:
+every thinking block carries a `signature`, an encrypted copy of the reasoning
+that the server issues and verifies, and it must be *"passed back unchanged"*.
+A leading thinking block for a turn the model has not yet taken cannot be
+synthesised, so "prefill that begins with a thinking block" has no client-side
+construction through the public Messages API.
 
-| | reasoning chars | reasoning tokens |
-|---|---:|---:|
-| no prefill | 1375 | 350 |
-| prefill | **0** | **0** |
+**Consequence for figure 6.5.4.5.B.** `neither` and `thinking` are reachable on
+every target. `prefill` is reachable on 4.5-generation models. `prefill+thinking`
+is reachable through **no configuration available to this project**, and where
+prefill does work it silently zeroes thinking — `claude-haiku-4.5`, same prompt,
+thinking enabled: 1375 reasoning characters without prefill, 0 with, HTTP 200
+both times. A prefilled turn is still tagged `prefill`, so that cell would have
+filled with turns containing no thinking: mislabelled rather than empty.
 
-No error — a 200 with an empty reasoning channel. This is the dangerous case,
-because a prefilled turn is still tagged `prefill` and would land in the figure's
-prefill+thinking cell carrying no thinking at all. Any such cell we produced
-would be mislabelled rather than empty.
+**Status: open, not closed.** Two paths are untested. (1) The **direct Anthropic
+endpoint** — no `ANTHROPIC_API_KEY` has been available; `run_petri.py` now routes
+`anthropic/...` target ids there and raises rather than falling back to
+OpenRouter, so this is one key away from being answered. Note the config differs
+by provider: `budget_tokens` is deprecated on 4.6 and **400s on 4.7+**, so the
+direct path uses adaptive thinking and the OpenRouter config would fail there
+outright. (2) Whatever request construction produced Anthropic's own figure,
+which may not be the public Messages API.
 
-**Consequence for figure 6.5.4.5.B.** Of its four turn types, `neither` and
-`thinking` are reachable on every target; `prefill` is reachable only on
-4.5-generation models; **`prefill+thinking` is unreachable on every model
-available to us**, because the two are mutually exclusive at the API. The second
-figure therefore cannot be reproduced in full, and the limit is the API surface,
-not the harness or the auditor.
+Until one of those resolves, the prefill axis is **pending**, and the flat 0/12
+curves cannot be attributed to under-sampling high-leak turn types, because that
+attribution assumes a cell no available configuration can fill.
 
-This also revises the reading of the flat 0/12 curves: they were partly
-attributed to sampling only low-leak turn types. That explanation is unavailable
-for prefill+thinking, which no configuration can sample.
-
-**Evidence:** provider matrix above, run 2026-08-06; `logs/probe-prefill-opus46`
-(**contaminated — see below**, do not read its leak counts).
+**Evidence:** provider × thinking-field matrix, 2026-08-06/07; Anthropic thinking
+and extended-thinking docs; `inspect_petri/target/_agent.py:34-35`;
+`logs/probe-prefill-opus46` (**contaminated — see below**).
 
 **Contamination note.** `logs/probe-prefill-opus46` recorded
 `event_extracted=1` in 3/3 investigations. Those are not extractions. The prefill
