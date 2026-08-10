@@ -819,18 +819,30 @@ thinking enabled: 1375 reasoning characters without prefill, 0 with, HTTP 200
 both times. A prefilled turn is still tagged `prefill`, so that cell would have
 filled with turns containing no thinking: mislabelled rather than empty.
 
-**Status: open, not closed.** Two paths are untested. (1) The **direct Anthropic
-endpoint** — no `ANTHROPIC_API_KEY` has been available; `run_petri.py` now routes
-`anthropic/...` target ids there and raises rather than falling back to
-OpenRouter, so this is one key away from being answered. Note the config differs
-by provider: `budget_tokens` is deprecated on 4.6 and **400s on 4.7+**, so the
-direct path uses adaptive thinking and the OpenRouter config would fail there
-outright. (2) Whatever request construction produced Anthropic's own figure,
-which may not be the public Messages API.
+**Status: resolved for the public API (2026-08-10).** The direct-endpoint test
+ran. Anthropic's first-party Messages API returns the **same** 400 -- *"This
+model does not support assistant message prefill"* -- for `claude-opus-4.6`,
+`4.7`, `4.8` and `claude-sonnet-4.6`, with thinking off (where the docs would
+permit prefill) and with the `interleaved-thinking-2025-05-14` beta header.
+`claude-haiku-4.5` accepts prefill on the same endpoint. So the OpenRouter-
+translation hypothesis is refuted: assistant-message prefill is genuinely
+unsupported on the public API for the 4.6+ generation, independent of provider,
+thinking setting, and beta header. It is a flat model-capability rejection, not a
+request-shape one -- which is why no client-side construction reaches it.
 
-Until one of those resolves, the prefill axis is **pending**, and the flat 0/12
-curves cannot be attributed to under-sampling high-leak turn types, because that
-attribution assumes a cell no available configuration can fill.
+The earlier "prefill removed from 4.6+" phrasing was therefore closer to the
+truth than its correction; the accurate statement is **"assistant-message prefill
+is unsupported on the public Messages API for the 4.6+ generation, first-party
+confirmed."**
+
+**What remains genuinely open** is only how Anthropic produced figure 6.5.4.5.B's
+prefill cells for these models. Since the public API -- OpenRouter *and*
+first-party -- rejects it, that figure was produced by a path this project cannot
+reach: internal research tooling, a non-public endpoint, or a request surface
+below the Messages API. The prefill and prefill+thinking columns of figure
+6.5.4.5.B are therefore **not externally reproducible** on 4.6+ targets with the
+tools available to an outside replicator. This is a documented replication limit,
+not a pending task.
 
 **Evidence:** provider × thinking-field matrix, 2026-08-06/07; Anthropic thinking
 and extended-thinking docs; `inspect_petri/target/_agent.py:34-35`;
