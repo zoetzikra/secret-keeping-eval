@@ -1,4 +1,4 @@
-.PHONY: blindness-scan check lint format types test controls control-report fp-control cot-scan cot-scan-audit config-parity observability reasoning-provenance judge-sample judge-agreement preflight run-status run-watch pressure-test pressure-replication arm-compare channel-exploitation pilot-summary transcript eval-smoke
+.PHONY: blindness-scan check lint format types test controls control-report fp-control cot-scan cot-scan-audit config-parity observability reasoning-provenance pipeline-selfcheck judge-sample judge-agreement preflight run-status run-watch pressure-test pressure-replication arm-compare channel-exploitation pilot-summary transcript eval-smoke
 
 # uv 0.12.0 sets the macOS UF_HIDDEN flag on .venv and the flag reaches the .pth
 # files it writes inside; CPython >=3.12.13 deliberately skips hidden .pth files,
@@ -87,8 +87,10 @@ POOL ?=
 km:
 	$(PY) python analysis/km_curve.py $(LOG) $(if $(POOL),--pool $(POOL),)
 
-# Self-contained HTML page: three survival panels (any / output / reasoning).
+# Self-contained HTML page: survival panels per channel. `label=dir,dir` pools
+# repetitions into one arm and, for two paired arms, derives the McNemar contrast.
 #   make km-artifact LOG="logs/pilot-informed-v2 logs/control-benign-neutral"
+#   make km-artifact LOG="pressure=logs/pressure-p5,logs/pressure-p6,logs/pressure-p7 control=logs/control-p5,logs/control-p6,logs/control-p7"
 km-artifact:
 	PYTHONPATH=src:.:analysis uv run python analysis/km_artifact.py $(LOG)
 
@@ -175,6 +177,12 @@ observability:
 #   make reasoning-provenance [DIRS="logs/probe-opus47 logs/pressure-p6"]
 reasoning-provenance:
 	$(PY) python analysis/reasoning_provenance.py $(DIRS)
+
+# Surfaced-to-auditor path check: every readable reasoning summary (and every
+# one containing the secret) must appear in the auditor's delivered messages.
+#   make pipeline-selfcheck DIRS="logs/abl-plain-nested logs/abl-petri"
+pipeline-selfcheck:
+	$(PY) python analysis/pipeline_selfcheck.py $(DIRS)
 
 DIRS ?=
 cot-scan-audit:
