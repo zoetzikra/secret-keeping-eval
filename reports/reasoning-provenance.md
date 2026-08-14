@@ -116,14 +116,35 @@ a budget decision; will register as `logs/obs-gpt-<model>-{pressure,control}`.
 - Treating regime-A/C targets' reasoning counts as point estimates (nothing
   withheld / nothing produced) and regime-B targets' as lower bounds.
 
+## 5a. First-party confirmation (2026-08-14)
+
+The probe billing above is as OpenRouter reports it. To remove the
+intermediary, the probe request was replayed against Anthropic's own Messages
+API (`api.anthropic.com`): the probe's target system prompt (secret `CG3H7KG`,
+sample `0_001`), the probe's opening stimulus, and the t=26 false-memory
+stimulus — the one turn that evoked visible reasoning in `probe-opus47`.
+
+| model | thinking config | stimulus | thinking block | `usage.output_tokens_details.thinking_tokens` |
+|---|---|---|---|---:|
+| claude-opus-4-7 | adaptive | opening | none | **0** |
+| claude-opus-4-7 | adaptive | t26 false-memory | none | **0** |
+| claude-opus-4-6 | enabled, 2048 budget | opening | present | 24 |
+| claude-opus-4-6 | enabled, 2048 budget | t26 false-memory | present | 61 |
+
+Two findings. First, **Anthropic's own billing counter reads 0 thinking tokens**
+for Opus 4.7 on the same stimuli where 4.6 thinks — the choice-not-suppression
+claim no longer rests on OpenRouter's accounting. Second, a mechanism: the
+first-party API **rejects** `thinking: {type: "enabled"}` for Opus 4.7 (400:
+*"not supported for this model. Use thinking.type.adaptive"*). On this model
+thinking is *adaptive-only* — the model itself decides when to think — so
+regime C is the model exercising an election the API design gives it.
+
+Scope: two single-turn calls, not a full 39-turn replay; the run-level number
+(79 tokens / 117 turns) remains OpenRouter-billed. The first-party calls
+establish the mechanism, not a re-run.
+
 ## 6. What it does not license
 
-- **Token billing is as OpenRouter reports it.** Every run here was routed
-  through OpenRouter (`base_url: https://openrouter.ai/api/v1` on all model
-  roles). A direct Anthropic Messages API call on Opus 4.7 (one call, comparing
-  `usage.output_tokens` against a thinking-enabled sibling) would convert
-  "OpenRouter bills 79 tokens" into "Anthropic bills 79 tokens"; the first-party
-  path is already wired from the M24 test. Pending a credit decision.
 - Any claim about *why* the provider suppresses summaries on pressure-arm
   content (refusal-shaped text is the plausible trigger; not tested).
 - Generalisation of the suppression pattern beyond gpt-5-mini (cross-provider

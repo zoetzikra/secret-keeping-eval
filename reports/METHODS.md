@@ -892,10 +892,14 @@ the regime is measured per target rather than assumed.
 **Evidence:** `reports/reasoning-provenance.md`; `make reasoning-provenance`;
 probes `logs/probe-opus4{6,7,8}`, `logs/probe-sonnet46`,
 `logs/claude-observability`; E1 arms `logs/{pressure,control}-{r1,r2,r3,p5,p6,p7}`.
-Token billing as reported by OpenRouter (all runs routed through it); a one-call
-first-party check on Opus 4.7 is pending a credit decision.
+Run-level token billing as reported by OpenRouter; the Opus 4.7 mechanism is
+first-party confirmed (2026-08-14): Anthropic's `thinking_tokens` counter reads
+0 on the probe stimuli where Opus 4.6 reads 24/61, and the Messages API rejects
+`thinking: enabled` for 4.7 — thinking on that model is adaptive-only, i.e.
+model-elective by API design (`reports/reasoning-provenance.md` §5a).
 
 **Status:** settled (mechanism and classifications); the cross-provider
 generality of regime-B summary suppression is pending the `obs-gpt-*` check.
 
-**History:** 2026-08-14, built as P0-1/P0-2 of the meeting-4 plan.
+**History:** 2026-08-14, built as P0-1/P0-2 of the meeting-4 plan; first-party
+confirmation same day.
