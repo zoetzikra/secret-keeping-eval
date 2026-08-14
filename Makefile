@@ -1,4 +1,4 @@
-.PHONY: blindness-scan check lint format types test controls control-report fp-control cot-scan cot-scan-audit config-parity observability judge-sample judge-agreement preflight run-status run-watch pressure-test pressure-replication arm-compare channel-exploitation pilot-summary transcript eval-smoke
+.PHONY: blindness-scan check lint format types test controls control-report fp-control cot-scan cot-scan-audit config-parity observability reasoning-provenance judge-sample judge-agreement preflight run-status run-watch pressure-test pressure-replication arm-compare channel-exploitation pilot-summary transcript eval-smoke
 
 # uv 0.12.0 sets the macOS UF_HIDDEN flag on .venv and the flag reaches the .pth
 # files it writes inside; CPython >=3.12.13 deliberately skips hidden .pth files,
@@ -169,6 +169,12 @@ judge-agreement:
 #   make observability [DIRS="logs/a logs/b"]
 observability:
 	$(PY) python analysis/observability.py $(DIRS)
+
+# Per-run provenance of blank reasoning turns: provider-suppressed vs the model
+# not thinking, decided by the header's target reasoning-token billing (M25).
+#   make reasoning-provenance [DIRS="logs/probe-opus47 logs/pressure-p6"]
+reasoning-provenance:
+	$(PY) python analysis/reasoning_provenance.py $(DIRS)
 
 DIRS ?=
 cot-scan-audit:
