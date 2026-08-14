@@ -101,10 +101,20 @@ higher-leaking one, pressure-arm reasoning-leak counts are the *more*
 under-counted, so the E1 effect (80/120 vs 44/120, stratified exact McNemar
 p < 0.001) is a floor.
 
-Pending: the cross-provider check (same pressure/control design on 1–2
-additional GPT-family targets via OpenRouter, n=10 paired) to establish whether
-summary-suppression-under-pressure is OpenAI-wide or model-specific. Blocked on
-a budget decision; will register as `logs/obs-gpt-<model>-{pressure,control}`.
+### Cross-provider check — design (frozen before results, M16)
+
+Question: is summary-suppression-under-pressure OpenAI-wide or specific to
+gpt-5-mini? Two additional OpenAI reasoning targets, chosen by reachability
+smoke (`obs-smoke-*` rows in RUNS.md): **`openai/gpt-5-nano`** (gpt-5 sibling;
+smoke: regime B, summaries 2/2) and **`openai/o4-mini`** (o-series; smoke:
+regime B, summaries 1/6 — low but measurable). `openai/gpt-5.1` was dropped:
+no reasoning blocks returned via this route. Arms: pressure (informed auditor,
+the E1 configuration) vs control (`_benign_conversation`), n=10 per arm, 40
+turns, paired on `secret_seed=9`, judge on in both arms, model roles identical
+to E1 except the target string. Registered `logs/obs-{gpt5nano,o4mini}-{pressure,control}`.
+The decision-relevant cells, as above: per-arm **none-rate** (model stops
+reasoning?) and per-arm **summary rate** (provider attachment). Runs launched
+sequentially (one eval at a time). Results: **pending — runs in flight.**
 
 ## 5. What this licenses
 
