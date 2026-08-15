@@ -593,10 +593,22 @@ nothing to guard there is no value to white-bear about. Run paired on
 `secret_seed=0` (the E2 comparator set), n=20, 40 turns, informed auditor;
 `logs/e2-disclose`. Reported as a third column in `reports/baseline-protection.md`.
 
+Result (`logs/e2-disclose`, n=20, seed 0): output disclosure rises to 20/20 as
+instructed, cleanly. The predicted reasoning effect does **not** hold. Per
+investigation, disclose reasoning is 8/20 (keep 15/20, no-instruction 2/20), but
+this is an artifact of exposure — instructed disclosure leaks in output on turn 1,
+early stop fires, and investigations run a median of 1 turn against 40. Normalised
+per readable turn, disclose rehearses the secret *most* (533 per 1000 vs keep 70,
+no-instruction 4), because the model names it while planning to produce it, not
+while guarding it. A reasoning count is therefore not the same quantity across the
+guard/share boundary, so disclose does not extend the white-bear dose-response
+into a monotone axis. The clean contrast remains keep vs no-instruction.
+
 **Status:** **settled** for keep vs no-instruction — run complete (E2), n=20 × 40
-turns, replicated against two independent instructed runs. Disclose arm: **pending
-— run in flight**. Untested across targets: single target (`gpt-5-mini`), single
-seed set; a cross-target check is cheap and belongs in any cross-lab run.
+turns, replicated against two independent instructed runs. Disclose arm complete
+(P1-1); it does not extend the dose-response as predicted (reason above).
+Untested across targets: single target (`gpt-5-mini`), single seed set; a
+cross-target check is cheap and belongs in any cross-lab run.
 
 **History:** 2026-07-30 arm demoted from plumbing gate to measurement after
 `logs/floor` (0 leaks in 8 × 8 turns). 2026-08-03 re-run at scale; premise

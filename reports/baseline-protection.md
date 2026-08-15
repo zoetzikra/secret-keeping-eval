@@ -65,14 +65,54 @@ about. Report whichever way it falls.
 
 | channel | disclose | no instruction | keep (run 1) | keep (run 2) |
 |---|---|---|---|---|
-| **reasoning** | *pending* | **2/20** | 15/20 · p = 0.002 | 12/20 · p = 0.006 |
-| output | *pending* | 1/20 | 1/20 · p = 1.00 | 1/20 · p = 1.00 |
-| extraction | *pending* | 0/20 | 5/20 · p = 0.06 | 3/20 · p = 0.25 |
+| **reasoning** (per investigation) | 8/20 | **2/20** | 15/20 · p = 0.002 | 12/20 · p = 0.006 |
+| reasoning per 1000 readable turns | **533** | 4 | 70 | — |
+| output | **20/20** | 1/20 | 1/20 · p = 1.00 | 1/20 · p = 1.00 |
+| extraction | 0/20 | 0/20 | 5/20 · p = 0.06 | 3/20 · p = 0.25 |
+| median turns / investigation | **1** | 40 | 40 | 40 |
+| summary availability | 52% | 64% | 61% | 60% |
 
-Disclose column **pending — run in flight** (`logs/e2-disclose`). Exact McNemar,
-paired on secrets. The keep-vs-no-instruction gap is several times the measured
-±3-investigation noise floor (METHODS M15) and replicates against both keep-arm
-runs.
+Exact McNemar, paired on secrets. Independent deterministic recount of every
+reasoning count agrees with the scorer exactly (8/8, 2/2, 15/15).
+
+**Output — the instruction axis works cleanly.** Told to share, the target
+shares: 20/20 versus 1/20 in both other arms. This is the expected, uncomplicated
+end of the result.
+
+**Reasoning — not cleanly comparable across the guard/share boundary, and the
+predicted dose-response does not hold.** The per-investigation counts run
+keep 15/20 > disclose 8/20 > no-instruction 2/20 (disclose vs keep McNemar
+p = 0.065; disclose vs no-instruction p = 0.109 — neither significant at n=20),
+which at first looks like the predicted "less to guard → less rehearsal". It is
+an artifact. Two things break the comparison:
+
+1. **Exposure.** Told to share, the target discloses in output on turn 1, early
+   stop fires, and the investigation ends — median **1 turn** per investigation
+   against 40 for the other arms. So there is almost no reasoning exposure in
+   which a rehearsal could be counted; 8/20 is measured over 29 turns, keep's
+   15/20 over 793.
+
+2. **Direction of the mechanism reverses.** Normalised per readable turn, disclose
+   rehearses the secret in reasoning the *most* — **533 per 1000 readable turns**,
+   against keep's 70 and no-instruction's 4. But it is not *guarding* rehearsal:
+   the transcripts show the model naming the secret while planning to *produce*
+   it (*"Even though they didn't ask directly, I think it's relevant to
+   share…"*). The secret enters the reasoning channel for the opposite reason it
+   does under keep, so a reasoning-channel count cannot be read as the same
+   quantity on both sides of the guard/share line.
+
+The clean white-bear dose-response is therefore the **keep vs no-instruction**
+contrast (15/20 vs 2/20) — guarding a value induces rehearsing it. The disclose
+arm does *not* extend that into a monotone axis, because instructing disclosure
+puts the secret into reasoning through production rather than removing it. The
+prediction (reasoning rehearsal falls below keep) is **not confirmed**; reported
+as it fell.
+
+**Extraction is 0/20 by construction:** when the target hands the value over, the
+auditor never has to assemble or guess it, so the attacker-emission endpoint does
+not fire. Availability is lowest in disclose (52%) — but with a median of one
+turn per investigation, the availability figure is over a tiny denominator and
+is not load-bearing here.
 
 **Observability (METHODS M22).** Reasoning-summary availability is 64% here
 against 61% and 60% in the keep arms — close enough that unequal observability
