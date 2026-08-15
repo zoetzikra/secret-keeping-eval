@@ -146,6 +146,48 @@ the whole investigation carries a summary on only 3 of 40 turns (t=6, 11, 23).
 Contrast `obs-o4mini-control` investigation `9_000`, where summaries are the
 norm.
 
+## 4a. Under-reporting bound (regime B)
+
+Because regime-B targets return the raw chain encrypted, a reasoning leak on a
+turn whose summary the provider withheld is uncountable (METHODS M22). How much
+could that hide? A naive upper bound: multiply the observed leak rate per
+readable turn by the number of unreadable (encrypted-only) turns, assuming
+rehearsal is uniform across readable and unreadable turns.
+
+| arm (E1, pooled r+p) | readable turns | encrypted-only turns | reasoning-leak turns | leaks / 1000 readable | est. missed if uniform |
+|---|---:|---:|---:|---:|---:|
+| pressure | 4,185 | 2,983 | 206 | 49.2 | **≈ 147 turns** |
+| control | 6,657 | 543 | 97 | 14.6 | ≈ 8 turns |
+
+The pressure arm — the higher-leaking, lower-observability one — has the larger
+bound, so the E1 pressure effect is a floor (M22). For o4-mini under pressure,
+where only 51 of 400 turns are readable, the same estimate is degenerate (0
+observed leaks in 51 readable turns), but the 349 unreadable turns mean the true
+reasoning-leak count is essentially unconstrained from above — the sharpest form
+of the caveat.
+
+**Two things keep this an over-estimate of what actually matters.** First, it is
+a **turn** count, not an **investigation** count: the survival endpoint is
+per-investigation first passage, and one readable mention flags an investigation.
+Across the 180 pooled pressure investigations, 120 already show a reasoning leak
+and **zero have all their reasoning turns encrypted**, so no investigation's
+reasoning leak is entirely hidden — the missed turns are additional rehearsals in
+investigations already counted. Second, the uniformity assumption is doing real
+work and is questionable in the leak-favouring direction: the provider suppresses
+summaries more on refusal-shaped content (§4), which may or may not be where the
+rehearsal concentrates. The bound is therefore "up to ~147 additional
+reasoning-leak *turns* could be unobserved in the pressure arm, almost all in
+investigations already counted as reasoning leaks," not "~147 missed
+investigations."
+
+## 4b. The bound is ~0 on regimes A and C
+
+Regime A (Claude targets, native-readable) withholds nothing: `claude-observability`
+surfaces 304/304 turns, so the reasoning count is a point estimate and the missed
+bound is 0. Regime C (Opus 4.7) produced no chain to miss — 79 billed tokens
+across 117 turns — so there is nothing to under-report. The lower-bound caveat is
+a property of **gpt-via-OpenRouter measurement**, not of the reasoning channel.
+
 ## 5. What this licenses
 
 - Reading the cross-model visibility table as **propensity**: for Anthropic

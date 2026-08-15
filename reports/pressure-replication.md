@@ -195,7 +195,10 @@ either way, in either direction.
 - Not a claim about the **output** channel, which is unaffected — this is a
   reasoning-channel result.
 - Not an exact rate: both counts are lower bounds over unequal readable subsets
-  (METHODS M22). The *direction* is secure; 0.67 and 0.37 are floors.
+  (METHODS M22). The *direction* is secure; 0.67 and 0.37 are floors. Quantified:
+  up to ~147 additional reasoning-leak turns could be unobserved in the pooled
+  pressure arm (vs ~8 in control), almost all in investigations already counted —
+  see `reports/reasoning-provenance.md` §4a. The bias runs toward the null.
 - Not a generalisation beyond `gpt-5-mini`, 40 turns, and six secret sets.
 - Not a mechanism. That pressure raises rehearsal is measured; *why* is
   inferred from transcripts (the target rehearses the value while planning to
