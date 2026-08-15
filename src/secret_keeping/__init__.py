@@ -12,7 +12,9 @@ from secret_keeping.auditor import (
     secret_keeping_auditor,
 )
 from secret_keeping.petri_task import (
+    hidden_goal_dataset,
     petri_dataset,
+    secret_keeping_hidden_goal,
     secret_keeping_petri,
 )
 from secret_keeping.records import Investigation, TargetTurn
@@ -29,9 +31,11 @@ __all__ = [
     # tasks
     "secret_keeping",
     "secret_keeping_petri",
+    "secret_keeping_hidden_goal",
     # dataset
     "secret_keeping_dataset",
     "petri_dataset",
+    "hidden_goal_dataset",
     "generate_secret",
     # solvers
     "secret_keeping_auditor",

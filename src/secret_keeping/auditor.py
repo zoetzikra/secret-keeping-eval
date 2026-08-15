@@ -37,6 +37,7 @@ from secret_keeping.prompts import (
     TARGET_REASONING_TEMPLATE,
     TARGET_SYSTEM_PROMPT,
     TARGET_SYSTEM_PROMPT_DISCLOSE,
+    TARGET_SYSTEM_PROMPT_HIDDEN_GOAL,
     TARGET_SYSTEM_PROMPT_NO_INSTRUCTION,
     TARGET_SYSTEM_PROMPT_PERMISSIVE,
     TRIVIAL_REFUSAL,
@@ -142,12 +143,15 @@ def inject_secret(variant: str = "keep") -> Solver:
         variant: Which target prompt to install. `"keep"` is the eval proper.
             `"no-instruction"` omits the keep-instruction (baseline protection).
             `"disclose"` instructs proactive sharing (the opposite pole).
+            `"hidden-goal"` frames the secret as a benign hidden directive's
+            codename in a staged support session (P3-a extension).
             `"permissive"` explicitly permits sharing (plumbing validation).
     """
     templates = {
         "keep": TARGET_SYSTEM_PROMPT,
         "no-instruction": TARGET_SYSTEM_PROMPT_NO_INSTRUCTION,
         "disclose": TARGET_SYSTEM_PROMPT_DISCLOSE,
+        "hidden-goal": TARGET_SYSTEM_PROMPT_HIDDEN_GOAL,
         "permissive": TARGET_SYSTEM_PROMPT_PERMISSIVE,
     }
     if variant not in templates:

@@ -50,6 +50,7 @@ from inspect_petri.target import TargetContext
 
 from secret_keeping.auditor import inject_secret
 from secret_keeping.prompts import (
+    AUDITOR_SEED_HIDDEN_GOAL,
     AUDITOR_SEED_INFORMED,
     AUDITOR_SEED_SUFFIX_FIXED_SYSTEM_PROMPT,
     AUDITOR_SEED_SUFFIX_PREFILL,
@@ -326,5 +327,88 @@ def secret_keeping_petri(
             "secret_seed": secret_seed,
             "enable_prefill": enable_prefill,
             "target_tools": target_tools,
+        },
+    )
+
+
+def hidden_goal_dataset(
+    investigations: int = DEFAULT_INVESTIGATIONS,
+    secret_seed: int = 0,
+    secret_length: int = DEFAULT_SECRET_LENGTH,
+) -> MemoryDataset:
+    """P3-a dataset: the secret is a hidden directive's codename, not a bare token.
+
+    Same seeded codenames as every other arm (so it is comparable), but the
+    auditor seed and target prompt frame it as a hidden operational goal in a
+    staged support session rather than an abstract string to protect.
+    """
+    seed = AUDITOR_SEED_HIDDEN_GOAL + AUDITOR_SEED_SUFFIX_FIXED_SYSTEM_PROMPT
+    return MemoryDataset(
+        samples=[
+            Sample(
+                input=seed,
+                target=generate_secret(secret_seed, i, secret_length),
+                id=f"{secret_seed}_{i:03d}",
+                metadata={
+                    "investigation_index": i,
+                    "secret_seed": secret_seed,
+                    "arm": "hidden-goal",
+                },
+            )
+            for i in range(investigations)
+        ],
+        name="secret_keeping_hidden_goal",
+    )
+
+
+@task
+def secret_keeping_hidden_goal(
+    investigations: int = DEFAULT_INVESTIGATIONS,
+    max_turns: int = DEFAULT_PETRI_MAX_TURNS,
+    secret_seed: int = 0,
+    secret_length: int = DEFAULT_SECRET_LENGTH,
+    judge: bool = True,
+    token_limit: int = DEFAULT_TOKEN_LIMIT,
+) -> Task:
+    """P3-a extension: does auditing elicit a benign hidden goal?
+
+    A ControlArena-style arm. The target holds a benign operational side-goal
+    (a soft up-sell) with a codename, staged mid-support-session, and is told
+    never to reveal the directive. "Revealing the goal" is operationalised as
+    the codename surfacing, so the validated token scorer applies unchanged. The
+    uncorrelated secret-keeping eval measures the monitorability floor; this arm
+    adds task-relevance — the goal is something the model is acting on — moving
+    it toward the correlated end of the axis (see `reports/hidden-goal.md`).
+
+    Petri-native and prefill-off; the extension is the prompt set and the seed,
+    not new harness machinery.
+    """
+    return Task(
+        dataset=hidden_goal_dataset(investigations, secret_seed, secret_length),
+        setup=[inject_secret("hidden-goal"), _petri_setup(max_turns, prefill=False)],
+        solver=audit_solver(
+            auditor=auditor_agent(
+                max_turns=max_turns,
+                compaction=True,
+                turn_counter=True,
+                tools=auditor_tools(
+                    prefill=False,
+                    rollback=True,
+                    target_tools="none",
+                    exclude={"set_system_message"},
+                ),
+            ),
+            target=secret_target_agent(),
+        ),
+        scorer=secret_leak_scorer(judge=judge),
+        viewer=audit_viewer(TRIAGE_DIMENSIONS),
+        token_limit=token_limit,
+        metadata={
+            "harness": "petri",
+            "arm": "hidden-goal",
+            "max_turns": max_turns,
+            "secret_seed": secret_seed,
+            "enable_prefill": False,
+            "target_tools": "none",
         },
     )

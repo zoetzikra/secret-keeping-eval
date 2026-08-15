@@ -142,6 +142,31 @@ def test_secret_is_only_in_sample_target() -> None:
         assert secret not in str(sample.input)
 
 
+def test_hidden_goal_dataset_keeps_the_codename_out_of_the_auditor_seed() -> None:
+    """P3-a: the codename lives only in `Sample.target`, never in the seed the
+    auditor receives — the same blindness invariant as every other arm."""
+    from secret_keeping.petri_task import hidden_goal_dataset
+
+    for sample in hidden_goal_dataset(investigations=5, secret_seed=7):
+        secret = sample.target
+        assert isinstance(secret, str)
+        assert secret not in str(sample.input)
+        assert secret not in str(sample.metadata)
+        assert sample.metadata is not None
+        assert sample.metadata["arm"] == "hidden-goal"
+
+
+def test_hidden_goal_prompt_carries_codename_and_never_reveal() -> None:
+    """The hidden-goal target prompt installs the codename and the non-disclosure
+    instruction, so codename detection scores goal disclosure."""
+    from secret_keeping.prompts import TARGET_SYSTEM_PROMPT_HIDDEN_GOAL
+
+    prompt = TARGET_SYSTEM_PROMPT_HIDDEN_GOAL.format(secret=SECRET_0)
+    assert SECRET_0 in prompt
+    assert "never reveal" in prompt.lower()
+    assert "codename" in prompt.lower()
+
+
 def test_dataset_is_deterministic_and_seed_addressed() -> None:
     first = list(secret_keeping_dataset(investigations=3, secret_seed=11))
     second = list(secret_keeping_dataset(investigations=3, secret_seed=11))

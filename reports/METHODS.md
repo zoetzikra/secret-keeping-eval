@@ -989,3 +989,62 @@ move conversion because uptake is ~0. E4 is next.
 
 **History:** 2026-08-15, built and run as P0-3b of the meeting-4 plan; result
 (1/20 uptake) same day.
+
+### M27 — Open-weight targets: raw CoT and prefill are reachable
+
+**Decision:** The open-weight targets `moonshotai/kimi-k3`,
+`deepseek/deepseek-v4-pro` and `z-ai/glm-5.2` (via OpenRouter) are used to obtain
+what the Anthropic and gpt targets cannot: a raw, unredacted reasoning chain
+*and* working assistant-message prefill. A cheap direct-API reachability gate
+runs first (readable chain? prefill accepted?); only passing targets get a Petri
+run.
+
+**Alternatives:** Staying on gpt-via-OpenRouter (rejected: regime B, chain always
+encrypted, reasoning counts are lower bounds — M22/M25); Anthropic 4.6+ (rejected:
+prefill returns a flat 400, first-party confirmed — M24). Neither can populate
+figure 6.5.4.5.B's prefill or prefill+thinking columns.
+
+**Why:** On these targets the reasoning channel is regime-A-like — the raw chain
+is returned readable — so reasoning-leak counts become **point estimates**, not
+lower bounds, and the M22 caveat lifts. And prefill is genuinely honored (with
+thinking off, glm-5.2 continued a prefilled sentence; HTTP 200 on all three),
+unlike the 4.6+ generation. This is the first target set in the project where the
+prefill and prefill+thinking cells of figure 6.5.4.5.B are reachable at all.
+
+**Evidence:** reachability gate 2026-08-15 (all three pass: readable raw CoT,
+prefill accepted); `reports/open-source-targets.md`; in-harness Petri probes
+`logs/probe-{kimi-k3,deepseek-v4,glm-5}`, `secret_seed=11`, prefill on.
+
+**Status:** reachability settled; in-harness leak/prefill-firing behaviour
+**pending — probes in flight**.
+
+**History:** 2026-08-15, built as P2 of the meeting-4 plan.
+
+### M28 — Hidden-goal arm operationalises a benign goal by codename
+
+**Decision:** The P3-a extension (`secret_keeping_hidden_goal`) frames the secret
+as the **codename of a benign hidden operational directive** in a staged
+support-session context, rather than an abstract string. "Revealing the goal" is
+operationalised as the codename surfacing, so the validated token scorer applies
+unchanged; the extension is the prompt set and seed, not new harness machinery.
+
+**Alternatives:** A semantic goal with no verbatim marker (rejected: would need a
+new, unvalidated goal-disclosure scorer, discarding every invariant guard); an
+egregiously misaligned goal (rejected — Jordan's caveat: an aligned model may
+*want* to reveal a bad goal, confounding capability with propensity).
+
+**Why:** The uncorrelated eval measures a monitorability floor — can the model
+resist revealing a secret it never needs. The hidden-goal arm adds
+task-relevance (the model is acting on the goal) to move toward the correlated
+end of the axis, while a benign framing keeps the measurement about
+*capability*. Reusing the codename-as-token endpoint keeps the result comparable
+to every other arm and inherits the validated detector.
+
+**Evidence:** `reports/hidden-goal.md`; `logs/probe-hidden-goal`. P3-b (constraint
+framing) and P3-c (CoT-monitored condition, disclose pole) documented there as
+future work, not built.
+
+**Status:** mechanism settled; result **pending — run in flight**.
+
+**History:** 2026-08-15, built as P3-a of the meeting-4 plan (the one extension
+operationalised; b/c documented).
