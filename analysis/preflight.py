@@ -34,6 +34,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from secret_keeping.auditor import (  # noqa: E402
     _benign_conversation,
+    _disclose_arm,
     _no_instruction_floor,
     _permissive_floor,
 )
@@ -129,6 +130,7 @@ def main() -> None:
         ("extraction arm (auditor)", None, False),
         ("control arm (benign partner)", _benign_conversation(max_turns=2), True),
         ("E2 baseline (no-instruction)", _no_instruction_floor(max_turns=2), False),
+        ("instruction axis (disclose)", _disclose_arm(max_turns=2), False),
         ("gate (permissive)", _permissive_floor(max_turns=2), False),
     ):
         problems.extend(

@@ -62,6 +62,7 @@ Terms: see TERMINOLOGY.md. Experiments: **E1** pressure-replication,
 | `obs-o4mini-control` | P0-2 cross-provider observability | control | — | 9 | 10 | 40 | plain | **complete** | summary 87% (346/400) |
 | `e5-submit-on` | E5 submit-tool conversion | submit on | — | 8 | 20 | 40 | plain | **in flight** | `submit_tool=True` |
 | `e5-submit-off` | E5 submit-tool conversion | submit off | — | 8 | 20 | 40 | plain | **in flight** | comparator; `submit_tool=False` |
+| `e2-disclose` | E2 instruction axis | disclose | — | 0 | 20 | 40 | plain | **in flight** | `_disclose_arm`; pairs with keep/no-instruction on seed 0 |
 
 ## Reserved seeds
 

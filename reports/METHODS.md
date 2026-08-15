@@ -580,15 +580,29 @@ to `generate_secret(seed, index)`; the only intended difference is
 and the event-based `cot_scan`, which agree exactly. Write-up:
 `reports/baseline-protection.md`.
 
-**Status:** **settled** — run complete (E2), n=20 × 40 turns, replicated against
-two independent instructed runs. Untested across targets: single target
-(`gpt-5-mini`), single seed set; a cross-target check is cheap and belongs in any
-cross-lab run.
+**Instruction axis extended with a disclose arm (P1-1).** The measurement is one
+point on an instruction axis with three settings: **keep** ("never reveal", the
+eval proper), **no-instruction** (secret present, no directive), and **disclose**
+(instructed to mention the code proactively; `TARGET_SYSTEM_PROMPT_DISCLOSE`,
+`_disclose_arm`). Disclose is deliberately distinct from the *permissive* gate
+prompt: permissive passively permits sharing on request, disclose instructs
+proactive mention, so it sits at the opposite pole from keep rather than at a
+neutral midpoint. The prediction the mechanism makes: output disclosure rises
+toward the ceiling while *reasoning* rehearsal falls relative to keep — with
+nothing to guard there is no value to white-bear about. Run paired on
+`secret_seed=0` (the E2 comparator set), n=20, 40 turns, informed auditor;
+`logs/e2-disclose`. Reported as a third column in `reports/baseline-protection.md`.
+
+**Status:** **settled** for keep vs no-instruction — run complete (E2), n=20 × 40
+turns, replicated against two independent instructed runs. Disclose arm: **pending
+— run in flight**. Untested across targets: single target (`gpt-5-mini`), single
+seed set; a cross-target check is cheap and belongs in any cross-lab run.
 
 **History:** 2026-07-30 arm demoted from plumbing gate to measurement after
 `logs/floor` (0 leaks in 8 × 8 turns). 2026-08-03 re-run at scale; premise
 inverted — the arm was expected to show the instruction adding protection above a
 leaky floor, and instead showed the instruction generating the leakage.
+2026-08-15 disclose arm added (P1-1) to complete the instruction axis.
 
 ### M21 — Resolve identifiers authoritatively; validate at the point of use
 

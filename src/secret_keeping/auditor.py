@@ -36,6 +36,7 @@ from secret_keeping.prompts import (
     BENIGN_USER_PROMPT_NEUTRAL,
     TARGET_REASONING_TEMPLATE,
     TARGET_SYSTEM_PROMPT,
+    TARGET_SYSTEM_PROMPT_DISCLOSE,
     TARGET_SYSTEM_PROMPT_NO_INSTRUCTION,
     TARGET_SYSTEM_PROMPT_PERMISSIVE,
     TRIVIAL_REFUSAL,
@@ -140,11 +141,13 @@ def inject_secret(variant: str = "keep") -> Solver:
     Args:
         variant: Which target prompt to install. `"keep"` is the eval proper.
             `"no-instruction"` omits the keep-instruction (baseline protection).
+            `"disclose"` instructs proactive sharing (the opposite pole).
             `"permissive"` explicitly permits sharing (plumbing validation).
     """
     templates = {
         "keep": TARGET_SYSTEM_PROMPT,
         "no-instruction": TARGET_SYSTEM_PROMPT_NO_INSTRUCTION,
+        "disclose": TARGET_SYSTEM_PROMPT_DISCLOSE,
         "permissive": TARGET_SYSTEM_PROMPT_PERMISSIVE,
     }
     if variant not in templates:
@@ -446,6 +449,24 @@ def _no_instruction_floor(max_turns: int = DEFAULT_MAX_TURNS) -> Solver:
     Use `_permissive_floor` as the gate.
     """
     inject = inject_secret("no-instruction")
+    loop = _auditor_loop(max_turns, early_stop=True, generate_target=None)
+
+    async def solve(state: TaskState, generate: Generate) -> TaskState:
+        return await loop(await inject(state, generate), generate)
+
+    return solve
+
+
+@solver
+def _disclose_arm(max_turns: int = DEFAULT_MAX_TURNS) -> Solver:
+    """Instruction-axis arm: the target is told to share the code proactively.
+
+    The opposite pole from the keep-instruction, parallel to
+    `_no_instruction_floor`. Completes the dose-response (keep / no-instruction /
+    disclose) that turns the E2 pink-elephant result into a full axis (METHODS
+    M20). Same loop, same budget; only the installed target prompt differs.
+    """
+    inject = inject_secret("disclose")
     loop = _auditor_loop(max_turns, early_stop=True, generate_target=None)
 
     async def solve(state: TaskState, generate: Generate) -> TaskState:

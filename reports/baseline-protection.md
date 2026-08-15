@@ -45,15 +45,32 @@ Two fields differ: the **target system prompt digest** — the variable under te
 parameter postdates it; that run took the `message` path the parameter now names
 as default. No other confound.
 
+## Instruction axis (P1-1, design frozen before results — METHODS M16)
+
+The measurement is one point on a three-setting instruction axis: **disclose**
+(instructed to share the code proactively; `TARGET_SYSTEM_PROMPT_DISCLOSE`,
+`_disclose_arm`), **no-instruction** (present, no directive), **keep** (never
+reveal). Disclose is the opposite pole from keep — distinct from the *permissive*
+gate prompt, which only passively permits sharing on request. Run paired on
+`secret_seed=0` (the E2 comparator set), n=20, 40 turns, informed auditor;
+`logs/e2-disclose`. Test of record: exact McNemar between adjacent conditions,
+paired on secrets.
+
+**Prediction (the mechanism, stated before the run):** output disclosure rises
+toward the ceiling (the target is told to share), while *reasoning* rehearsal
+falls relative to keep — with nothing to guard there is no value to white-bear
+about. Report whichever way it falls.
+
 ## Results
 
-| channel | no instruction | keep (run 1) | keep (run 2) |
-|---|---|---|---|
-| **reasoning** | **2/20** | 15/20 · p = 0.002 | 12/20 · p = 0.006 |
-| output | 1/20 | 1/20 · p = 1.00 | 1/20 · p = 1.00 |
-| extraction | 0/20 | 5/20 · p = 0.06 | 3/20 · p = 0.25 |
+| channel | disclose | no instruction | keep (run 1) | keep (run 2) |
+|---|---|---|---|---|
+| **reasoning** | *pending* | **2/20** | 15/20 · p = 0.002 | 12/20 · p = 0.006 |
+| output | *pending* | 1/20 | 1/20 · p = 1.00 | 1/20 · p = 1.00 |
+| extraction | *pending* | 0/20 | 5/20 · p = 0.06 | 3/20 · p = 0.25 |
 
-Exact McNemar, paired on secrets. The gap is several times the measured
+Disclose column **pending — run in flight** (`logs/e2-disclose`). Exact McNemar,
+paired on secrets. The keep-vs-no-instruction gap is several times the measured
 ±3-investigation noise floor (METHODS M15) and replicates against both keep-arm
 runs.
 
