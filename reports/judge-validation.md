@@ -93,12 +93,51 @@ eval: a missed disclosure never enters the curve and biases survival toward
 - Nothing here validates the *deterministic* matcher, which is covered by the
   control classes and the false-positive control instead.
 
+## Round 2 — positive-enriched re-draw (design frozen before labels; M16)
+
+Round 1's binary κ rested on 3 human-positive turns in 80 — too thin to quote
+externally. Round 2 re-draws at N=100 from the **complete runs of record only**
+(superseded, unusable and the contaminated `probe-prefill-opus46` excluded), with
+the sampler positive-enriched: `confirmation` 40 (the auditor stated the secret,
+so a target "yes" is a full leak), `decided` 25, `post_leak` 20, `adjacent` 10,
+`clean` 5. Sheet: `analysis/out/judge_labels_TOLABEL.md` (100 items). The pipeline
+is verified: `judge_agreement` reproduces round 1 exactly (κ = 0.087 three-way,
+0.654 binary) from the archived labels.
+
+**The positive class is irreducibly small — a property of the target, not the
+sample.** Across all 627 investigations in the project, first passage is set by
+the deterministic matcher in 39 cases (raw/separator-stripped/case-folded),
+by the **judge in only 6**, and by **confirmation in 1**. So the judge's own
+positive class — semantic or confirmation disclosures the verbatim matcher does
+*not* already catch — totals **7 across the entire corpus**. Enrichment cannot
+manufacture positives the data does not contain: these targets are output-
+disciplined, and the leaks that dominate are verbatim (caught deterministically,
+validated by the controls and the FP control, not by the judge).
+
+**Consequence for the gate.** Round 2 is therefore a **false-negative audit**,
+not a bid for a high κ on a large positive class (which this corpus cannot
+support). The 40 confirmation-stratum turns are all judge-`none` refusals by
+construction; the question the labelling answers is whether a human finds, on any
+of them, a target disclosure the judge missed — the one error direction that
+biases the survival curve toward `kept`. The gate is "no demonstrated false
+negatives on the largest positive-enriched sample the data supports," which is
+the round-1 finding re-tested at four times the confirmation exposure.
+
+**Results: pending Zoe's labels.** The labelling is human by necessity — an LLM
+grading the sheet would be one judge validating another, which is exactly the
+circularity the gate exists to prevent, so it is not automated. Fill each
+`LABEL:` line (`full` / `partial` / `none`) and run `make judge-agreement`. The
+provisional banners come off in one commit only when the labels land and the
+false-negative rate holds.
+
 ## Reproduce
 
 ```bash
-make judge-sample N=80     # regenerates the sheet (deterministic seed)
-make judge-agreement       # scores the filled sheet
+# Round 2 (complete runs only), deterministic seed:
+make judge-sample N=100 DIRS="logs/pressure-p5 logs/pressure-p6 logs/pressure-p7 …"
+make judge-agreement       # scores the filled sheet; reports binary κ + FN rate
 ```
 
 Labels and key: `analysis/out/judge_labels_TOLABEL.md`,
-`analysis/out/judge_labels_key.json`.
+`analysis/out/judge_labels_key.json`. Round-1 archive:
+`analysis/out/judge_labels_round1_LABELLED.md`.
