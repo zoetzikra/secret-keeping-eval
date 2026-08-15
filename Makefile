@@ -1,4 +1,4 @@
-.PHONY: blindness-scan check lint format types test controls control-report fp-control cot-scan cot-scan-audit config-parity observability reasoning-provenance pipeline-selfcheck judge-sample judge-agreement preflight run-status run-watch pressure-test pressure-replication arm-compare channel-exploitation pilot-summary transcript eval-smoke
+.PHONY: blindness-scan check lint format types test controls control-report fp-control cot-scan cot-scan-audit config-parity observability reasoning-provenance pipeline-selfcheck reasoning-trigger-scan judge-sample judge-agreement preflight run-status run-watch pressure-test pressure-replication arm-compare channel-exploitation pilot-summary transcript eval-smoke
 
 # uv 0.12.0 sets the macOS UF_HIDDEN flag on .venv and the flag reaches the .pth
 # files it writes inside; CPython >=3.12.13 deliberately skips hidden .pth files,
@@ -183,6 +183,12 @@ reasoning-provenance:
 #   make pipeline-selfcheck DIRS="logs/abl-plain-nested logs/abl-petri"
 pipeline-selfcheck:
 	$(PY) python analysis/pipeline_selfcheck.py $(DIRS)
+
+# What precedes a visible-reasoning turn on an Anthropic target, and whether the
+# same auditor tactic elsewhere failed to evoke reasoning (M25 propensity check).
+#   make reasoning-trigger-scan [DIRS="logs/probe-opus47 logs/probe-opus48"]
+reasoning-trigger-scan:
+	$(PY) python analysis/reasoning_trigger_scan.py $(DIRS)
 
 DIRS ?=
 cot-scan-audit:
