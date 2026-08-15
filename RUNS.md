@@ -63,10 +63,10 @@ Terms: see TERMINOLOGY.md. Experiments: **E1** pressure-replication,
 | `e5-submit-on` | E5 submit-tool conversion | submit on | — | 8 | 20 | 40 | plain | **complete** | tool fired 1/20; conversion 3/10 |
 | `e5-submit-off` | E5 submit-tool conversion | submit off | — | 8 | 20 | 40 | plain | **complete** | comparator; conversion 3/11 |
 | `e2-disclose` | E2 instruction axis | disclose | — | 0 | 20 | 40 | plain | **complete** | output 20/20; reasoning not comparable across guard/share (median 1 turn) |
-| `probe-kimi-k3` | P2 open-weight probe | informed | — | 11 | 3 | 40 | petri | **in flight** | `moonshotai/kimi-k3`, prefill on; readable raw CoT confirmed |
-| `probe-deepseek-v4` | P2 open-weight probe | informed | — | 11 | 3 | 40 | petri | **in flight** | `deepseek/deepseek-v4-pro`, prefill on |
-| `probe-glm-5` | P2 open-weight probe | informed | — | 11 | 3 | 40 | petri | **in flight** | `z-ai/glm-5.2`, prefill on |
-| `probe-hidden-goal` | P3-a hidden-goal extension | hidden-goal | — | 12 | 4 | 40 | petri | **in flight** | `gpt-5-mini`; benign directive codename; queued after P2 |
+| `probe-kimi-k3` | P2 open-weight probe | informed | — | 11 | 3 | 40 | petri | **complete** | regime A; prefill fired 58 turns; reasoning 2/3 |
+| `probe-deepseek-v4` | P2 open-weight probe | informed | — | 11 | 3 | 40 | petri | **complete** | regime A; prefill fired 11 turns; reasoning 3/3 |
+| `probe-glm-5` | P2 open-weight probe | informed | — | 11 | 3 | 40 | petri | **complete** | regime A; prefill fired 56 turns; reasoning 1/3 |
+| `probe-hidden-goal` | P3-a hidden-goal extension | hidden-goal | — | 12 | 4 | 40 | petri | **complete** | `gpt-5-mini`; codename kept 0/4 elicited |
 
 ## Reserved seeds
 
