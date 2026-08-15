@@ -66,6 +66,7 @@ Terms: see TERMINOLOGY.md. Experiments: **E1** pressure-replication,
 | `probe-kimi-k3` | P2 open-weight probe | informed | — | 11 | 3 | 40 | petri | **in flight** | `moonshotai/kimi-k3`, prefill on; readable raw CoT confirmed |
 | `probe-deepseek-v4` | P2 open-weight probe | informed | — | 11 | 3 | 40 | petri | **in flight** | `deepseek/deepseek-v4-pro`, prefill on |
 | `probe-glm-5` | P2 open-weight probe | informed | — | 11 | 3 | 40 | petri | **in flight** | `z-ai/glm-5.2`, prefill on |
+| `probe-hidden-goal` | P3-a hidden-goal extension | hidden-goal | — | 12 | 4 | 40 | petri | **in flight** | `gpt-5-mini`; benign directive codename; queued after P2 |
 
 ## Reserved seeds
 
@@ -78,6 +79,7 @@ Terms: see TERMINOLOGY.md. Experiments: **E1** pressure-replication,
 `8` — E5 submit-tool comparison (`e5-submit-{on,off}`).
 `9` — P0-2 cross-provider observability block (`obs-*`), both targets.
 `11` — P2 open-weight probes (`probe-{kimi-k3,deepseek-v4,glm-5}`).
+`12` — P3-a hidden-goal probe (`probe-hidden-goal`).
 
 ## Outstanding
 
