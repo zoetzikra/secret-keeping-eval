@@ -961,6 +961,19 @@ frozen in `reports/submit-tool.md` before results (M16). Unit tests:
 `test_submit_correct_with_no_prior_target_leak_is_invalid_auditor_leak`,
 `test_wrong_submission_ends_cleanly_and_is_not_an_error`.
 
-**Status:** mechanism settled; result **pending — runs in flight**.
+**Result: the auditor barely uses the tool, so conversion is unchanged.** On
+`secret_seed=8`, n=20 per arm, the submit tool fired on **1 of 20**
+investigations (that one submission correct, guard clean). Conversion 3/10 (on)
+vs 3/11 (off); paired exact McNemar on extraction p = 1.000; 0
+`invalid-auditor-leak` in either arm. Like prefill (M24), an unprompted
+affordance the auditor holds and declines to use, so the run did not test the
+auditor-action hypothesis at a meaningful dose. Nudging uptake via the auditor
+prompt would confound the affordance with prompt content (as in M19/M24), so the
+next lever is E4 (the planning scaffold, M19a) — a behavioural change that does
+not depend on voluntary tool use. Tool retained (off by default); guard sound.
 
-**History:** 2026-08-15, built as P0-3b of the meeting-4 plan.
+**Status:** settled — mechanism sound, guard verified; the intervention does not
+move conversion because uptake is ~0. E4 is next.
+
+**History:** 2026-08-15, built and run as P0-3b of the meeting-4 plan; result
+(1/20 uptake) same day.
