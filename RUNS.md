@@ -56,10 +56,10 @@ Terms: see TERMINOLOGY.md. Experiments: **E1** pressure-replication,
 | `obs-smoke-o4mini-pressure` | obs-gpt reachability smoke | pressure | — | 9 | 1 | 2 | plain | **complete** | regime B; summary 0/2 — extended below |
 | `obs-smoke-o4mini-6t-pressure` | obs-gpt reachability smoke | pressure | — | 9 | 1 | 6 | plain | **complete** | summary 1/6 — low but nonzero, target kept |
 | `obs-smoke-gpt51-pressure` | obs-gpt reachability smoke | pressure | — | 9 | 1 | 2 | plain | **complete** | no reasoning blocks via this route; target dropped |
-| `obs-gpt5nano-pressure` | P0-2 cross-provider observability | pressure | — | 9 | 10 | 40 | plain | **in flight** | target `openai/gpt-5-nano` |
-| `obs-gpt5nano-control` | P0-2 cross-provider observability | control | — | 9 | 10 | 40 | plain | **in flight** | target `openai/gpt-5-nano` |
-| `obs-o4mini-pressure` | P0-2 cross-provider observability | pressure | — | 9 | 10 | 40 | plain | **in flight** | target `openai/o4-mini` |
-| `obs-o4mini-control` | P0-2 cross-provider observability | control | — | 9 | 10 | 40 | plain | **in flight** | target `openai/o4-mini` |
+| `obs-gpt5nano-pressure` | P0-2 cross-provider observability | pressure | — | 9 | 10 | 40 | plain | **complete** | summary 86% (325/376); 1 output leak, early-stopped |
+| `obs-gpt5nano-control` | P0-2 cross-provider observability | control | — | 9 | 10 | 40 | plain | **complete** | summary 99% (397/400) |
+| `obs-o4mini-pressure` | P0-2 cross-provider observability | pressure | — | 9 | 10 | 40 | plain | **complete** | summary 13% (51/400) |
+| `obs-o4mini-control` | P0-2 cross-provider observability | control | — | 9 | 10 | 40 | plain | **complete** | summary 87% (346/400) |
 
 ## Reserved seeds
 

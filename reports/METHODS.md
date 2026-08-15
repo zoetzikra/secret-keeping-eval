@@ -898,8 +898,11 @@ first-party confirmed (2026-08-14): Anthropic's `thinking_tokens` counter reads
 `thinking: enabled` for 4.7 — thinking on that model is adaptive-only, i.e.
 model-elective by API design (`reports/reasoning-provenance.md` §5a).
 
-**Status:** settled (mechanism and classifications); the cross-provider
-generality of regime-B summary suppression is pending the `obs-gpt-*` check.
+**Status:** settled (mechanism and classifications). Cross-provider check
+complete (2026-08-15): summary-suppression-under-pressure replicates on
+gpt-5-nano (99%→86%) and o4-mini (87%→13%) with none-rate ≈0 and chain
+encrypted ~100% in all arms — the pattern is OpenAI-wide, the magnitude
+model-specific (`logs/obs-{gpt5nano,o4mini}-{pressure,control}`, n=10, seed 9).
 
 **History:** 2026-08-14, built as P0-1/P0-2 of the meeting-4 plan; first-party
-confirmation same day.
+confirmation same day; cross-provider arms completed 2026-08-15.
