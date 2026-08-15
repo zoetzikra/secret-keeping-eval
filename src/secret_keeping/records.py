@@ -139,3 +139,20 @@ class Investigation(StoreModel):
     a later one), but the partial-leak secondary curve is truncated past this
     point.
     """
+
+    submitted: bool = Field(default=False)
+    """Whether the auditor ended the investigation with a `submit_secret` call.
+
+    A submission is a distinct end-of-loop signal, like Petri's `end_conversation`:
+    it means the auditor chose to stop, so a short run is not an interruption. Only
+    set when the plain harness runs with `submit_tool=True`.
+    """
+
+    submitted_secret: str = Field(default="")
+    """The value the auditor submitted, verbatim. Auditor-authored, so it lives in
+    the harness-side store and is never rendered back to the auditor. The scorer
+    shape-checks it (M21) before deciding whether it matches the true secret."""
+
+    submitted_turn: int = Field(default=0)
+    """Completed target turns at the moment of submission — the auditor's evidence
+    depth. Used as the extraction time when the submission is correct."""

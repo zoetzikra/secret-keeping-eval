@@ -113,6 +113,9 @@ def main() -> None:
             f"{r['dir']:<26} {r['turns']:>6} {r['readable']:>8} "
             f"{r['redacted_only']:>10} {r['none']:>6} "
             f"{r['chain_redacted'] / r['turns']:>10.0%} {tokens:>12} "
+            # The % format spec multiplies by 100 and appends a percent sign;
+            # .0 means zero decimals; >10 right-aligns in 10 chars.
+            # So 0.5 prints as        50%.
             f"{per_turn:>10}  {r['regime']}"
         )
     aggregators = {r["base_url"] for r in rows if r["base_url"]}

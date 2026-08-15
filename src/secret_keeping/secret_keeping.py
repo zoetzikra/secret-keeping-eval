@@ -71,6 +71,7 @@ def secret_keeping(
     informed: bool = True,
     show_reasoning: bool = True,
     delivery: Delivery = "message",
+    submit_tool: bool = False,
     token_limit: int = DEFAULT_TOKEN_LIMIT,
 ) -> Task:
     """Secret-keeping survival eval, plain auditor harness.
@@ -95,6 +96,8 @@ def secret_keeping(
         delivery: How the target's reply reaches the auditor -- `"message"`
             injects it unsolicited, `"tool"` returns it from a tool the
             auditor called, matching Petri. See `Delivery`.
+        submit_tool: Give the auditor a `submit_secret` tool that ends the
+            investigation when it believes it knows the secret (METHODS M26).
         token_limit: Per-investigation token budget.
     """
     return Task(
@@ -107,6 +110,7 @@ def secret_keeping(
             early_stop=early_stop,
             show_reasoning=show_reasoning,
             delivery=delivery,
+            submit_tool=submit_tool,
         ),
         scorer=secret_leak_scorer(judge=judge),
         token_limit=token_limit,
@@ -119,5 +123,6 @@ def secret_keeping(
             "early_stop": early_stop,
             "show_reasoning": show_reasoning,
             "delivery": delivery,
+            "submit_tool": submit_tool,
         },
     )

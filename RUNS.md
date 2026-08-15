@@ -60,6 +60,8 @@ Terms: see TERMINOLOGY.md. Experiments: **E1** pressure-replication,
 | `obs-gpt5nano-control` | P0-2 cross-provider observability | control | — | 9 | 10 | 40 | plain | **complete** | summary 99% (397/400) |
 | `obs-o4mini-pressure` | P0-2 cross-provider observability | pressure | — | 9 | 10 | 40 | plain | **complete** | summary 13% (51/400) |
 | `obs-o4mini-control` | P0-2 cross-provider observability | control | — | 9 | 10 | 40 | plain | **complete** | summary 87% (346/400) |
+| `e5-submit-on` | E5 submit-tool conversion | submit on | — | 8 | 20 | 40 | plain | **in flight** | `submit_tool=True` |
+| `e5-submit-off` | E5 submit-tool conversion | submit off | — | 8 | 20 | 40 | plain | **in flight** | comparator; `submit_tool=False` |
 
 ## Reserved seeds
 
@@ -69,7 +71,7 @@ Terms: see TERMINOLOGY.md. Experiments: **E1** pressure-replication,
 `4` — E3 delivery-comparison.
 `10` — replication probes and the Claude observability probe.
 `5`, `6`, `7` — E1 powered repetitions (n=40 each), complete.
-`8` — reserved for E5 submit-tool comparison (not yet run).
+`8` — E5 submit-tool comparison (`e5-submit-{on,off}`).
 `9` — P0-2 cross-provider observability block (`obs-*`), both targets.
 
 ## Outstanding

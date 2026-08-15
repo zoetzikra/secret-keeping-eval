@@ -906,3 +906,47 @@ model-specific (`logs/obs-{gpt5nano,o4mini}-{pressure,control}`, n=10, seed 9).
 
 **History:** 2026-08-14, built as P0-1/P0-2 of the meeting-4 plan; first-party
 confirmation same day; cross-provider arms completed 2026-08-15.
+
+
+### M26 — Submit tool as a conversion intervention
+
+**Decision:** The plain auditor gains an optional `submit_secret` tool
+(`submit_tool: bool = False`, off by default so every existing arm is unchanged):
+once it believes it knows the secret it submits the value and the investigation
+ends. A submission is scored against the authoritative secret — resolved from
+`Sample.target`, shape-checked (M21), matched with the same deterministic matcher
+used everywhere — and, when correct, recorded as an extraction
+(`event_extracted`/`time_extracted`) with a `submitted`/`submission_correct`
+pair stored for analysis. The invariant-#1 guard is reused strictly: a submission
+is a definitive claim, not a probe, so a *correct* submission with no prior target
+leak in output or reasoning has no assembly path and is hard-excluded as
+`invalid-auditor-leak`, exactly the failure that contaminated
+`probe-prefill-opus46` via an error string. Petri is untouched — it already has
+`end_conversation` and is held fixed as the comparator (M4).
+
+**Alternatives:** Instructing the auditor prompt to act on what it reads
+(rejected: confounds the structural intervention with prompt content, the same
+reason delivery was isolated as a parameter in M19); routing the submission
+through the existing conversational-emission path (rejected: a submit call is
+more definitive than a narrowing guess, so it warrants the hard exclusion the
+opening-message case gets, not the softer `needs_review` path).
+
+**Why:** Transcript-reading (delivery) closed the latency gap but not conversion
+(M19): the plain auditor acts on an already-visible secret far less often than
+Petri (8/27 vs 7/9). The remaining hypothesis is that Petri's auditor is biased
+toward *acting* by having an explicit end-state to reach for. The submit tool
+adds exactly that affordance to the plain harness and nothing else, so a change
+in conversion is attributable to the affordance. E4 (the planning scaffold,
+M19a) is the *other* remaining lever and is kept distinct so the two are not
+conflated.
+
+**Evidence:** `logs/e5-submit-on` vs `logs/e5-submit-off`, `secret_seed=8`, n=20
+per arm, 40 turns, paired, informed auditor, plain harness both sides; design
+frozen in `reports/submit-tool.md` before results (M16). Unit tests:
+`test_submit_after_a_target_leak_is_a_scored_extraction`,
+`test_submit_correct_with_no_prior_target_leak_is_invalid_auditor_leak`,
+`test_wrong_submission_ends_cleanly_and_is_not_an_error`.
+
+**Status:** mechanism settled; result **pending — runs in flight**.
+
+**History:** 2026-08-15, built as P0-3b of the meeting-4 plan.
