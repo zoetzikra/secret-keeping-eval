@@ -186,10 +186,20 @@ pipeline-selfcheck:
 
 # What precedes a visible-reasoning turn on an Anthropic target, and whether the
 # same auditor tactic elsewhere failed to evoke reasoning (M25 propensity check).
+# Add `--caching` (via ARGS) for per-tactic (turn,R/-) sequences + caching-
+# hypothesis falsifiers.
 #   make reasoning-trigger-scan [DIRS="logs/probe-opus47 logs/probe-opus48"]
+#   make reasoning-trigger-scan ARGS=--caching DIRS="logs/probe-opus48"
+ARGS ?=
 reasoning-trigger-scan:
-	$(PY) python analysis/reasoning_trigger_scan.py $(DIRS)
+	$(PY) python analysis/reasoning_trigger_scan.py $(ARGS) $(DIRS)
 
 DIRS ?=
 cot-scan-audit:
 	$(PY) python analysis/cot_scan_audit.py $(DIRS)
+
+# Figure 6.5.4.5.B: per-turn leak rate by turn type (thinking x prefill), one
+# panel per run, from the scorer's tt_* cells. Writes analysis/out/turn_type.html.
+#   make turn-type-figure DIRS="logs/pow-kimi-k3 logs/pow-deepseek-v4 logs/pow-glm-5"
+turn-type-figure:
+	$(PY) python analysis/turn_type_figure.py $(DIRS)
