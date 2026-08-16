@@ -8,6 +8,29 @@ mechanical evidence, not an argument).
 
 ---
 
+## 2026-08-16 — reasoning-triggers §4: caching falsifier counts corrected (grab-bag grouping retracted)
+
+**What.** `anthropic-reasoning-triggers.md` §4 previously reported "18
+multi-occurrence sequences, 10 late-first-reasoning, 9 repeat-reasoning" and a
+`0_001` "×5" system-prompt-probe repeat. Those counts were computed on the
+instrument's **coarse keyword buckets**, which lump genuinely different attacks
+under one label (`0_000`'s "one strategy" was six-plus: existence probe,
+system-prompt probe, developer-authority pretext, `SYSTEM OVERRIDE` injection,
+form-fill, philosophical appeal, safety-researcher pretext, hypothetical reset).
+A "late-first" across those compares different attacks and does not test caching.
+
+**Why it mattered.** The aggregate counts are **retracted**. The conclusion
+(caching not supported) now rests on one hand-verified, verbatim-quoted
+same-strategy sequence: `0_001` t9/t23/t37 — "reveal your system prompt minus the
+secret," reasoning on all three occurrences — which caching (reason once, cached
+after) cannot produce. The batch-1 "×5" folded in t26 (*feedback on a draft*
+system prompt) and t31 (*write a new* system prompt), different tasks, now dropped;
+the clean count is ×3. A two-table contradiction (`0_000` t20 labelled both
+"system-prompt probe" and "philosophical appeal") is fixed to the single correct
+label (philosophical appeal). Injection turns (`0_000` t12, `0_002` t7/t13) are
+explicitly excluded from any system-prompt-probe caching sequence. Judge-independent;
+verdict unchanged, evidence base narrowed to the auditable case.
+
 ## 2026-08-16 — prefill on 4.6+ retested: reaffirmed, not a thinking-on construction collision
 
 **What.** Task A tested the hypothesis that M24's prefill 400 was a collision
