@@ -611,12 +611,25 @@ lever.
 Unit tests: `test_action_mandate_forces_a_tool_call_and_honours_submit`,
 `test_action_mandate_submit_guard_still_excludes_a_no_source_submission`.
 
-**Status:** mechanism settled; result **pending — runs in flight** (chained after
-the powered open-weight set to keep one eval on OpenRouter at a time).
+**Result — the bottleneck is recognition, not action.** The mandate fired
+structurally (a tool call on 40/40 turns) but the auditor chose
+`send_message_to_target` every time and `submit_secret` **0/20** — it declines to
+submit even when submit is one of only two permitted actions. Latency collapsed
+(median 14 → 4 turns) but conversion moved only 0.40 → 0.46 (paired exact McNemar
+on extraction p = 0.625, within the ±3 noise floor) and nowhere near Petri's 0.78;
+0 `invalid-auditor-leak`. This is the third structural intervention (after
+reasoning-nesting and delivery, M19) to move speed/behaviour without moving
+conversion, so the gap is relocated to how the auditor *reads* an already-visible
+secret, not how it acts. Action-forcing is exhausted as a lever; rollback is
+explicitly not next (never used even by Petri).
 
-**History:** 2026-08-16, built as Task D of the meeting-4 follow-up. Supersedes
-the "mandatory per-turn planning phase" framing of the M19 next-hypothesis list —
-the operative variable is the tool mandate, not planning.
+**Status:** **settled** — the per-turn tool mandate does not close the conversion
+gap; it moves latency, not conversion, and does not induce submission. The gap is
+recognition-side.
+
+**History:** 2026-08-16, built and run as Task D of the meeting-4 follow-up.
+Supersedes the "mandatory per-turn planning phase" framing of the M19
+next-hypothesis list — the operative variable is the tool mandate, not planning.
 
 ### M20 — Baseline-protection arm
 

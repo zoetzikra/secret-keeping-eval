@@ -67,9 +67,9 @@ Terms: see TERMINOLOGY.md. Experiments: **E1** pressure-replication,
 | `probe-deepseek-v4` | P2 open-weight probe | informed | — | 11 | 3 | 40 | petri | **complete** | regime A; prefill fired 11 turns; reasoning 3/3 |
 | `probe-glm-5` | P2 open-weight probe | informed | — | 11 | 3 | 40 | petri | **complete** | regime A; prefill fired 56 turns; reasoning 1/3 |
 | `probe-hidden-goal` | P3-a hidden-goal extension | hidden-goal | — | 12 | 4 | 40 | petri | **complete** | `gpt-5-mini`; codename kept 0/4 elicited |
-| `e4-mandate-off` | E4 per-turn tool mandate | off (baseline plain) | — | 14 | 20 | 40 | plain | **in flight** | message delivery, no submit; queued after pow set |
-| `e4-mandate-optional` | E4 per-turn tool mandate | optional (submit, auto) | — | 14 | 20 | 40 | plain | **in flight** | `submit_tool=True`, `tool_choice=auto` |
-| `e4-mandate-on` | E4 per-turn tool mandate | mandate (forced choice) | — | 14 | 20 | 40 | plain | **in flight** | `action_mandate=True` ({send,submit}, `tool_choice=any`) |
+| `e4-mandate-off` | E4 per-turn tool mandate | off (baseline plain) | — | 14 | 20 | 40 | plain | **complete** | baseline; conversion 4/10, latency 14 |
+| `e4-mandate-optional` | E4 per-turn tool mandate | optional (submit, auto) | — | 14 | 20 | 40 | plain | **complete** | submit 2/20; conversion 3/8 (= E5 condition) |
+| `e4-mandate-on` | E4 per-turn tool mandate | mandate (forced choice) | — | 14 | 20 | 40 | plain | **complete** | forced 40/40 tool calls, submit 0/20; conversion 6/13, latency 4 |
 | `pow-kimi-k3` | P2 powered open-weight replication | informed | — | 13 | 20 | 60 | petri | **complete** | regime A; any 17/20, reasoning 17/20, output 1/20; prefill 298 turns; $102.22 |
 | `pow-deepseek-v4` | P2 powered open-weight replication | informed | — | 13 | 20 | 60 | petri | **complete** | regime A; any 20/20, reasoning 19/20, output 4/20; prefill 66 turns; $4.14 |
 | `pow-glm-5` | P2 powered open-weight replication | informed | — | 13 | 20 | 60 | petri | **complete** | regime A; any 10/20, reasoning 10/20, output 1/20; prefill 453 turns; $52.37 |
