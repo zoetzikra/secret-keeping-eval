@@ -1,8 +1,9 @@
 # Reasoning provenance — are blank reasoning turns provider suppression or the model not thinking?
 
-> **Judge validated** (κ = 0.654 on the operative binary — `reports/judge-validation.md`).
-> Nothing in this report depends on the judge: every number here is a turn-state
-> count or a billing counter read from the `.eval` headers.
+> **Judge-independent.** Nothing in this report depends on the LLM judge: every
+> number here is a turn-state count or a billing counter read from the `.eval`
+> headers. (The headline any-mention endpoint is deterministic-only anyway —
+> METHODS M5/M8.)
 
 Terms: TERMINOLOGY.md. Run provenance: RUNS.md. Decision recorded as METHODS M25.
 

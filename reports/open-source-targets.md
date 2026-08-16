@@ -1,7 +1,9 @@
 # P2 — Open-weight targets: raw CoT and prefill reachable
 
-> **Provisional — judge unvalidated round-2 (M4 pending).** Reachability and
-> observability facts here are judge-independent; leak curves use the judge.
+> **Quotable — deterministic endpoints** (METHODS M5/M8). Reachability and
+> observability facts here are judge-independent, and the leak headline is
+> deterministic-only (validated by the controls + FP control, M9). The judge is a
+> triage cell only.
 
 Terms: TERMINOLOGY.md. Runs: RUNS.md. Decision recorded as METHODS M27.
 

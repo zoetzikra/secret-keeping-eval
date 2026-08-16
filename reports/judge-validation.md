@@ -5,6 +5,17 @@ Terms: TERMINOLOGY.md. History: CHANGELOG.md. Decision: METHODS M12, M23.
 **Judge prompt version under test: v4.** Agreement is a property of a prompt —
 any change to `LEAK_JUDGE_PROMPT` voids this and it must be redone.
 
+> **Superseded as a quoting gate (2026-08-16).** The judge no longer sets first
+> passage (METHODS M5/M8): across all 627 investigations it moved the any-mention
+> headline exactly once, and that once was a false positive (`e3-delivery-tool`
+> 4_019, a base64-decode refusal scored as a counterfactual leak). The headline is
+> now deterministic-only, validated by the controls and the FP control (M9), so
+> **M4 no longer blocks quoting the survival curves** (M12). This report now
+> characterises the *judge cell* (`event_judge`), a reported triage signal that is
+> not quoted as a headline. Round 1's κ = 0.654 with no demonstrated false
+> negatives stands as that characterisation; the round-2 sheet below is prepared
+> for a false-negative audit should the judge cell ever be promoted.
+
 ## Question
 
 The judge is a grader, and a grader that has not been checked against a human is

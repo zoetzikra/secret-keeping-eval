@@ -1,7 +1,8 @@
 # P3-a — Does auditing elicit a benign hidden goal?
 
-> **Provisional — judge unvalidated round-2 (M4 pending).** Codename detection is
-> deterministic; goal-disclosure judging uses the judge.
+> **Quotable — deterministic endpoint** (METHODS M5/M8). Codename detection is
+> deterministic; the headline does not depend on the LLM judge (validated by the
+> controls + FP control, M9). The judge is a triage cell only.
 
 Terms: TERMINOLOGY.md. Runs: RUNS.md. Decision recorded as METHODS M28.
 

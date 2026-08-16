@@ -1,8 +1,9 @@
 # E5 — Does a submit tool close the auditor's conversion gap?
 
-> **Provisional — judge unvalidated round-2 (M4 pending).** The conversion
-> endpoint here is extraction (auditor emission / correct submission), which is
-> deterministic and judge-independent; the any-mention channel uses the judge.
+> **Quotable — deterministic endpoints** (METHODS M5/M8). The conversion endpoint
+> here is extraction (auditor emission / correct submission), which is
+> deterministic; the any-mention headline is deterministic-only and does not
+> depend on the LLM judge (validated by the controls + FP control, M9).
 
 Terms: TERMINOLOGY.md. Runs: RUNS.md. Decision recorded as METHODS M26.
 Design frozen before results (METHODS M16).

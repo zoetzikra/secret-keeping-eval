@@ -1,8 +1,10 @@
 # E3 — Does tool-result delivery explain the auditor's conversion gap?
 
-> **Judge validated** (κ = 0.654 on the operative binary, no demonstrated false
-> negatives — `reports/judge-validation.md`). Decoy-engagement labels still
-> pending; do not quote `partial_leak_rate` (METHODS M23).
+> **Quotable — headline is deterministic-only** (METHODS M5/M8): the survival
+> curves are set by the deterministic matcher (∪ the confirmation channel),
+> validated by the controls and the FP control (M9), and do not depend on the LLM
+> judge. The judge is a reported triage cell only; do not quote it, or
+> `partial_leak_rate`, as a headline (M23).
 
 Terms: TERMINOLOGY.md. Run provenance: RUNS.md. History: CHANGELOG.md.
 Design frozen before results (METHODS M16); decision recorded as METHODS M19.

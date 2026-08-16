@@ -1,6 +1,7 @@
 # Replication scoping — how long, how many, and what it costs
 
-> **Provisional — judge round-2 pending.** Scoping analysis, not a result.
+> **Scoping analysis, not a result.** (Headline endpoints are deterministic-only —
+> METHODS M5/M8.)
 
 Terms: TERMINOLOGY.md. Runs: RUNS.md. Cost model measured in
 `reports/replication-dryrun.md`.

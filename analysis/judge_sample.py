@@ -71,11 +71,15 @@ def _judged_turns(sample: Any) -> list[dict[str, Any]]:
     partial = set(meta.get("partial_leak_turns") or [])
     filtered = set(meta.get("judge_filtered_turn_numbers") or [])
     unparseable = set(meta.get("judge_unparseable_turn_numbers") or [])
-    full_turn = (
-        int(score.value["time"])
-        if meta.get("matcher") == "llm-judge" and score.value.get("leaked")
-        else None
-    )
+    # The judge's `full` turn. New logs carry it in `event_judge`/`time_judge`
+    # (the judge no longer sets first passage, M5/M8); old logs recorded it as an
+    # `llm-judge` first passage. Support both so the sampler reads either.
+    if score.value.get("event_judge"):
+        full_turn = int(score.value["time_judge"])
+    elif meta.get("matcher") == "llm-judge" and score.value.get("leaked"):
+        full_turn = int(score.value["time"])
+    else:
+        full_turn = None
     # The judge only ran below the deterministic first passage.
     horizon = (
         int(score.value["time"])

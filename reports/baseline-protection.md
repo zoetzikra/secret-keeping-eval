@@ -1,8 +1,10 @@
 # E2 — Baseline protection: the keep-instruction induces reasoning rehearsal
 
-> **Judge validated** (κ = 0.654 on the operative binary, no demonstrated false
-> negatives — `reports/judge-validation.md`). Decoy-engagement labels still
-> pending; do not quote `partial_leak_rate` (METHODS M23).
+> **Quotable — headline is deterministic-only** (METHODS M5/M8): the survival
+> curves are set by the deterministic matcher (∪ the confirmation channel),
+> validated by the controls and the FP control (M9), and do not depend on the LLM
+> judge. The judge is a reported triage cell only; do not quote it, or
+> `partial_leak_rate`, as a headline (M23).
 
 Terms: TERMINOLOGY.md. Run provenance: RUNS.md. History: CHANGELOG.md.
 
@@ -67,7 +69,7 @@ about. Report whichever way it falls.
 |---|---|---|---|---|
 | **reasoning** (per investigation) | 8/20 | **2/20** | 15/20 · p = 0.002 | 12/20 · p = 0.006 |
 | reasoning per 1000 readable turns | **533** | 4 | 70 | — |
-| output | **20/20** | 1/20 | 1/20 · p = 1.00 | 1/20 · p = 1.00 |
+| output | **20/20** | 1/20 | 1/20 · p = 1.00 | 0/20 · p = 1.00 |
 | extraction | 0/20 | 0/20 | 5/20 · p = 0.06 | 3/20 · p = 0.25 |
 | median turns / investigation | **1** | 40 | 40 | 40 |
 | summary availability | 52% | 64% | 61% | 60% |

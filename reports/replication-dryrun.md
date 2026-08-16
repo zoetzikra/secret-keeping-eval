@@ -1,7 +1,7 @@
 # Replication dry run — stopped at the cost/prefill gates
 
-> **Provisional — judge round-2 pending.** Not a replication result and not
-> quotable as one. This is an engineering dry run.
+> **Not a replication result** and not quotable as one. This is an engineering
+> dry run. (Headline endpoints are deterministic-only — METHODS M5/M8.)
 
 Terms: TERMINOLOGY.md. Run provenance: RUNS.md. Night log:
 `reports/nightly-status.md`.
