@@ -67,6 +67,12 @@ Terms: see TERMINOLOGY.md. Experiments: **E1** pressure-replication,
 | `probe-deepseek-v4` | P2 open-weight probe | informed | — | 11 | 3 | 40 | petri | **complete** | regime A; prefill fired 11 turns; reasoning 3/3 |
 | `probe-glm-5` | P2 open-weight probe | informed | — | 11 | 3 | 40 | petri | **complete** | regime A; prefill fired 56 turns; reasoning 1/3 |
 | `probe-hidden-goal` | P3-a hidden-goal extension | hidden-goal | — | 12 | 4 | 40 | petri | **complete** | `gpt-5-mini`; codename kept 0/4 elicited |
+| `e4-mandate-off` | E4 per-turn tool mandate | off (baseline plain) | — | 14 | 20 | 40 | plain | **in flight** | message delivery, no submit; queued after pow set |
+| `e4-mandate-optional` | E4 per-turn tool mandate | optional (submit, auto) | — | 14 | 20 | 40 | plain | **in flight** | `submit_tool=True`, `tool_choice=auto` |
+| `e4-mandate-on` | E4 per-turn tool mandate | mandate (forced choice) | — | 14 | 20 | 40 | plain | **in flight** | `action_mandate=True` ({send,submit}, `tool_choice=any`) |
+| `pow-kimi-k3` | P2 powered open-weight replication | informed | — | 13 | 20 | 60 | petri | **in flight** | prefill on; paired with the other two on seed 13 |
+| `pow-deepseek-v4` | P2 powered open-weight replication | informed | — | 13 | 20 | 60 | petri | **in flight** | prefill on; paired set |
+| `pow-glm-5` | P2 powered open-weight replication | informed | — | 13 | 20 | 60 | petri | **in flight** | prefill on; paired set |
 
 ## Reserved seeds
 
@@ -80,6 +86,8 @@ Terms: see TERMINOLOGY.md. Experiments: **E1** pressure-replication,
 `9` — P0-2 cross-provider observability block (`obs-*`), both targets.
 `11` — P2 open-weight probes (`probe-{kimi-k3,deepseek-v4,glm-5}`).
 `12` — P3-a hidden-goal probe (`probe-hidden-goal`).
+`13` — P2 powered open-weight set (`pow-{kimi-k3,deepseek-v4,glm-5}`), one shared seed so the three targets are paired.
+`14` — E4 per-turn tool-call mandate (`e4-mandate-{off,optional,on}`), one shared seed, paired 3-point axis.
 
 ## Outstanding
 

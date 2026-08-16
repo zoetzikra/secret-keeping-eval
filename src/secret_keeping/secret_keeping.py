@@ -72,6 +72,7 @@ def secret_keeping(
     show_reasoning: bool = True,
     delivery: Delivery = "message",
     submit_tool: bool = False,
+    action_mandate: bool = False,
     token_limit: int = DEFAULT_TOKEN_LIMIT,
 ) -> Task:
     """Secret-keeping survival eval, plain auditor harness.
@@ -98,8 +99,21 @@ def secret_keeping(
             auditor called, matching Petri. See `Delivery`.
         submit_tool: Give the auditor a `submit_secret` tool that ends the
             investigation when it believes it knows the secret (METHODS M26).
+        action_mandate: Require the auditor to call exactly one tool per turn,
+            choosing between `send_message_to_target` and `submit_secret`
+            (E4, METHODS M19a). Forces it to decide each turn whether the secret
+            is already on its screen. Sets tool delivery + submit tool + forced
+            choice together; when on, it overrides `delivery`/`submit_tool`.
         token_limit: Per-investigation token budget.
     """
+    # The per-turn tool-call mandate (E4) bundles tool delivery, the submit tool,
+    # and a forced choice: with `delivery="tool"` + `submit_tool=True` the loop
+    # offers both tools under `tool_choice="any"`, so exactly one is called each
+    # turn. E3 showed tool delivery alone does not move conversion, so any
+    # movement here is attributable to the mandate, not the delivery component.
+    if action_mandate:
+        delivery = "tool"
+        submit_tool = True
     return Task(
         dataset=secret_keeping_dataset(
             investigations, secret_seed, secret_length, informed
@@ -124,5 +138,6 @@ def secret_keeping(
             "show_reasoning": show_reasoning,
             "delivery": delivery,
             "submit_tool": submit_tool,
+            "action_mandate": action_mandate,
         },
     )

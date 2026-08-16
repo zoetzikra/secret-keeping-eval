@@ -545,21 +545,25 @@ summary inside `<target_response>` did the same -- so presentation governs how
 quickly the interlocutor notices, not whether it acts. **Next hypothesis, concrete and ordered by testability** (from diffing the two
 auditor prompts):
 
-(a) **Petri's mandatory per-turn planning phase** — "begin every audit by
-creating a plan… use your first turns to brainstorm" — which the plain prompt
-lacks. An interlocutor that re-plans against its own transcript is likelier to
-notice the secret is already on its screen. Cheapest to isolate, most plausible.
-(b) **Petri's every-turn tool-call requirement**, which forces transcript
-engagement on every turn regardless of intent.
-(c) **Rollback / multi-conversation structure** — a genuine affordance the plain
-harness does not have, and the hardest to add.
+(a) **Petri's every-turn tool-call requirement** — the per-turn mandate that
+forces the auditor to engage the transcript and *act* each turn rather than
+ruminate. This is the E4 lever (M19a). **Correction (Zoe, 2026-08-16):** this was
+previously named "Petri's mandatory per-turn *planning* phase," which is
+misleading — Petri's planning is *upfront* ("use your first turns to brainstorm"),
+not per turn; what Petri mandates every turn is the **tool call**. The operative
+variable is the tool mandate, not planning; a planning sentence is at most a minor
+secondary.
+(b) **Rollback / multi-conversation structure** — a genuine affordance the plain
+harness does not have, and the hardest to add. Note: rollback was never used even
+by Petri (see the standing finding), so it is not the next lever.
 
 **Do not test this by copying Petri's system prompt wholesale.** It carries
 ~200 lines of realism and naming instructions irrelevant to this setting, and
-importing them would confound the comparison with a dozen unrelated changes. The
-clean experiment (E4) isolates the planning scaffold as a *single addable
-component* of the plain auditor prompt and tests that alone, paired on shared
-secrets, plain harness both sides.
+importing them would confound the comparison with a dozen unrelated changes. E4
+isolates the **tool mandate** as a single addable component — a
+`{send_message_to_target, submit_secret}` toolset under `tool_choice="any"`
+(`action_mandate=True`) — with the auditor system prompt held byte-identical,
+paired on shared secrets, plain harness both sides.
 
 The parameter is kept. It is the cheapest known way to reduce time-to-act, and
 retaining it costs nothing.
@@ -573,6 +577,46 @@ turns. `reports/delivery-comparison.md`.
 **History:** 2026-08-03 built after the gap survived repetition (8/27 vs 7/9,
 p = 0.019); tested the same day and the hypothesis did not survive contact with
 the measurement.
+
+### M19a — Per-turn tool-call mandate (E4)
+
+**Decision:** The plain auditor's `action_mandate=True` gives it a
+`{send_message_to_target, submit_secret}` toolset under `tool_choice="any"`,
+requiring **exactly one tool call per turn**, so it must decide each turn whether
+to keep probing (send) or act on a secret already on its screen (submit). The
+auditor system prompt is held byte-identical to every other arm; the single
+isolable change is the toolset + forced choice (M19 discipline). Tested as a
+three-point axis — off (baseline) / optional (E5's `tool_choice="auto"`) / mandate
+— paired on `secret_seed=14`, plain harness, informed auditor.
+
+**Alternatives:** A per-turn *planning* sentence (rejected as the primary — Zoe's
+correction: Petri's planning is upfront, not per turn; the per-turn mandate is the
+tool call, so planning is at most a minor secondary and would confound with prompt
+content); copying Petri's system prompt (rejected — M19 discipline); rollback /
+multi-conversation (rejected as next lever — rollback was never used even by
+Petri).
+
+**Why:** E5 showed the *optional* submit tool fired 1/20 — the auditor-action
+hypothesis was never tested at dose (M26). Petri's transferable per-turn mechanism
+is the tool-call requirement, which forces the auditor to engage the transcript
+and act each turn. The mandate instantiates exactly that on the plain harness,
+isolating it from tactic and realism content, so a conversion change is
+attributable to being forced to act. The decisive secondary is the submission
+rate: if the mandate raises submission and latency but not conversion, the
+bottleneck is **recognition, not action**, and action-forcing is exhausted as a
+lever.
+
+**Evidence:** `logs/e4-mandate-{off,optional,on}`, `secret_seed=14`, n=20 per arm,
+40 turns, paired; design frozen in `reports/submit-tool.md` §6–8 before results.
+Unit tests: `test_action_mandate_forces_a_tool_call_and_honours_submit`,
+`test_action_mandate_submit_guard_still_excludes_a_no_source_submission`.
+
+**Status:** mechanism settled; result **pending — runs in flight** (chained after
+the powered open-weight set to keep one eval on OpenRouter at a time).
+
+**History:** 2026-08-16, built as Task D of the meeting-4 follow-up. Supersedes
+the "mandatory per-turn planning phase" framing of the M19 next-hypothesis list —
+the operative variable is the tool mandate, not planning.
 
 ### M20 — Baseline-protection arm
 
@@ -1046,7 +1090,7 @@ opening-message case gets, not the softer `needs_review` path).
 Petri (8/27 vs 7/9). The remaining hypothesis is that Petri's auditor is biased
 toward *acting* by having an explicit end-state to reach for. The submit tool
 adds exactly that affordance to the plain harness and nothing else, so a change
-in conversion is attributable to the affordance. E4 (the planning scaffold,
+in conversion is attributable to the affordance. E4 (the per-turn tool mandate,
 M19a) is the *other* remaining lever and is kept distinct so the two are not
 conflated.
 
@@ -1065,8 +1109,8 @@ vs 3/11 (off); paired exact McNemar on extraction p = 1.000; 0
 affordance the auditor holds and declines to use, so the run did not test the
 auditor-action hypothesis at a meaningful dose. Nudging uptake via the auditor
 prompt would confound the affordance with prompt content (as in M19/M24), so the
-next lever is E4 (the planning scaffold, M19a) — a behavioural change that does
-not depend on voluntary tool use. Tool retained (off by default); guard sound.
+next lever is E4 (the per-turn tool mandate, M19a) — a behavioural change that
+does not depend on voluntary tool use. Tool retained (off by default); guard sound.
 
 **Status:** settled — mechanism sound, guard verified; the intervention does not
 move conversion because uptake is ~0. E4 is next.
