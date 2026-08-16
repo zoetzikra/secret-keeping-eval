@@ -8,6 +8,31 @@ mechanical evidence, not an argument).
 
 ---
 
+## 2026-08-16 — prefill on 4.6+ retested: reaffirmed, not a thinking-on construction collision
+
+**What.** Task A tested the hypothesis that M24's prefill 400 was a collision
+between Petri's bare-text prefill and the thinking-on signed-thinking-block rule
+(so thinking-off would work). Falsified. Full first-party kind-matrix on
+`claude-opus-4-8`: every trailing-assistant construction returns 400 — bare text
+(thinking off and on), real signed thinking block, signed block + text,
+kept-signature-rewritten, and bogus-signature (which errors on structure before
+signature validation). The `interleaved-thinking-2025-05-14` beta header changes
+nothing. A generation sweep draws the line: 4.5 generation accepts prefill
+(`sonnet-4.5`, `haiku-4.5` → 200); the 4.6-and-later line rejects it
+(`sonnet-4.6`, `opus-4.8`, `claude-fable-5`, `claude-opus-5` → 400) by their own
+IDs.
+
+**Why it mattered.** M24 is reaffirmed on much stronger, thinking- and
+construction-independent evidence: prefill is unsupported on 4.6+/5 as a flat
+generational capability boundary. The contradicting evidence reconciles cleanly —
+the colleague's successful Petri prefills run against a 4.5-generation target (not
+a thinking-off 4.6+ one), and the mentor's "Fable 5 accepts prefill" matrix
+reflects a different access surface this project's key does not share.
+
+**What it invalidated.** Nothing quoted; M24's conclusion is unchanged. The
+proposed thinking-off Petri prefill smoke on opus-4.8 (M24 follow-up stub) is now
+moot — prefill is rejected thinking-off. Report: `reports/prefill-diagnostic.md`.
+
 ## 2026-08-16 — the LLM judge no longer sets first passage (deterministic-only headline)
 
 **What.** First passage on the output and any-mention channels is now the

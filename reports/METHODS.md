@@ -853,7 +853,12 @@ named, but the API rejects it — read at the time as prefill having been remove
 across the 4.6+ model line. 2026-08-07, that reading superseded: the system
 card's own figure populates prefill+thinking cells for Opus 4.6/4.7/4.8 and
 Sonnet 4.6, so the capability exists; reclassified as a request-path /
-request-construction limitation (below).
+request-construction limitation (below). 2026-08-16, the request-construction
+reading was itself tested with a full first-party kind-matrix and **falsified**:
+no construction (bare, thinking-off, signed thinking block, beta header) is
+accepted on 4.6+/5, while the 4.5 generation accepts prefill — a flat generational
+capability boundary. M24 stands as "unsupported on 4.6+", now on the strongest
+evidence yet.
 
 **Revision 2026-08-06, corrected 2026-08-07 — reason superseded twice; still
 open.** M24 originally attributed the empty prefill axis to auditor reluctance.
@@ -917,18 +922,41 @@ truth than its correction; the accurate statement is **"assistant-message prefil
 is unsupported on the public Messages API for the 4.6+ generation, first-party
 confirmed."**
 
+**Reaffirmed by the full kind-matrix (2026-08-16, Task A).** A thinking-on
+construction-collision hypothesis was tested and **falsified**. On first-party
+`claude-opus-4-8`, every trailing-assistant construction returns 400: bare text
+(thinking off *and* on), a real server-signed thinking block replayed verbatim,
+signed-thinking-block + text, a kept-signature-rewritten-text block, and a
+bogus-signature block — the last erroring on structure ("final block cannot be
+`thinking`") *before* signature validation, so even the mentor matrix's one
+"rejection" row behaves differently here. The `interleaved-thinking-2025-05-14`
+beta header changes nothing. A generation sweep sharpens the line: the **4.5
+generation accepts** prefill (`sonnet-4.5`, `haiku-4.5` → 200) and the **4.6-and-
+later line rejects** it (`sonnet-4.6`, `opus-4.8`, **`claude-fable-5`**,
+`claude-opus-5` → 400), by their own model IDs. So it is a flat, generational
+capability boundary, independent of thinking, beta header, model-ID alias, and
+request shape. The contradicting evidence reconciles as: the colleague's
+successful Petri prefills run against a **4.5-generation target** (not a
+thinking-off 4.6+ one), and the mentor's "Fable 5 accepts prefill" matrix reflects
+a **different access surface** that this project's first-party key does not share.
+Full report: `reports/prefill-diagnostic.md`.
+
 **What remains genuinely open** is only how Anthropic produced figure 6.5.4.5.B's
 prefill cells for these models. Since the public API -- OpenRouter *and*
 first-party -- rejects it, that figure was produced by a path this project cannot
-reach: internal research tooling, a non-public endpoint, or a request surface
-below the Messages API. The prefill and prefill+thinking columns of figure
-6.5.4.5.B are therefore **not externally reproducible** on 4.6+ targets with the
-tools available to an outside replicator. This is a documented replication limit,
-not a pending task.
+reach: internal research tooling, a non-public endpoint, or an access tier below
+the standard Messages API. The prefill and prefill+thinking columns of figure
+6.5.4.5.B are therefore **not externally reproducible** on 4.6+/5 targets with the
+tools available to an outside replicator on standard first-party access —
+reachable only on 4.5-generation targets (`haiku-4.5`, `sonnet-4.5`) and on
+open-weight targets (P2). This is a documented replication limit, not a pending
+task.
 
-**Evidence:** provider × thinking-field matrix, 2026-08-06/07; Anthropic thinking
-and extended-thinking docs; `inspect_petri/target/_agent.py:34-35`;
-`logs/probe-prefill-opus46` (**contaminated — see below**).
+**Evidence:** provider × thinking-field matrix, 2026-08-06/07; full first-party
+kind-matrix + generation sweep, 2026-08-16 (`reports/prefill-diagnostic.md`,
+scratchpad `prefill_smoke_diag.py` / `prefill_matrix.py`); Anthropic thinking and
+extended-thinking docs; `inspect_petri/tools/_resume.py` (Petri stages a bare
+trailing prefill); `logs/probe-prefill-opus46` (**contaminated — see below**).
 
 **Contamination note.** `logs/probe-prefill-opus46` recorded
 `event_extracted=1` in 3/3 investigations. Those are not extractions. The prefill
