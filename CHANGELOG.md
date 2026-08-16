@@ -33,6 +33,18 @@ reflects a different access surface this project's key does not share.
 proposed thinking-off Petri prefill smoke on opus-4.8 (M24 follow-up stub) is now
 moot — prefill is rejected thinking-off. Report: `reports/prefill-diagnostic.md`.
 
+**Follow-up (2026-08-16, Task A′) — confirmed on Petri's actual wire path.** The
+objection that batch 1 tested a hand-rolled request, not Petri's, was tested:
+fired the prefill through inspect_ai's own provider (Petri appends a bare
+`ChatMessageAssistant` and generates; `_agent.py:34-35`). Our Anthropic targets
+route via OpenRouter; the captured wire payload is a bare trailing assistant block
+with no beta header and no thinking wrapper, and `openrouter/anthropic/claude-opus-4.8`
+returns 400 across every OpenRouter route (Anthropic first-party, Bedrock, Vertex,
+Azure), thinking on and off, while `haiku-4.5` returns 200. Petri-path 400s
+identically → M24 stands on Petri-path evidence. Two questions logged for the
+mentor/colleague to identify their accepting surface (report §8). Judge-independent
+(status codes + captured payloads).
+
 ## 2026-08-16 — the LLM judge no longer sets first passage (deterministic-only headline)
 
 **What.** First passage on the output and any-mention channels is now the

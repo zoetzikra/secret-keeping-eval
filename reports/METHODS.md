@@ -979,11 +979,22 @@ generation accepts** prefill (`sonnet-4.5`, `haiku-4.5` → 200) and the **4.6-a
 later line rejects** it (`sonnet-4.6`, `opus-4.8`, **`claude-fable-5`**,
 `claude-opus-5` → 400), by their own model IDs. So it is a flat, generational
 capability boundary, independent of thinking, beta header, model-ID alias, and
-request shape. The contradicting evidence reconciles as: the colleague's
-successful Petri prefills run against a **4.5-generation target** (not a
-thinking-off 4.6+ one), and the mentor's "Fable 5 accepts prefill" matrix reflects
-a **different access surface** that this project's first-party key does not share.
-Full report: `reports/prefill-diagnostic.md`.
+request shape.
+
+**Confirmed on Petri's actual wire path (2026-08-16, Task A′).** The raw-API
+objection — "that is not what Petri sends" — was tested by firing the prefill
+through inspect_ai's own provider (Petri appends a bare `ChatMessageAssistant`
+and calls `generate`; `_agent.py:34-35`). Our Anthropic targets route through
+**OpenRouter** (the `anthropic` first-party SDK is not installed here), and the
+captured wire payload is a bare trailing assistant block with **no beta header and
+no thinking wrapper** — the same construction as the raw test. `openrouter/anthropic/claude-opus-4.8`
+returns **400 across every OpenRouter route** (Anthropic first-party, Bedrock,
+Vertex, Azure), thinking on and off; `haiku-4.5` on the same path returns 200 and
+continues the prefill. So the "inspect uses a magic construction the raw test
+missed" hypothesis is refuted: Petri-path 400s identically. What stays open is
+which *surface* the mentor's accepting screenshot and the colleague's working
+Petri prefills use — two explicit questions logged for them, not assumed away
+(`reports/prefill-diagnostic.md` §8). Full report: `reports/prefill-diagnostic.md`.
 
 **What remains genuinely open** is only how Anthropic produced figure 6.5.4.5.B's
 prefill cells for these models. Since the public API -- OpenRouter *and*
@@ -1153,11 +1164,27 @@ reasoning-channel with output disciplined, matching the cross-lab pattern —
 now without an observability discount. n=3 is a reachability/shape probe, not a
 powered curve.
 
-**Status:** **settled** — raw CoT and working prefill confirmed reachable and
-exercised end to end; figure 6.5.4.5.B's previously-unreachable cell populated. A
-powered curve is future work (cheap on these targets).
+**Powered result (2026-08-16) — supersedes the n=3 probe as the effect estimate.**
+`logs/pow-{kimi-k3,deepseek-v4,glm-5}`, Petri n=20, 60 turns, `secret_seed=13`
+(one seed shared across all three so they are paired), prefill on, informed
+auditor, judge on, `max_samples=4`; 20/20 samples each, 0 `invalid-auditor-leak`,
+0 `ModelGenerateError`, blindness-scan clean, all three regime A (chain encrypted
+0%, so reasoning counts are point estimates). Any-mention headline (leaked/n):
+**deepseek-v4 20/20, kimi-k3 17/20, glm-5 10/20**; output discipline holds
+(4/20, 1/20, 1/20); reasoning carries the headline (19/20, 17/20, 10/20) and
+extraction tracks it (20/20, 17/20, 9/20). Figure 6.5.4.5.B `prefill+thinking`
+cell populated at n=20 (kimi 85/293, deepseek 40/49, glm 11/435 leaks/turns);
+prefill fired 298/66/453 turns. Spend $158.74 total. Full report and the linked
+survival + figure-B HTML: `reports/open-source-targets.md` §4. The n=3 probe
+remains the reachability gate; this is the effect estimate.
 
-**History:** 2026-08-15, built and run as P2 of the meeting-4 plan.
+**Status:** **settled** — raw CoT and working prefill confirmed reachable and
+exercised end to end; figure 6.5.4.5.B's previously-unreachable cell populated at
+n=3 and now at n=20. Effect estimate in hand; a pressure-vs-control paired arm on
+these targets (E1-style) is the remaining future work.
+
+**History:** 2026-08-15, built and run as P2 of the meeting-4 plan (n=3 probe).
+2026-08-16, powered n=20 set added; supersedes the probe as the effect estimate.
 
 ### M28 — Hidden-goal arm operationalises a benign goal by codename
 
