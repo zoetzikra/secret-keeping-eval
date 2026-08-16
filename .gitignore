@@ -8,3 +8,5 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 analysis/out/
+midpointdraft.tex
+screenshot.png

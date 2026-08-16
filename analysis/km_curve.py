@@ -110,6 +110,7 @@ def observations(
     log = read_eval_log(max(list_eval_logs(str(log_dir)), key=lambda i: i.mtime or 0))
     event_key, time_key = CHANNELS[channel]
     obs: list[Observation] = []
+    ids: list[str] = []
     excluded = 0
     for sample in log.samples or []:
         score = (sample.scores or {}).get("secret_leak_scorer")
@@ -121,13 +122,17 @@ def observations(
             excluded += 1
             continue
         obs.append(_observation(value, score.metadata or {}, event_key, time_key))
+        ids.append(str(sample.id))
     roles = {r: c.model for r, c in (log.eval.model_roles or {}).items()}
+    solvers = [step.solver for step in (log.plan.steps if log.plan else [])]
     meta = {
         "task": log.eval.task,
         "args": log.eval.task_args,
         "roles": roles,
         "excluded": excluded,
         "n": len(obs),
+        "ids": ids,  # aligned with `obs`; pairs shared-secret arms across runs
+        "solver": solvers[-1] if solvers else "",
     }
     return obs, meta
 

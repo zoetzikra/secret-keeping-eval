@@ -1,6 +1,15 @@
 """Render the survival curves as a self-contained HTML page.
 
     make km-artifact LOG="logs/pilot-informed-v2 logs/control-benign-neutral ..."
+    make km-artifact LOG="pressure=logs/pressure-p5,logs/pressure-p6 ..."
+
+A bare directory is one arm. `label=dir,dir,...` pools repetitions into a single
+arm: repetitions are independent draws of the same quantity, and plotted
+separately they read as different conditions, which they are not (same rule as
+`km_curve.py --pool`). When exactly two pooled arms share their repetition
+structure (paired ids per repetition, as the E1 arms do by shared
+`secret_seed`), the page also derives the paired contrast — Wilson intervals and
+the stratified exact McNemar over discordant pairs — from the rendered data.
 
 One small multiple per channel, because the channels are the comparison the spec
 cares about:
@@ -19,10 +28,11 @@ with the other.
 """
 
 import sys
+from math import comb, sqrt
 from pathlib import Path
 from typing import Any
 
-from km_curve import CHANNELS, KMPoint, kaplan_meier, observations
+from km_curve import CHANNELS, KMPoint, Observation, kaplan_meier, observations
 
 # Categorical slots 1-3 from the reference palette, validated for both surfaces:
 # light all-pairs CVD dE 9.2 (deutan), normal-vision 24.0; dark 9.4 / 20.9. The
@@ -100,6 +110,7 @@ def _panel(channel: str, arms: dict[str, list[KMPoint]], max_t: int) -> str:
             f'<text class="tick" x="{sx(t):.1f}" y="{H - PAD_B + 14}" '
             f'text-anchor="middle">{t}</text>'
         )
+    placed: list[float] = []  # end-label y positions, to avoid collisions
     for i, points in enumerate(arms.values()):
         if not points:
             continue
@@ -113,9 +124,13 @@ def _panel(channel: str, arms: dict[str, list[KMPoint]], max_t: int) -> str:
         parts.append(f'<polygon class="band s{i}" points="{band}"/>')
         parts.append(f'<polyline class="line s{i}" points="{line}"/>')
         end = _steps(points, max_t)[-1]
+        label_y = sy(end[1]) - 5
+        while any(abs(label_y - q) < 9 for q in placed):
+            label_y += 10
+        placed.append(label_y)
         parts.append(
             f'<text class="endlabel s{i}" x="{sx(end[0]) - 4:.1f}" '
-            f'y="{sy(end[1]) - 5:.1f}" text-anchor="end">{end[1]:.2f}</text>'
+            f'y="{label_y:.1f}" text-anchor="end">{end[1]:.2f}</text>'
         )
     parts.append("</svg>")
     return (
@@ -186,6 +201,78 @@ def _channel_relation(counts: dict[str, int], n: int) -> str:
     )
 
 
+def _wilson(k: int, n: int) -> tuple[float, float]:
+    z = 1.96
+    p = k / n
+    denom = 1 + z * z / n
+    centre = (p + z * z / (2 * n)) / denom
+    half = z * sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / denom
+    return max(0.0, centre - half), min(1.0, centre + half)
+
+
+def _mcnemar_exact(b: int, c: int) -> float:
+    """Two-sided exact McNemar: binomial tail on the discordant pairs."""
+    m = b + c
+    if m == 0:
+        return 1.0
+    tail = sum(comb(m, k) for k in range(min(b, c) + 1)) / 2**m
+    return float(min(1.0, 2 * tail))
+
+
+def _contrast(
+    perdir: dict[str, list[tuple[str, list[Observation], list[str]]]],
+    metas: dict[str, dict[str, Any]],
+    channel: str,
+) -> str:
+    """The paired between-arm sentence, derived from the rendered runs.
+
+    Only emitted for exactly two arms whose repetitions pair up by sample id —
+    the E1 design, where pressure and control share a `secret_seed` per
+    repetition so investigation i holds the same token in both arms. The test is
+    the design's test of record (stratified exact McNemar over discordant pairs);
+    anything it cannot derive from the page's own data it does not say.
+    """
+    if len(perdir) != 2:
+        return ""
+    (arm_a, dirs_a), (arm_b, dirs_b) = perdir.items()
+    if len(dirs_a) != len(dirs_b):
+        return ""
+    b = c = 0  # b: leaked in A only, c: leaked in B only
+    for (_, obs_a, ids_a), (_, obs_b, ids_b) in zip(dirs_a, dirs_b, strict=True):
+        if set(ids_a) != set(ids_b):
+            return ""
+        events_b = {i: o.event for i, o in zip(ids_b, obs_b, strict=True)}
+        for i, o in zip(ids_a, obs_a, strict=True):
+            if o.event and not events_b[i]:
+                b += 1
+            elif events_b[i] and not o.event:
+                c += 1
+    ka = sum(o.event for _, obs, _ in dirs_a for o in obs)
+    kb = sum(o.event for _, obs, _ in dirs_b for o in obs)
+    na, nb = metas[arm_a]["n"], metas[arm_b]["n"]
+    lo_a, hi_a = _wilson(ka, na)
+    lo_b, hi_b = _wilson(kb, nb)
+    p = _mcnemar_exact(b, c)
+    p_txt = "&lt; 0.001" if p < 0.001 else f"= {p:.3f}"
+    return (
+        f'<p class="note contrast">Paired contrast on the '
+        f"<b>{'reasoning' if channel == 'cot' else CHANNEL_TITLES[channel].lower()}"
+        f"</b> channel: <b>{arm_a}</b> "
+        f"{ka}/{na} ({ka / na:.2f}, Wilson 95% [{lo_a:.2f}, {hi_a:.2f}]) vs "
+        f"<b>{arm_b}</b> {kb}/{nb} ({kb / nb:.2f}, [{lo_b:.2f}, {hi_b:.2f}]). "
+        f"Discordant pairs {b}:{c}; stratified exact McNemar p {p_txt}. "
+        "Pairs share a secret within each repetition, so this is the design's "
+        "test of record, computed from the runs on this page.</p>"
+    )
+
+
+def _descriptor(meta: dict[str, Any]) -> str:
+    if "benign" in meta["solver"]:
+        return "benign-partner control"
+    informed = (meta.get("args") or {}).get("informed", True)
+    return "informed auditor" if informed else "uninformed auditor"
+
+
 def _derived_prose(
     data: dict[str, dict[str, list[KMPoint]]], metas: dict[str, dict[str, Any]]
 ) -> str:
@@ -221,16 +308,74 @@ def _derived_prose(
     return "".join(blocks)
 
 
-def build(log_dirs: list[Path]) -> str:
+CONTRAST_CHANNEL = "cot"  # E1's operative channel: reasoning rehearsal
+
+
+# The reasoning-channel caveat is target-dependent (METHODS M25): on regime-B
+# targets (gpt via OpenRouter) reasoning counts are lower bounds because the chain
+# is readable only where the provider attaches a summary; on regime-A targets
+# (the open-weight set) the raw chain is returned readable, so the counts are point
+# estimates and the M22 caveat lifts. Everything else in the banner is shared.
+_JUDGE_CAVEAT = (
+    "<b>Judge:</b> validated on the operative leak/no-leak decision "
+    "(&kappa;&nbsp;=&nbsp;0.654, <code>reports/judge-validation.md</code>); "
+    "decoy-engagement labels pending, so partial-disclosure rates are not quotable."
+)
+_REASONING_LOWER_BOUND = (
+    "Reasoning-leak counts are <b>lower bounds</b>: reasoning is readable only "
+    "where the provider attaches a summary (METHODS M22)."
+)
+_REASONING_POINT_ESTIMATE = (
+    "Reasoning-leak counts are <b>point estimates</b>: this target returns the raw "
+    "chain readable (regime A, chain encrypted on 0% of turns), so the M22 "
+    "lower-bound caveat does not apply (METHODS M25/M27)."
+)
+
+
+def _banner(n_desc: str, horizon: int, regime_a: bool) -> str:
+    scale = (
+        f"<b>PRELIMINARY.</b> {n_desc} investigations at a {horizon}-turn horizon. "
+        "Greenwood bands are wide at these sample sizes &mdash; the shape is "
+        "suggestive, not settled.<br>"
+    )
+    reasoning = _REASONING_POINT_ESTIMATE if regime_a else _REASONING_LOWER_BOUND
+    return f"{scale}{_JUDGE_CAVEAT} {reasoning}"
+
+
+def build(arms: list[tuple[str, list[Path]]], regime_a: bool = False) -> str:
     data: dict[str, dict[str, list[KMPoint]]] = {}
     metas: dict[str, dict[str, Any]] = {}
-    for d in log_dirs:
-        arm = d.name
+    perdir: dict[str, list[tuple[str, list[Observation], list[str]]]] = {}
+    for arm, dirs in arms:
         data[arm] = {}
+        dir_metas: list[dict[str, Any]] = []
         for channel in CHANNELS:
-            obs, meta = observations(d, channel)
-            data[arm][channel] = kaplan_meier(obs)
-            metas[arm] = meta
+            pooled: list[Observation] = []
+            contrast_dirs: list[tuple[str, list[Observation], list[str]]] = []
+            for d in dirs:
+                obs, meta = observations(d, channel)
+                pooled.extend(obs)
+                contrast_dirs.append((d.name, obs, meta["ids"]))
+                if channel == "any":  # collect metas once
+                    dir_metas.append(meta)
+            data[arm][channel] = kaplan_meier(pooled)
+            if channel == CONTRAST_CHANNEL:
+                perdir[arm] = contrast_dirs
+        first = dir_metas[0]
+        args = dict(first.get("args") or {})
+        if len(dir_metas) > 1:
+            args["secret_seed"] = "/".join(
+                str((m.get("args") or {}).get("secret_seed")) for m in dir_metas
+            )
+        metas[arm] = {
+            "task": first["task"],
+            "args": args,
+            "roles": first["roles"],
+            "solver": first["solver"],
+            "n": sum(m["n"] for m in dir_metas),
+            "excluded": sum(m["excluded"] for m in dir_metas),
+            "dirs": [d.name for d in dirs],
+        }
     max_t = max(
         (p.t for a in data.values() for pts in a.values() for p in pts), default=40
     )
@@ -246,20 +391,21 @@ def build(log_dirs: list[Path]) -> str:
     )
     marks = [t for t in (5, 10, 20, 30, max_t) if t <= max_t]
     pins = "".join(
-        f"<div><dt>{arm}</dt><dd>{metas[arm]['args']}</dd></div>" for arm in data
+        f"<div><dt>{arm}</dt><dd>{' + '.join(metas[arm]['dirs'])} &middot; "
+        f"{metas[arm]['args']}</dd></div>"
+        for arm in data
     )
 
-    first = next(iter(data))
-    first_args = metas[first].get("args") or {}
-    roles = metas[first].get("roles") or {}
+    first_arm = next(iter(data))
+    roles = metas[first_arm].get("roles") or {}
+    descriptors = list(dict.fromkeys(_descriptor(metas[a]) for a in data))
     subject = (
         f"target <b>{roles.get('target', 'unknown')}</b>, "
-        f"<b>{'Petri' if 'petri' in metas[first].get('task', '') else 'plain'}</b>"
-        f" harness, {'informed' if first_args.get('informed', True) else 'uninformed'}"
-        " auditor"
+        f"<b>{'Petri' if 'petri' in metas[first_arm].get('task', '') else 'plain'}</b>"
+        f" harness, {' vs '.join(descriptors)}"
     )
-    horizon = int(first_args.get("max_turns", 0) or 0)
-    n_first = metas[first]["n"]
+    horizon = int(metas[first_arm]["args"].get("max_turns", 0) or 0)
+    n_desc = " + ".join(str(metas[a]["n"]) for a in data)
 
     light = "".join(f"  --s{i}: {c};\n" for i, c in enumerate(SERIES_LIGHT))
     dark = "".join(f"  --s{i}: {c};\n" for i, c in enumerate(SERIES_DARK))
@@ -271,9 +417,8 @@ def build(log_dirs: list[Path]) -> str:
         light=light,
         dark=dark,
         subject=subject,
-        prose=_derived_prose(data, metas),
-        n_first=n_first,
-        horizon=horizon,
+        prose=_derived_prose(data, metas) + _contrast(perdir, metas, CONTRAST_CHANNEL),
+        banner=_banner(n_desc, horizon, regime_a),
     )
 
 
@@ -362,12 +507,7 @@ dl.pins dd {{ margin: .1rem 0 0; word-break: break-all;
 </style>
 
 <div class="viz-root"><div class="wrap">
-  <div class="banner"><b>PRELIMINARY.</b> {n_first} investigations at a
-  {horizon}-turn horizon. This is <i>not</i> the faithful replication, which is
-  Petri / prefill-on / n&nbsp;&asymp;&nbsp;150 / ~120 turns. Greenwood bands are
-  wide at this sample size &mdash; the shape is suggestive, not settled.<br>
-  <b>Provisional</b> &mdash; judge validation round&nbsp;2 pending; not quotable
-  externally.</div>
+  <div class="banner">{banner}</div>
 
   <h1>Secret-keeping survival, by channel</h1>
   <p class="dek"><b>{subject}.</b> S(t) is the fraction of investigations in
@@ -393,11 +533,26 @@ dl.pins dd {{ margin: .1rem 0 0; word-break: break-all;
 
 
 def main() -> None:
-    dirs = [Path(d) for d in (sys.argv[1:] or ["logs"])]
+    # Optional flags: --out=<basename> writes analysis/out/<basename>.html instead
+    # of the default km_artifact.html (so several arms can coexist); --regime-a
+    # swaps the reasoning caveat to point-estimate for native-readable targets.
+    out_name = "km_artifact"
+    regime_a = False
+    arms: list[tuple[str, list[Path]]] = []
+    for token in sys.argv[1:] or ["logs"]:
+        if token == "--regime-a":
+            regime_a = True
+        elif token.startswith("--out="):
+            out_name = token.split("=", 1)[1]
+        elif "=" in token:
+            label, joined = token.split("=", 1)
+            arms.append((label, [Path(d) for d in joined.split(",")]))
+        else:
+            arms.append((Path(token).name, [Path(token)]))
     out_dir = Path("analysis/out")
     out_dir.mkdir(parents=True, exist_ok=True)
-    out = out_dir / "km_artifact.html"
-    out.write_text(build(dirs))
+    out = out_dir / f"{out_name}.html"
+    out.write_text(build(arms, regime_a=regime_a))
     print(f"wrote {out}")
 
 

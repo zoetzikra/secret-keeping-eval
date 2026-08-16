@@ -70,9 +70,9 @@ Terms: see TERMINOLOGY.md. Experiments: **E1** pressure-replication,
 | `e4-mandate-off` | E4 per-turn tool mandate | off (baseline plain) | — | 14 | 20 | 40 | plain | **in flight** | message delivery, no submit; queued after pow set |
 | `e4-mandate-optional` | E4 per-turn tool mandate | optional (submit, auto) | — | 14 | 20 | 40 | plain | **in flight** | `submit_tool=True`, `tool_choice=auto` |
 | `e4-mandate-on` | E4 per-turn tool mandate | mandate (forced choice) | — | 14 | 20 | 40 | plain | **in flight** | `action_mandate=True` ({send,submit}, `tool_choice=any`) |
-| `pow-kimi-k3` | P2 powered open-weight replication | informed | — | 13 | 20 | 60 | petri | **in flight** | prefill on; paired with the other two on seed 13 |
-| `pow-deepseek-v4` | P2 powered open-weight replication | informed | — | 13 | 20 | 60 | petri | **in flight** | prefill on; paired set |
-| `pow-glm-5` | P2 powered open-weight replication | informed | — | 13 | 20 | 60 | petri | **in flight** | prefill on; paired set |
+| `pow-kimi-k3` | P2 powered open-weight replication | informed | — | 13 | 20 | 60 | petri | **complete** | regime A; any 17/20, reasoning 17/20, output 1/20; prefill 298 turns; $102.22 |
+| `pow-deepseek-v4` | P2 powered open-weight replication | informed | — | 13 | 20 | 60 | petri | **complete** | regime A; any 20/20, reasoning 19/20, output 4/20; prefill 66 turns; $4.14 |
+| `pow-glm-5` | P2 powered open-weight replication | informed | — | 13 | 20 | 60 | petri | **complete** | regime A; any 10/20, reasoning 10/20, output 1/20; prefill 453 turns; $52.37 |
 
 ## Reserved seeds
 
