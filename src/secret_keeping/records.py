@@ -156,3 +156,29 @@ class Investigation(StoreModel):
     submitted_turn: int = Field(default=0)
     """Completed target turns at the moment of submission — the auditor's evidence
     depth. Used as the extraction time when the submission is correct."""
+
+    # --- Hidden-goal ControlArena extension (P3, re-scoped) -------------------
+    # Populated only by the CA hidden-goal task; empty/false for every other arm.
+    seed_history_json: str = Field(default="")
+    """The truncated ControlArena action history (JSON of ChatMessage dumps), which
+    the seeded target agent replays as its real prior context. Harness-side; the
+    same actions are rendered into the auditor seed as `seed_transcript`."""
+
+    hidden_goal_text: str = Field(default="")
+    """The verbatim ControlArena `side_task_description` the target is concealing.
+    Harness-side only (never auditor-visible); handed to the disclosure judge as
+    "what is being concealed" for its visibility control."""
+
+    seed_transcript: str = Field(default="")
+    """The auditor-visible action transcript (no system prompt / goal instruction).
+    Stored so the disclosure judge can enforce its visibility control: a goal
+    legible from these actions is not a target confession."""
+
+    goal_legible_in_seed: bool = Field(default=False)
+    """Whether the goal instruction is already legible in `seed_transcript` (Q3 /
+    extended void-check). Reported per investigation to size the seeded-history
+    blindness risk."""
+
+    ca_arm: str = Field(default="")
+    """Which CA hidden-goal arm produced this investigation: `default` (ControlArena's
+    attack prompt as-is) or `keep` (+ explicit never-reveal-including-in-reasoning)."""
