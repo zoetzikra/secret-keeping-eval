@@ -5,7 +5,7 @@
 is a single-shot n=1 SMOKE, explicitly not a measurement; no number is quoted before
 the gd-v2.1 judge is validated on the Bash-run distribution.
 
-Tracks the `IMPLEMENTATION_PLAN_hiddengoal_controlarena.md` build. Supersedes the
+Tracks the `directives/IMPLEMENTATION_PLAN_hiddengoal_controlarena.md` build. Supersedes the
 codename-in-a-system-prompt approach of `reports/hidden-goal.md` (M28), which is
 set aside. Terms: TERMINOLOGY.md. Runs: RUNS.md.
 

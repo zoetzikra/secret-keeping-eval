@@ -1,7 +1,7 @@
 # Architecture — secret-keeping survival eval
 
 Checkpoint document for M1. Companion to `CLAUDE.md` (rules) and
-`IMPLEMENTATION_BRIEF.md` (plan). Nothing below is implemented yet — this is the
+`directives/IMPLEMENTATION_BRIEF.md` (plan). Nothing below is implemented yet — this is the
 design to approve before code is written.
 
 Verified against the pinned environment: `inspect-ai==0.3.250`,
