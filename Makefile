@@ -203,3 +203,10 @@ cot-scan-audit:
 #   make turn-type-figure DIRS="logs/pow-kimi-k3 logs/pow-deepseek-v4 logs/pow-glm-5"
 turn-type-figure:
 	$(PY) python analysis/turn_type_figure.py $(DIRS)
+
+# The two system-card figures (6.4.2.4.A/B) as PNGs in the card's own house style,
+# for the powered open-weight set: an aggregated per-model survival overlay and the
+# grouped per-turn-type leak-rate bars. Writes analysis/out/pow_{survival,turn_type}.png.
+#   make pow-figures
+pow-figures:
+	PYTHONPATH=src:.:analysis uv run python analysis/pow_figures.py

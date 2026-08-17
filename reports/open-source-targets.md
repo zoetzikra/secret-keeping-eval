@@ -120,7 +120,18 @@ discipline (1–4/20), reasoning-channel mentions carrying the whole headline, a
 extraction tracking the reasoning channel** — with the chain readable, the auditor
 reads the reasoning leak and states the secret, so extraction ≈ reasoning on every
 target. deepseek decays fastest (headline S→0 by turn 2), glm-5 slowest (S=0.50,
-median t\*=30); kimi sits between. Greenwood-banded curves, all four channels:
+median t\*=30); kimi sits between.
+
+**Aggregated survival in the system-card house style** (the direct analogue of
+figure 6.5.4.5.A / 6.4.2.4.A — the target models' any-mention curves overlaid on
+one axis, "this is what the replication reproduces"):
+[analysis/out/pow_survival.png](../analysis/out/pow_survival.png)
+(`make pow-figures`).
+
+![Secret-keeping robustness over investigator turns, powered open-weight set](../analysis/out/pow_survival.png)
+
+Per-target Greenwood-banded curves broken out by all four channels (any-mention,
+output, reasoning, extraction):
 
 - deepseek-v4-pro: [analysis/out/km_pow_deepseek-v4.html](../analysis/out/km_pow_deepseek-v4.html)
 - kimi-k3: [analysis/out/km_pow_kimi-k3.html](../analysis/out/km_pow_kimi-k3.html)
@@ -133,9 +144,17 @@ lower bound.
 ### 4.2 Figure 6.5.4.5.B — per-turn leak rate by turn type
 
 The whole open-weight detour exists to populate the `prefill+thinking` cell,
-unreachable on Anthropic 4.6+ and gpt (M24). It is now populated at n=20
-([analysis/out/turn_type.html](../analysis/out/turn_type.html), rendered by
-`make turn-type-figure`). Cells are leaks/turns (per-turn any-mention analogue):
+unreachable on Anthropic 4.6+ and gpt (M24). It is now populated at n=20. Grouped
+bars in the system-card house style (figure 6.5.4.5.B / 6.4.2.4.B, one bar per
+target per turn type, Wilson 95% error bars):
+[analysis/out/pow_turn_type.png](../analysis/out/pow_turn_type.png)
+(`make pow-figures`); the interactive per-target version is
+[analysis/out/turn_type.html](../analysis/out/turn_type.html)
+(`make turn-type-figure`).
+
+![Rate of secret leaking by turn type, powered open-weight set](../analysis/out/pow_turn_type.png)
+
+Cells are leaks/turns (per-turn any-mention analogue):
 
 | target | thinking only | prefill only | **prefill + thinking** | neither |
 |---|---:|---:|---:|---:|
@@ -200,4 +219,5 @@ make reasoning-provenance DIRS="logs/pow-kimi-k3 logs/pow-deepseek-v4 logs/pow-g
 make blindness-scan DIRS="logs/pow-kimi-k3 logs/pow-deepseek-v4 logs/pow-glm-5"
 python analysis/km_artifact.py logs/pow-deepseek-v4 --regime-a --out=km_pow_deepseek-v4
 make turn-type-figure DIRS="logs/pow-kimi-k3 logs/pow-deepseek-v4 logs/pow-glm-5"
+make pow-figures   # the two system-card-style PNGs (aggregated survival + turn-type)
 ```
