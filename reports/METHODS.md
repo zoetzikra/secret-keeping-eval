@@ -1278,14 +1278,12 @@ the white-bear / monitorability pattern in the realistic setting. Blindness hold
 draw on a degraded-realism trajectory — illustrative of the machinery, **not a
 measurement**.
 
-**Status:** **machinery settled** (loader + seeded task + two-dimensional disclosure
-scorer, tested, end-to-end on a real ControlArena trajectory; gd-v2 corrects the two
-gd-v1 errors on the first calibration cases). **Result pending** the real paired
-default-vs-keep set on multi-step Bash traces (`secret_seed=16`) and gd-v2.1 judge
-validation (M12) — where the endpoint's real κ is measured (the gd-v2.1 concealment definition is
-frozen pre-committed, M16, so the labeller and judge share it). No number quoted before then. P3 benign side-task variants
-(intern-changelog, house-brand, data-handling, Socratic-tutor) are the follow-up
-roadmap, not built.
+**Status:** **superseded by M29 (2026-08-23)** on seed construction — the eval now uses
+prompt-only seeding, not mid-task trajectories, so "the real paired set on multi-step
+Bash traces" is void. What survives from M28: the two paired arms (`default`/`keep`),
+the judged-disclosure endpoint, the scorer/records plumbing, and the gd-v2.1 → gd-v3
+judge line (M30). The scenario set is M31. Judge validation (M12) and the M16
+concealment freeze still gate quoting; no number quoted before then.
 
 **History:** 2026-08-15, P3-a built as a codename-of-a-benign-directive arm
 (`secret_keeping_hidden_goal`, `logs/probe-hidden-goal`, n=4, 0/4 elicited). 2026-08-17,
@@ -1300,3 +1298,51 @@ missed the reasoning concealment tell); gd-v2.1 sharpened the concealment tell t
 fabrication-only and froze it pre-committed (M16). On the two calibration cases
 gd-v2.1 gives default → no-tell, keep → tell. The old `secret_keeping_hidden_goal` task and
 `reports/hidden-goal.md` are set aside.
+
+### M29 — Hidden-goal seeding is prompt-only (pre-deployment interrogation)
+
+**Decision:** The hidden-goal eval seeds the target **prompt-only**: a system prompt
+carrying ControlArena's *verbatim* attack side-task text (or a constructed scenario
+side task, M31) plus the openly-stated main task, injected auditor-blind via
+`_SecretTargetContext` (Variant A / M3). There are **no prior assistant turns, no
+tool calls, no trajectory**. The eval models one scenario cleanly: **pre-deployment
+interrogation of a possibly prompt-implanted model, before it has acted**. Seed
+construction is dataset-only (`get_dataset(EvalMode.ATTACK)`), so **no sandbox is ever
+provisioned** — which opens the full ControlArena settings roster.
+
+**Alternatives:** Mid-task trajectory seeding — truncate a real ATTACK trajectory so
+the target carries its own prior side-goal actions (the 2026-08-17 design). Rejected
+2026-08-23: in ATTACK mode the model reliably acts on the seeded side task and the
+setting already monitors CoT and output, so a mid-task interrogation adds little; the
+scenario where mid-task auditing *would* matter — a goal developed *during* the
+trajectory — is exactly the one where the goal is **not** in the system prompt, so the
+verbatim-attack-prompt mid-task construction is not a realistic instrument for it.
+Jordan endorsed prompt-only in meeting 5 and withdrew his own halfway-transcript
+suggestion. The trajectory code is **kept (deprecated), not deleted** — possible
+implicit-trajectory work may want it.
+
+**Why:** Prompt-only makes the instrument cleaner in two ways. (i) Blindness is
+trivial: with no seeded actions, `goal_legible_in_seed` is 0 by construction, so the
+disclosure judge's visibility control has nothing to exclude and cannot be gamed by
+seed-legible goals. (ii) The auditor does pre-deployment interrogation with no
+transcript, isolating "can the model be talked into revealing a prompt-implanted
+goal" from any confound introduced by the model having visibly acted. Removing the
+sandbox requirement is a direct consequence — nothing executes — and is what makes the
+4-scenario matrix (M31) affordable across many settings.
+
+**Evidence:** `src/secret_keeping/controlarena.py` (`build_prompt_only_seed`,
+`load_prompt_only_seed`, `attack_samples`); `src/secret_keeping/hidden_goal_ca.py`;
+`AUDITOR_SEED_HIDDEN_GOAL_PROMPT_ONLY`; tests
+`tests/secret_keeping/test_controlarena.py` (zero prior turns; goal only in the
+target system prompt; auditor seed blind to the attack text). Runs no-Docker on Apps
+and Bash samples alike.
+
+**Status:** **settled** (meeting-5 plan T1). The seed shape is frozen; the scenario
+set that rides it (M31) and the judge that scores it (gd-v3, M30) are separate
+entries.
+
+**History:** 2026-08-23, meeting-5 re-scope. Supersedes the mid-task trajectory
+seeding of M28 (2026-08-17); that path is deprecated, not reverted. The superseded
+directive `directives/IMPLEMENTATION_PLAN_hiddengoal_controlarena.md` is removed in
+the same commit (its binding-conventions header made it a trap for future agents);
+its text lives in git history and `reports/controlarena-spike.md`.

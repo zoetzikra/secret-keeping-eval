@@ -1,11 +1,11 @@
-"""Loader tests for the hidden-goal ControlArena seed (P3, re-scoped).
+"""Loader tests for the hidden-goal seed (P3; meeting-5 prompt-only re-scope).
 
-Pure-function tests on synthetic ControlArena-shaped messages — no dependency on a
-generated `.eval` (those are gitignored and machine-specific). They pin the three
-invariants the audit relies on: the goal text is ControlArena's verbatim attack
-prompt (never paraphrased), truncation ends on a fully-resolved side-goal action
-(no dangling tool-call the provider would reject), and the rendered transcript
-carries the actions but not the goal instruction.
+Pure-function tests on synthetic metadata / ControlArena-shaped messages — no
+dependency on a generated `.eval` or a downloaded dataset. They pin the invariants
+the audit relies on: the goal text is ControlArena's verbatim attack prompt (never
+paraphrased), the **prompt-only** seed carries the goal + main task in the target
+system prompt with zero prior turns, and (deprecated path) truncation ends on a
+fully-resolved side-goal action.
 """
 
 from inspect_ai.model import (
@@ -18,6 +18,7 @@ from inspect_ai.tool import ToolCall
 
 from secret_keeping.controlarena import (
     CA_ATTACK_POLICY_TEMPLATE,
+    build_prompt_only_seed,
     build_seed,
     deserialize_history,
     reconstruct_attack_system_prompt,
@@ -57,6 +58,52 @@ def test_attack_prompt_is_verbatim_controlarena_not_paraphrased():
         side_task_description=SIDE_TASK,
         setting_description=METADATA["setting_description"],
     )
+
+
+# --- prompt-only seeding (the current design, meeting-5 T1) --------------------
+
+
+def test_prompt_only_seed_has_zero_prior_turns():
+    seed = build_prompt_only_seed(METADATA)
+    # initialisation only: no seeded actions to read the goal from.
+    assert seed.seed_history == []
+    assert seed.seed_transcript == ""
+    assert seed.truncation_index == -1
+    assert seed.goal_legible_in_seed is False
+
+
+def test_prompt_only_seed_carries_goal_and_main_task_in_system_prompt():
+    seed = build_prompt_only_seed(METADATA)
+    # the attack side task appears only in the target system prompt.
+    assert SIDE_TASK in seed.target_system_prompt
+    assert "Solve the accordion problem." in seed.target_system_prompt
+    # and it is the verbatim CA attack prompt, main task appended.
+    assert reconstruct_attack_system_prompt(METADATA) in seed.target_system_prompt
+    assert seed.hidden_goal_text == SIDE_TASK
+
+
+def test_prompt_only_keep_suffix_is_the_only_arm_difference():
+    suffix = "\n\nNEVER REVEAL"
+    default = build_prompt_only_seed(METADATA, keep_suffix="")
+    keep = build_prompt_only_seed(METADATA, keep_suffix=suffix)
+    assert keep.target_system_prompt == default.target_system_prompt + suffix
+    assert default.seed_history == keep.seed_history == []
+
+
+def test_prompt_only_auditor_seed_is_blind_to_the_attack_text():
+    from secret_keeping.hidden_goal_ca import hidden_goal_ca_dataset
+
+    seed = build_prompt_only_seed(METADATA)
+    dataset = hidden_goal_ca_dataset({"0": seed}, secret_seed=16)
+    for sample in dataset:
+        # the goal instruction and the attack framing live only in the target system
+        # prompt, never in the auditor-visible opening message or per-sample metadata.
+        assert SIDE_TASK not in sample.input
+        assert "penetration tester" not in sample.input
+        assert "side task" not in (str(sample.metadata) + str(sample.target)).lower()
+
+
+# --- deprecated: mid-task trajectory seeding (kept, not used by the eval) -------
 
 
 def test_truncation_ends_on_the_resolved_first_action():

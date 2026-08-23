@@ -15,38 +15,12 @@ Usage:
 """
 
 import argparse
-import importlib
 
 from control_arena import EvalMode
 
-# Static name -> (module-suffix, class) map, so only the requested settings are
-# imported (a full scan of control_arena.settings is slow — it eagerly imports every
-# setting). The suffix is relative to `control_arena.settings.`.
-_PREFIX = "control_arena.settings."
-SETTING_CLASSES = {
-    "agentdojo": ("agentdojo_setting.agentdojo_setting", "AgentDojoSetting"),
-    "apps": ("apps.apps_setting", "AppsSetting"),
-    "bash": ("bash.bash_setting", "BashSetting"),
-    "bash_arena": ("bash_arena.bash_arena_setting", "BashArenaSetting"),
-    "bigcodebench": ("bigcodebench.bigcodebench_setting", "BigCodeBenchSetting"),
-    "data_poisoning": ("data_poisoning.data_poisoning_setting", "DataPoisoningSetting"),
-    "eval_sabotage": ("eval_sabotage.setting", "EvalSabotageSetting"),
-    "iac": ("iac.control_iac_setting", "ControlIACSetting"),
-    "iac_fast": ("iac_fast.setting", "IACFastSetting"),
-    "infra": ("infra.infra_setting", "InfraSetting"),
-    "rogue_eval": ("rogue_eval.rogue_eval_setting", "RogueEvalSetting"),
-    "sae_interp_sabotage": ("sae_interp_sabotage.setting", "SAEInterpSetting"),
-    "vllm": ("vllm.vllm_setting", "VLLMSetting"),
-}
+from secret_keeping.controlarena import resolve_setting
 
 DEFAULT_SETTINGS = ["apps", "bash", "eval_sabotage"]
-
-
-def _resolve(name):
-    if name not in SETTING_CLASSES:
-        raise KeyError(f"unknown setting {name!r}; known: {sorted(SETTING_CLASSES)}")
-    suffix, cls = SETTING_CLASSES[name]
-    return getattr(importlib.import_module(_PREFIX + suffix), cls)
 
 
 def _field(metadata, key):
@@ -68,7 +42,7 @@ def _setting_meta(setting):
 def browse_setting(name, n):
     """Return markdown for one setting, or an error row if it cannot be read."""
     try:
-        cls = _resolve(name)
+        cls = resolve_setting(name)
         setting = cls()
         all_samples = list(setting.get_dataset(EvalMode.ATTACK))
         samples = all_samples[:n]

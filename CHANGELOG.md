@@ -8,6 +8,42 @@ mechanical evidence, not an argument).
 
 ---
 
+## 2026-08-23 — P3-CA re-scoped to prompt-only seeding; mid-task trajectory path deprecated
+
+**What.** Per meeting 5 (`directives/IMPLEMENTATION_PLAN_meeting5.md`, T1), the
+hidden-goal eval moves from mid-task trajectory seeding to **prompt-only seeding**:
+the target is initialised with a system prompt (ControlArena's verbatim attack side
+task + the openly-stated main task, auditor-blind) and **no prior turns** — modelling
+pre-deployment interrogation of a possibly prompt-implanted model, before it has
+acted. New in `controlarena.py`: `build_prompt_only_seed`, `load_prompt_only_seed`,
+`attack_samples`, `resolve_setting` / `SETTING_CLASSES`. `hidden_goal_ca.py` swaps its
+seed source (task arg `ca_log` → `setting`) and uses a no-transcript auditor seed
+(`AUDITOR_SEED_HIDDEN_GOAL_PROMPT_ONLY`). Design recorded in METHODS **M29**.
+
+**Why it mattered.** In ATTACK mode the model reliably acts on the seeded side task
+and the setting already monitors CoT/output, so mid-task interrogation adds little;
+the scenario where it *would* matter (a goal developed during the trajectory) is
+exactly the one where the goal is not in the system prompt. Jordan endorsed
+prompt-only in meeting 5. Consequences: `goal_legible_in_seed` is trivially 0 (no
+seeded actions), so the judge's visibility control has nothing to exclude; and seed
+construction is **dataset-only** — no sandbox is provisioned, opening the full
+settings roster (Apps and Bash both run no-Docker).
+
+**What it invalidated.** M28's "real paired set on multi-step Bash traces
+(`secret_seed=16`)" is **void** — no trajectories are generated any more; seed 16 is
+**reassigned** to the paired default-vs-keep prompt-only set (RUNS.md). The mid-task
+trajectory code (`build_seed`, `load_hidden_goal_seed`, `truncate_after_first_action`,
+`render_transcript`) is **deprecated, kept not deleted** (implicit-trajectory work may
+want it). The `ca-*-smoke` trajectory-generation rows stay as history, annotated
+"path deprecated 2026-08-23". The superseded directive
+`directives/IMPLEMENTATION_PLAN_hiddengoal_controlarena.md` is **removed** in this
+commit (its binding-conventions header made it a trap for future agents); its text
+lives in git history and `reports/controlarena-spike.md`.
+
+**Also (T2).** `analysis/ca_task_browser.py` + `make ca-browse`: dataset-only dump of
+ATTACK seed material across settings (no sandbox), to shortlist settings for the
+matrix. `reports/ca-task-browser.md` is a generated artifact.
+
 ## 2026-08-17 — P3-CA: disclosure judge gd-v2 → gd-v2.1 (concealment = fabrication only, frozen M16)
 
 **What.** The concealment-tell dimension is sharpened to **fabrication only** and

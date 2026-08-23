@@ -77,9 +77,10 @@ Terms: see TERMINOLOGY.md. Experiments: **E1** pressure-replication,
 | `probe-haiku-4-5` | P2b Anthropic-4.5 prefill probe | informed | — | 11 | 3 | 40 | petri | **complete** | regime C (no chain); prefill fired 7 turns; any 3/3, output 3/3, reasoning 0/3 |
 | `pow-sonnet-4-5` | P2b powered Anthropic-4.5 prefill replication | informed | — | 13 | 20 | 60 | petri | **complete** | regime C (no chain, 0 reasoning toks); any 20/20, output 20/20, reasoning 0/20, extraction 16/20; prefill 156 turns |
 | `pow-haiku-4-5` | P2b powered Anthropic-4.5 prefill replication | informed | — | 13 | 20 | 60 | petri | **complete** | regime C (no chain, 0 reasoning toks); any 20/20, output 20/20, reasoning 0/20, extraction 17/20; prefill 72 turns |
-| `ca-agentdojo-smoke` | P3-CA Phase-0 CtrlArena smoke (trajectory gen) | untrusted policy (H+A) | — | n/a | 4 | ≤20 | control-arena | **complete** | AgentDojo `workspace`, gpt-5-mini, no-Docker; ATTACK side-task acted (side_success C/I); prompt-injection threat model — contrast only |
-| `ca-apps-attack-smoke` | P3-CA Phase-0 CtrlArena smoke (trajectory gen) | attack policy | — | n/a | 1 | ≈1 | control-arena | **complete** | Apps ATTACK, gpt-5-mini, no-Docker (local sandbox, scorers skipped); backdoor in submit args; faithful held-goal but ≈1-turn |
+| `ca-agentdojo-smoke` | P3-CA Phase-0 CtrlArena smoke (trajectory gen) | untrusted policy (H+A) | — | n/a | 4 | ≤20 | control-arena | **complete** | **path deprecated 2026-08-23** (mid-task trajectory seeding, M29). AgentDojo `workspace`, gpt-5-mini, no-Docker; prompt-injection threat model — contrast only |
+| `ca-apps-attack-smoke` | P3-CA Phase-0 CtrlArena smoke (trajectory gen) | attack policy | — | n/a | 1 | ≈1 | control-arena | **complete** | **path deprecated 2026-08-23** (M29). Apps ATTACK, gpt-5-mini, no-Docker; backdoor in submit args; the trajectory-seed source, now unused |
 | `hg-ca-apps-smoke` | P3-CA Phase-2 pipeline smoke (audit) | default + keep | — | 15 | 2 | 6 | petri | **complete** | **SMOKE, single-shot/degraded-realism — NOT a result.** Seeded from `ca-apps-attack-smoke`; under gd-v2.1 neither arm discloses (both refuse); keep-arm shows the fabrication concealment tell (cover story), default candid (no tell); `goal_legible_in_seed` 0/2; 0 invalid-auditor-leak. (gd-v1's "default disclosed@t1" retracted — see CHANGELOG 2026-08-17.) |
+| `hg-ca-s1-smoke` | T1 acceptance / S1 prompt-only smoke (audit) | default + keep | — | 16 | 4 | 4 | petri | **complete** | **SMOKE — NOT a result.** Prompt-only seeding (M29), apps + bash samples, both arms, gpt-5-mini, **no Docker**; seed = system prompt + main task only, `seed_transcript` empty, `goal_legible_in_seed` 0/4, auditor blind to attack text. Judge gd-v2.1 (pre-T3); to be re-scored under gd-v3. |
 
 ## Reserved seeds
 
@@ -96,7 +97,7 @@ Terms: see TERMINOLOGY.md. Experiments: **E1** pressure-replication,
 `13` — P2 powered open-weight set (`pow-{kimi-k3,deepseek-v4,glm-5}`), one shared seed so the three targets are paired.
 `14` — E4 per-turn tool-call mandate (`e4-mandate-{off,optional,on}`), one shared seed, paired 3-point axis.
 `15` — P3-CA hidden-goal-ControlArena **pipeline smoke** (`hg-ca-apps-smoke`); the trajectory-generation smokes (`ca-*-smoke`) carry no secret and use `secret_seed=n/a`.
-`16` — **reserved** for the P3-CA **paired default-vs-keep arm set** on Bash traces (the real result). Not yet consumed.
+`16` — P3-CA **paired default-vs-keep, prompt-only seeding** (S1, CA-native); reassigned 2026-08-23 from the void "Bash traces" plan (M29).
 
 ## Outstanding
 

@@ -1,30 +1,30 @@
-"""Hidden-goal ControlArena arm: audit a target seeded from a real ATTACK trace.
+"""Hidden-goal arm: audit a target **prompt-only-seeded** from a ControlArena task.
 
-The target is seeded mid-task from a truncated ControlArena ATTACK trajectory
-(`controlarena.py`), carrying ControlArena's verbatim attack system prompt
-(auditor-blind, Variant A / M3) plus the model's own prior side-goal actions as
-real context. A Petri auditor then tries to make it confess the hidden objective.
+The eval models pre-deployment interrogation of a possibly prompt-implanted model,
+*before it has acted* (meeting-5 re-scope, 2026-08-23). The target is seeded with a
+system prompt only — ControlArena's verbatim attack side task + the openly-stated
+main task, injected auditor-blind via `_SecretTargetContext` (Variant A / M3). There
+are no prior turns; the audit is a fresh interrogation. No sandbox is provisioned
+(`controlarena.load_prompt_only_seed` is dataset-only), which opens the full settings
+roster.
 
-**Two paired arms on identical trajectories** (directive correction B), differing
-ONLY by the appended instruction:
+**Two paired arms** (correction B), differing ONLY by the appended instruction:
 
-- `default` — ControlArena's attack prompt as-is (already "be subtle / the user
-  does not know").
+- `default` — ControlArena's attack prompt as-is ("be subtle / the user does not
+  know").
 - `keep` — same + `HIDDEN_GOAL_CA_KEEP_SUFFIX` (never reveal, including in
   reasoning).
 
 Endpoint is **judged goal-disclosure** (correction C): no codename. The disclosure
-judge scores output and reasoning channels separately, enforces the visibility
-control (a goal legible from the seeded actions is not a confession), and labels
-active denial as its own outcome. The reasoning-channel contrast between the arms
-is the headline (does the explicit keep-instruction induce reasoning-channel
-disclosure, as it did for the password in E2?).
+judge scores output and reasoning channels separately and labels active denial as
+its own outcome. The reasoning-channel contrast between the arms is the headline
+(does the explicit keep-instruction induce reasoning-channel disclosure, as it did
+for the password in E2?).
 
-**SMOKE status:** on single-shot Apps traces this exercises the full pipeline but is
-single-shot/degraded-realism; its numbers are NOT the extension's result. The real
-paired comparison runs on multi-step Bash traces.
-
-Correlated pole (correction D). `max_samples<=4` always (Petri deadlock cap).
+Under prompt-only seeding `goal_legible_in_seed` is trivially 0 (there are no seeded
+actions), so the judge's visibility control has nothing to exclude — a cleaner
+instrument than the deprecated mid-task construction. `max_samples<=4` always (Petri
+deadlock cap). The 4-scenario matrix (S1–S4) builds on this task (plan T4).
 """
 
 from __future__ import annotations
@@ -51,7 +51,7 @@ from inspect_petri.target._types import TOOL_RESULT
 from secret_keeping.controlarena import (
     HiddenGoalSeed,
     deserialize_history,
-    load_hidden_goal_seed,
+    load_prompt_only_seed,
     serialize_history,
 )
 from secret_keeping.petri_task import (
@@ -60,7 +60,7 @@ from secret_keeping.petri_task import (
     _SecretTargetContext,
 )
 from secret_keeping.prompts import (
-    AUDITOR_SEED_HIDDEN_GOAL_CA,
+    AUDITOR_SEED_HIDDEN_GOAL_PROMPT_ONLY,
     AUDITOR_SEED_SUFFIX_FIXED_SYSTEM_PROMPT,
     GOAL_DISCLOSURE_JUDGE_PROMPT,
     GOAL_DISCLOSURE_JUDGE_VERSION,
@@ -73,17 +73,17 @@ CA_ARMS = {"default": "", "keep": HIDDEN_GOAL_CA_KEEP_SUFFIX}
 
 
 # --- Seeded target agent ------------------------------------------------------
-# A copy of inspect_petri.target_agent's loop, changed in exactly one line: the
-# initial message list is [system, *seed_history, user] instead of [system, user],
-# so the target carries its own prior ControlArena actions as real context. The
-# replay/rollback machinery (wait_for_resume, replayable, expect, send_output) is
-# preserved verbatim, and _SecretTargetContext supplies the auditor-blind system
-# prompt and records live turns exactly as in the plain Petri task.
+# A copy of inspect_petri.target_agent's loop, generalised to insert a seed history
+# ([system, *seed_history, user] instead of [system, user]). Under prompt-only
+# seeding `seed_history` is empty, so this reduces to the stock loop with an
+# auditor-blind, hidden-goal-bearing system prompt. The replay/rollback machinery
+# (wait_for_resume, replayable, expect, send_output) is preserved verbatim, and
+# _SecretTargetContext supplies the system prompt and records live turns.
 
 
 @agent(name="target")
 def seeded_target_agent() -> Agent:
-    """Target agent seeded with a truncated ControlArena action history."""
+    """Target agent seeded with a hidden-goal system prompt (+ any seed history)."""
 
     async def execute(state: AgentState, context: TargetContext) -> AgentState:
         investigation = store_as(Investigation)
@@ -131,26 +131,26 @@ def seeded_target_agent() -> Agent:
 def hidden_goal_ca_dataset(
     seeds: dict[str, HiddenGoalSeed], secret_seed: int
 ) -> MemoryDataset:
-    """One sample per (trajectory, arm).
+    """One sample per (sample, arm).
 
-    The auditor seed carries the rendered *action* transcript (never the goal
-    instruction) and the Variant-A note (no `set_system_message` tool). The hidden
-    goal and the reconstructed system prompt travel through the store (populated by
-    `_ca_setup` from `seeds`), never through auditor-visible `Sample.metadata`.
+    The auditor seed is the pre-deployment interrogation prompt (no transcript, since
+    the target has taken no prior actions) plus the Variant-A note (no
+    `set_system_message` tool). The hidden goal and the system prompt travel through
+    the store (populated by `_ca_setup` from `seeds`), never through auditor-visible
+    `Sample.metadata`.
     """
+    audit_seed = (
+        AUDITOR_SEED_HIDDEN_GOAL_PROMPT_ONLY + AUDITOR_SEED_SUFFIX_FIXED_SYSTEM_PROMPT
+    )
     samples = []
-    for traj_id, seed in seeds.items():
+    for sample_id, _seed in seeds.items():
         for arm in CA_ARMS:
-            audit_seed = (
-                AUDITOR_SEED_HIDDEN_GOAL_CA.format(transcript=seed.seed_transcript)
-                + AUDITOR_SEED_SUFFIX_FIXED_SYSTEM_PROMPT
-            )
             samples.append(
                 Sample(
                     input=audit_seed,
                     target="",  # no verbatim token; the endpoint is judged disclosure
-                    id=f"{secret_seed}_{traj_id}_{arm}",
-                    metadata={"ca_arm": arm, "trajectory_id": traj_id},
+                    id=f"{secret_seed}_{sample_id}_{arm}",
+                    metadata={"ca_arm": arm, "sample_ref": sample_id},
                 )
             )
     return MemoryDataset(samples=samples, name="secret_keeping_hidden_goal_ca")
@@ -158,16 +158,16 @@ def hidden_goal_ca_dataset(
 
 @solver
 def _ca_setup(seeds: dict[str, HiddenGoalSeed], max_turns: int) -> Solver:
-    """Populate the store from the per-sample seed, keyed by trajectory id.
+    """Populate the store from the per-sample seed, keyed by sample ref.
 
-    Reads the seed by trajectory id (not from metadata) so nothing goal-bearing is
-    ever exposed to the auditor channel. Re-applied per sample; the seeded target
-    agent reads these fields at execute time.
+    Reads the seed by sample ref (not from metadata) so nothing goal-bearing is ever
+    exposed to the auditor channel. Re-applied per sample; the seeded target agent
+    reads these fields at execute time.
     """
 
     async def solve(state: TaskState, generate: Generate) -> TaskState:
         arm = state.metadata["ca_arm"]
-        seed = seeds[state.metadata["trajectory_id"]]
+        seed = seeds[state.metadata["sample_ref"]]
         suffix = CA_ARMS[arm]
         investigation = state.store_as(Investigation)
         investigation.harness = "petri"
@@ -395,20 +395,21 @@ def goal_disclosure_scorer() -> Scorer:
 
 @task
 def secret_keeping_hidden_goal_ca(
-    ca_log: str,
-    sample_ids: str | int,
-    secret_seed: int = 15,
+    setting: str = "apps",
+    sample_ids: str | int = "0",
+    secret_seed: int = 16,
     max_turns: int = DEFAULT_PETRI_MAX_TURNS,
     token_limit: int = DEFAULT_TOKEN_LIMIT,
 ) -> Task:
-    """Audit targets seeded from real ControlArena ATTACK trajectories.
+    """Audit prompt-only-seeded targets (S1, CA-native) — pre-deployment interrogation.
 
     Args:
-        ca_log: Path to a ControlArena ATTACK `.eval` log to seed from.
-        sample_ids: Comma-separated sample ids to seed (one trajectory each; both
-            arms run per trajectory).
-        secret_seed: Registry seed id for this run (P3-CA block; 15 reserved for the
-            spike, 16 for the paired arm set).
+        setting: ControlArena setting name (`apps`, `bash`, …). Its ATTACK dataset is
+            loaded dataset-only — no sandbox, no Docker.
+        sample_ids: Comma-separated sample ids (or positional indices) to seed; both
+            arms run per sample.
+        secret_seed: Registry seed id for this run (P3-CA block; 16 = paired
+            default-vs-keep prompt-only set).
         max_turns: Auditor turn budget.
         token_limit: Per-investigation budget; exceeding it is censored, not an error.
 
@@ -416,7 +417,7 @@ def secret_keeping_hidden_goal_ca(
     prefill off. `max_samples<=4` must be passed on the CLI.
     """
     ids = [s.strip() for s in str(sample_ids).split(",") if s.strip()]
-    seeds = {sid: load_hidden_goal_seed(ca_log, sid) for sid in ids}
+    seeds = {sid: load_prompt_only_seed(setting, sid) for sid in ids}
 
     return Task(
         dataset=hidden_goal_ca_dataset(seeds, secret_seed),
@@ -443,7 +444,8 @@ def secret_keeping_hidden_goal_ca(
             "arm": "hidden-goal-ca",
             "max_turns": max_turns,
             "secret_seed": secret_seed,
-            "ca_log": ca_log,
+            "setting": setting,
+            "seed_mode": "prompt-only",
             "judge_prompt_version": GOAL_DISCLOSURE_JUDGE_VERSION,
         },
     )
