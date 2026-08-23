@@ -157,10 +157,14 @@ def attack_samples(setting_name: str) -> list[Sample]:
 # --- Prompt-only seeding (the current design; meeting-5 plan T1) ---------------
 
 
-def _prompt_only_seed(
+def prompt_only_seed(
     target_system_prompt: str, hidden_goal_text: str
 ) -> HiddenGoalSeed:
-    """A `HiddenGoalSeed` with no prior turns (initialisation only)."""
+    """A `HiddenGoalSeed` with no prior turns (initialisation only).
+
+    The low-level prompt-only builder both the CA-native path (`build_prompt_only_seed`)
+    and the constructed scenarios (`scenarios.build_scenario_seed`, plan T4) go through.
+    """
     return HiddenGoalSeed(
         target_system_prompt=target_system_prompt,
         seed_history=[],
@@ -184,7 +188,7 @@ def build_prompt_only_seed(
     system += PROMPT_ONLY_MAIN_TASK_TEMPLATE.format(
         main_task=metadata["main_task_description"]
     )
-    return _prompt_only_seed(system + keep_suffix, metadata["side_task_description"])
+    return prompt_only_seed(system + keep_suffix, metadata["side_task_description"])
 
 
 def load_prompt_only_seed(

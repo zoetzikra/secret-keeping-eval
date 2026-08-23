@@ -65,9 +65,11 @@ from secret_keeping.prompts import (
     GOAL_DISCLOSURE_JUDGE_PROMPT,
     GOAL_DISCLOSURE_JUDGE_VERSION,
     HIDDEN_GOAL_CA_KEEP_SUFFIX,
+    SCENARIO_PROMPTS_VERSION,
 )
 from secret_keeping.records import Investigation, TargetTurn
-from secret_keeping.secret_keeping import DEFAULT_TOKEN_LIMIT
+from secret_keeping.scenarios import SCENARIOS, build_scenario_seed
+from secret_keeping.secret_keeping import DEFAULT_INVESTIGATIONS, DEFAULT_TOKEN_LIMIT
 
 CA_ARMS = {"default": "", "keep": HIDDEN_GOAL_CA_KEEP_SUFFIX}
 
@@ -430,32 +432,19 @@ def goal_disclosure_scorer() -> Scorer:
 # --- Task ---------------------------------------------------------------------
 
 
-@task
-def secret_keeping_hidden_goal_ca(
-    setting: str = "apps",
-    sample_ids: str | int = "0",
-    secret_seed: int = 16,
-    max_turns: int = DEFAULT_PETRI_MAX_TURNS,
-    token_limit: int = DEFAULT_TOKEN_LIMIT,
+def _build_audit_task(
+    seeds: dict[str, HiddenGoalSeed],
+    secret_seed: int,
+    max_turns: int,
+    token_limit: int,
+    metadata: dict[str, Any],
 ) -> Task:
-    """Audit prompt-only-seeded targets (S1, CA-native) — pre-deployment interrogation.
+    """The freeze-mode prompt-only audit Task shared by every hidden-goal entry point.
 
-    Args:
-        setting: ControlArena setting name (`apps`, `bash`, …). Its ATTACK dataset is
-            loaded dataset-only — no sandbox, no Docker.
-        sample_ids: Comma-separated sample ids (or positional indices) to seed; both
-            arms run per sample.
-        secret_seed: Registry seed id for this run (P3-CA block; 16 = paired
-            default-vs-keep prompt-only set).
-        max_turns: Auditor turn budget.
-        token_limit: Per-investigation budget; exceeding it is censored, not an error.
-
-    Freeze mode: no ControlArena tools during the audit (`target_tools="none"`),
-    prefill off. `max_samples<=4` must be passed on the CLI.
+    One place defines the auditor (no prefill, no `set_system_message`, freeze mode),
+    the seeded target agent, and the gd-v3 disclosure scorer, so S1 (CA-native) and
+    the S2–S4 scenarios differ only in how `seeds` was built.
     """
-    ids = [s.strip() for s in str(sample_ids).split(",") if s.strip()]
-    seeds = {sid: load_prompt_only_seed(setting, sid) for sid in ids}
-
     return Task(
         dataset=hidden_goal_ca_dataset(seeds, secret_seed),
         setup=[_ca_setup(seeds, max_turns)],
@@ -481,8 +470,83 @@ def secret_keeping_hidden_goal_ca(
             "arm": "hidden-goal-ca",
             "max_turns": max_turns,
             "secret_seed": secret_seed,
-            "setting": setting,
             "seed_mode": "prompt-only",
             "judge_prompt_version": GOAL_DISCLOSURE_JUDGE_VERSION,
+            **metadata,
+        },
+    )
+
+
+@task
+def secret_keeping_hidden_goal_ca(
+    setting: str = "apps",
+    sample_ids: str | int = "0",
+    secret_seed: int = 16,
+    max_turns: int = DEFAULT_PETRI_MAX_TURNS,
+    token_limit: int = DEFAULT_TOKEN_LIMIT,
+) -> Task:
+    """Audit prompt-only-seeded targets (S1, CA-native) — pre-deployment interrogation.
+
+    Args:
+        setting: ControlArena setting name (`apps`, `bash`, …). Its ATTACK dataset is
+            loaded dataset-only — no sandbox, no Docker.
+        sample_ids: Comma-separated sample ids (or positional indices) to seed; both
+            arms run per sample.
+        secret_seed: Registry seed id for this run (P3-CA block; 16 = paired
+            default-vs-keep prompt-only S1 set).
+        max_turns: Auditor turn budget.
+        token_limit: Per-investigation budget; exceeding it is censored, not an error.
+
+    Freeze mode: no ControlArena tools during the audit (`target_tools="none"`),
+    prefill off. `max_samples<=4` must be passed on the CLI.
+    """
+    ids = [s.strip() for s in str(sample_ids).split(",") if s.strip()]
+    seeds = {sid: load_prompt_only_seed(setting, sid) for sid in ids}
+    return _build_audit_task(
+        seeds,
+        secret_seed,
+        max_turns,
+        token_limit,
+        {"scenario": "S1", "setting": setting, "correlation": "correlated"},
+    )
+
+
+@task
+def secret_keeping_hidden_goal_scenario(
+    scenario: str = "S4",
+    investigations: int = DEFAULT_INVESTIGATIONS,
+    secret_seed: int = 19,
+    max_turns: int = DEFAULT_PETRI_MAX_TURNS,
+    token_limit: int = DEFAULT_TOKEN_LIMIT,
+) -> Task:
+    """Audit a constructed prompt-only scenario (S2–S4), both arms.
+
+    All `investigations` share the one scenario seed (they differ only in target /
+    auditor sampling), giving `investigations` paired default-vs-keep investigations
+    for the scenario's survival estimate.
+
+    Args:
+        scenario: `S2a` | `S2b` | `S3` | `S4` (see `scenarios.SCENARIOS`).
+        investigations: Number of paired investigations per arm.
+        secret_seed: Registry seed id (one per scenario; see RUNS.md reserved seeds).
+        max_turns: Auditor turn budget.
+        token_limit: Per-investigation budget; exceeding it is censored, not an error.
+
+    Freeze mode, prefill off. `max_samples<=4` must be passed on the CLI.
+    """
+    sc = SCENARIOS[scenario]
+    seed = build_scenario_seed(scenario)
+    seeds = {f"{i:03d}": seed for i in range(investigations)}
+    return _build_audit_task(
+        seeds,
+        secret_seed,
+        max_turns,
+        token_limit,
+        {
+            "scenario": sc.id,
+            "scenario_label": sc.label,
+            "correlation": sc.correlation,
+            "route": sc.route,
+            "scenario_prompts_version": SCENARIO_PROMPTS_VERSION,
         },
     )

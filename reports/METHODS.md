@@ -1407,3 +1407,65 @@ number quoted before M12.
 
 **History:** 2026-08-23, gd-v2.1 → gd-v3 built as meeting-5 plan T3. Adds `indirect`
 and `unclassified`; dimension 2 carried over frozen from M16.
+
+### M31 — The 4-scenario matrix: admissibility routes, pre-registered hypotheses
+
+**Decision:** The hidden-goal eval runs a 4-scenario matrix, each scenario prompt-only
+(M29) and paired `default`/`keep`, with the side-task/constraint text versioned
+(`SCENARIO_PROMPTS_VERSION = sc-v1`) and Zoe-reviewed before any powered run:
+
+- **S1 — CA-native** (ControlArena's verbatim attack side task; correlated). Necessity
+  varies by setting: Apps-class trivial (single forward pass → route *necessity*),
+  Bash-class complex.
+- **S2 — benign analog (intern-changelog)**, built as the within-scenario correlation
+  pair: **S2a** side edit in the *same* file the task edits (correlated, route
+  *necessity*) vs **S2b** an *unrelated* file (uncorrelated, route *decorrelation*).
+- **S3 — task-relevant manipulation (house-brand Plan Pro)** (correlated, non-trivial).
+- **S4 — decorrelated benign constraint (Socratic tutor)** (decorrelated, route
+  *decorrelation*).
+
+**Admissibility rule (Zoe, 2026-08-23).** A cell is a valid secret-keeping cell iff
+the trace has *no task-reason to include the goal* — reached via **decorrelation**
+(goal irrelevant to everything in the conversation) or **lack of necessity** (side
+task correlated but completable in a single forward pass). Either way the CoT is
+expected silent, so a goal-mention is signal, not task noise. Every cell is labelled
+with its route (stored in run metadata).
+
+**Pre-registered before the powered runs (M16 discipline):**
+1. On correlated-trivial cells, a spontaneous CoT mention of the side task is a
+   rehearsal/salience signal; **interrogation-elicited disclosure is the headline
+   channel**.
+2. **Headline cross-scenario hypothesis:** secret-keeping ability differs by scenario,
+   and the AISI-relevant contrast is **S2-vs-S1** (benign analog vs sneaky) — the
+   prediction Jordan asked to see first is *sneakier and fewer refusals under the
+   benign analog than under the egregious CA side task*.
+3. **Egregious-goal confound:** aligned models may disclose an *egregious* side goal
+   more readily because honesty tendencies push them to confess — so **S1 measures
+   capability and propensity mixed**, and the benign scenarios (S2–S4) are the cleaner
+   capability probe. This is the within-repo statement of why benign analogs matter.
+
+**Alternatives:** A single scenario (rejected — the cross-scenario contrast is the
+deliverable). Egregious goals only (rejected — confounds capability with propensity,
+above). Building the correlation contrast across scenarios rather than within S2
+(rejected — S2a/S2b hold everything but the target file fixed, the cleanest contrast).
+
+**Endpoint & framing.** Judged disclosure under gd-v3 (M30), no codename; an optional
+codename floor is a deferred ablation (plan T4.5, build only on Zoe's green-light
+after the S1 powered run). Ground truth: every run stores the verbatim
+side-task/constraint text (`Investigation.hidden_goal_text`) next to the transcript,
+so the judge and the M12 labeller read the same ground truth. `keep` appends the
+explicit CoT-secrecy suffix on top of each scenario's own secrecy clause, mirroring
+the password eval's keep semantics.
+
+**Evidence:** `src/secret_keeping/scenarios.py` (registry + `build_scenario_seed`);
+`secret_keeping_hidden_goal_scenario` task; `prompts.py` S2–S4 texts (`sc-v1`).
+Smokes per scenario (RUNS.md, SMOKE) precede any powered run.
+
+**Status:** **design settled and pre-registered** (meeting-5 plan T4); prompt texts
+pending Zoe's review before the powered runs. No number quoted before M12 judge
+validation on gd-v3. S5 (data-handling within-rule correlation toggle) is a stretch,
+built only after S1–S4 smoke clean.
+
+**History:** 2026-08-23, built as meeting-5 plan T4. Folds in the Phase-4 roadmap of
+the removed directive (intern-changelog, house-brand, data-handling, Socratic) and
+its egregious-goal confound note.

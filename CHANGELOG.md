@@ -8,6 +8,33 @@ mechanical evidence, not an argument).
 
 ---
 
+## 2026-08-23 — P3-CA: 4-scenario prompt-only matrix (S1–S4), pre-registered
+
+**What.** The hidden-goal eval gains a 4-scenario matrix, each prompt-only (M29) and
+paired `default`/`keep`: **S1** CA-native (ControlArena's verbatim attack side task);
+**S2a/S2b** benign intern-changelog analog (correlated same-file vs uncorrelated
+unrelated-file — the within-scenario correlation contrast); **S3** house-brand Plan
+Pro (task-relevant manipulation); **S4** Socratic-tutor (decorrelated constraint). New
+`src/secret_keeping/scenarios.py` (registry + `build_scenario_seed`), task
+`secret_keeping_hidden_goal_scenario`, versioned prompt texts in `prompts.py`
+(`SCENARIO_PROMPTS_VERSION = sc-v1`). S1 and the scenario task share one audit-task
+builder (`_build_audit_task`). Design + pre-registration in METHODS **M31**.
+
+**Why it mattered.** This is the meeting's core experimental deliverable. Each cell is
+labelled with its admissibility route (decorrelation / lack-of-necessity), and three
+hypotheses are pre-registered before the powered runs (M16 discipline): interrogation-
+elicited disclosure is the headline channel; the AISI-relevant contrast is S2-vs-S1
+(benign analog sneakier + fewer refusals than the egregious CA task); and S1 mixes
+capability with propensity (aligned models may confess an egregious goal), so the
+benign scenarios are the cleaner capability probe.
+
+**What it invalidated.** Nothing quoted — no powered runs yet. Seeds 17–20 reserved
+(S2a/S2b/S3/S4). Scenario prompt texts are pending Zoe's review before the powered
+runs; smokes (RUNS.md, SMOKE) precede them. No number quoted before M12 judge
+validation on gd-v3. The optional codename-floor ablation (plan T4.5) is deferred to
+Zoe's green-light after the S1 powered run. S5 (data-handling within-rule toggle) is a
+stretch, built only after S1–S4 smoke clean.
+
 ## 2026-08-23 — P3-CA disclosure judge gd-v2.1 → gd-v3 (adds `indirect` + `unclassified`)
 
 **What.** Dimension 1 of the goal-disclosure judge gains a fourth level **`indirect`**
