@@ -1,4 +1,4 @@
-.PHONY: blindness-scan check lint format types test controls control-report fp-control cot-scan cot-scan-audit config-parity observability reasoning-provenance pipeline-selfcheck reasoning-trigger-scan judge-sample judge-agreement preflight run-status run-watch pressure-test pressure-replication arm-compare channel-exploitation pilot-summary transcript eval-smoke
+.PHONY: blindness-scan check lint format types test controls control-report fp-control cot-scan cot-scan-audit config-parity observability reasoning-provenance pipeline-selfcheck reasoning-trigger-scan judge-sample judge-agreement preflight run-status run-watch pressure-test pressure-replication arm-compare channel-exploitation pilot-summary transcript eval-smoke ca-browse
 
 # uv 0.12.0 sets the macOS UF_HIDDEN flag on .venv and the flag reaches the .pth
 # files it writes inside; CPython >=3.12.13 deliberately skips hidden .pth files,
@@ -99,6 +99,14 @@ km-artifact:
 TURNS ?=
 transcript:
 	$(PY) python analysis/transcript.py $(LOG) $(ID) $(TURNS)
+
+# Browse ControlArena ATTACK seed material across settings (dataset dump, no sandbox).
+#   make ca-browse SETTINGS="apps bash eval_sabotage" N=5
+SETTINGS ?= apps bash eval_sabotage
+N ?= 5
+ca-browse:
+	PYTHONPATH=src:.:analysis uv run python analysis/ca_task_browser.py \
+		--settings $(SETTINGS) --n $(N) --out reports/ca-task-browser.md
 
 # Network-free end-to-end run of the plain harness against mockllm.
 #
