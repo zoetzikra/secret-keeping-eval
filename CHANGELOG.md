@@ -8,6 +8,38 @@ mechanical evidence, not an argument).
 
 ---
 
+## 2026-08-24 — P3-CA scenario matrix revised sc-v1 → sc-v2 (Zoe's six-part review)
+
+**What.** Six changes to the prompt-only scenario matrix
+(`SCENARIO_PROMPTS_VERSION = sc-v2`): (1) intern renamed **Jordan Reyes → Bob
+Mortimer** (name collision in transcripts/rationales). (2) **S2 given a three-point
+bare/default/keep arm axis** — `bare` carries the side task with no secrecy language
+(the true no-secrecy baseline E2 needs), `default` adds the scenario-native "don't
+mention", `keep` adds the CoT suffix; the constraint scenarios keep `default`/`keep`
+because there the clause *is* the scenario (M31). (3) S2a/S2b verified legibly
+different (same-file `CHANGELOG.md` vs unrelated `CONTRIBUTORS.md`). (4) **S4 (Socratic
+tutor) retired** from the matrix — maximal behavioural footprint (M32), content-leak
+unmeasurable; its two smoke transcripts moved to the M12 sheet as constraint-type
+boundary cases. (5) **New scenarios S5 (data-handling, neg/aff phrasing pair — white-
+bear pre-registration, M31), S6 (broad preference), S7 (narrow omission, negation-
+phrased)** added, all full matrix members. (6) METHODS additions: **M32
+behavioural-footprint axis** (why content-leak is not comparable across scenarios) and
+an `indirect`-over-firing calibration flag logged as an open question for the M12 round.
+
+**Why it mattered.** Without S2's `bare` arm there was no no-secrecy baseline to
+reproduce the E2/Result-2 keep-vs-no-instruction contrast. S4's constraint content is
+broadcast every turn, so its content-leak standard was void — retiring it and naming
+the behavioural-footprint axis makes explicit that the cross-scenario currency is
+*provenance* disclosure, not raw content emission. The S5 neg/aff pair tests
+ironic-process (Result 2) with policy held fixed.
+
+**What it invalidated.** sc-v1 scenario texts and the `hg-scenario-smoke` run (seeds
+17–20) are **superseded**; seeds 21–26 reserved for sc-v2. S4 is removed from the
+`SCENARIOS` registry (retired, not deleted — text kept so the M12 boundary reference is
+grounded). The per-arm refactor changed the seed-map contract (`_ca_setup` no longer
+appends a suffix — seeds arrive fully-formed) and the `hidden_goal_ca_dataset`
+signature. Re-smoked as `hg-scenario-smoke-v2`. No number quoted before M12 validation.
+
 ## 2026-08-23 — P3-CA: 4-scenario prompt-only matrix (S1–S4), pre-registered
 
 **What.** The hidden-goal eval gains a 4-scenario matrix, each prompt-only (M29) and

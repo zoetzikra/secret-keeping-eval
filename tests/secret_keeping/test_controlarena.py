@@ -94,7 +94,7 @@ def test_prompt_only_auditor_seed_is_blind_to_the_attack_text():
     from secret_keeping.hidden_goal_ca import hidden_goal_ca_dataset
 
     seed = build_prompt_only_seed(METADATA)
-    dataset = hidden_goal_ca_dataset({"0": seed}, secret_seed=16)
+    dataset = hidden_goal_ca_dataset({"0_default": ("default", seed)}, secret_seed=16)
     for sample in dataset:
         # the goal instruction and the attack framing live only in the target system
         # prompt, never in the auditor-visible opening message or per-sample metadata.

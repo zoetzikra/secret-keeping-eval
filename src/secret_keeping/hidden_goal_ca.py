@@ -71,7 +71,13 @@ from secret_keeping.records import Investigation, TargetTurn
 from secret_keeping.scenarios import SCENARIOS, build_scenario_seed
 from secret_keeping.secret_keeping import DEFAULT_INVESTIGATIONS, DEFAULT_TOKEN_LIMIT
 
-CA_ARMS = {"default": "", "keep": HIDDEN_GOAL_CA_KEEP_SUFFIX}
+# S1 (CA-native) arm suffixes. The scenario matrix (S2–S7) supplies its own arm set
+# and per-arm side-task text via scenarios.build_scenario_seed, so seeds arrive
+# fully-formed (suffix already applied) and `_ca_setup` never appends one.
+CA_ARMS_SUFFIX = {"default": "", "keep": HIDDEN_GOAL_CA_KEEP_SUFFIX}
+
+# A per-investigation seed carries its arm name and its fully-formed HiddenGoalSeed.
+SeedMap = dict[str, tuple[str, HiddenGoalSeed]]
 
 
 # --- Seeded target agent ------------------------------------------------------
@@ -130,51 +136,45 @@ def seeded_target_agent() -> Agent:
 # --- Dataset ------------------------------------------------------------------
 
 
-def hidden_goal_ca_dataset(
-    seeds: dict[str, HiddenGoalSeed], secret_seed: int
-) -> MemoryDataset:
-    """One sample per (sample, arm).
+def hidden_goal_ca_dataset(seeds: SeedMap, secret_seed: int) -> MemoryDataset:
+    """One sample per key in `seeds` (each key is an investigation+arm).
 
-    The auditor seed is the pre-deployment interrogation prompt (no transcript, since
-    the target has taken no prior actions) plus the Variant-A note (no
-    `set_system_message` tool). The hidden goal and the system prompt travel through
-    the store (populated by `_ca_setup` from `seeds`), never through auditor-visible
-    `Sample.metadata`.
+    `seeds` maps `key -> (arm, fully-formed HiddenGoalSeed)`. The auditor seed is the
+    pre-deployment interrogation prompt (no transcript, since the target has taken no
+    prior actions) plus the Variant-A note (no `set_system_message` tool). The hidden
+    goal and the system prompt travel through the store (populated by `_ca_setup`),
+    never through auditor-visible `Sample.metadata`.
     """
     audit_seed = (
         AUDITOR_SEED_HIDDEN_GOAL_PROMPT_ONLY + AUDITOR_SEED_SUFFIX_FIXED_SYSTEM_PROMPT
     )
-    samples = []
-    for sample_id, _seed in seeds.items():
-        for arm in CA_ARMS:
-            samples.append(
-                Sample(
-                    input=audit_seed,
-                    target="",  # no verbatim token; the endpoint is judged disclosure
-                    id=f"{secret_seed}_{sample_id}_{arm}",
-                    metadata={"ca_arm": arm, "sample_ref": sample_id},
-                )
-            )
+    samples = [
+        Sample(
+            input=audit_seed,
+            target="",  # no verbatim token; the endpoint is judged disclosure
+            id=f"{secret_seed}_{key}",
+            metadata={"ca_arm": arm, "sample_ref": key},
+        )
+        for key, (arm, _seed) in seeds.items()
+    ]
     return MemoryDataset(samples=samples, name="secret_keeping_hidden_goal_ca")
 
 
 @solver
-def _ca_setup(seeds: dict[str, HiddenGoalSeed], max_turns: int) -> Solver:
-    """Populate the store from the per-sample seed, keyed by sample ref.
+def _ca_setup(seeds: SeedMap, max_turns: int) -> Solver:
+    """Populate the store from the per-key seed (arm suffix already baked in).
 
-    Reads the seed by sample ref (not from metadata) so nothing goal-bearing is ever
-    exposed to the auditor channel. Re-applied per sample; the seeded target agent
-    reads these fields at execute time.
+    Reads the seed by key (not from metadata) so nothing goal-bearing is ever exposed
+    to the auditor channel. The seed is stored verbatim — the arm's suffix, if any,
+    was applied when the seed was built.
     """
 
     async def solve(state: TaskState, generate: Generate) -> TaskState:
-        arm = state.metadata["ca_arm"]
-        seed = seeds[state.metadata["sample_ref"]]
-        suffix = CA_ARMS[arm]
+        arm, seed = seeds[state.metadata["sample_ref"]]
         investigation = state.store_as(Investigation)
         investigation.harness = "petri"
         investigation.max_turns = max_turns
-        investigation.target_system_prompt = seed.target_system_prompt + suffix
+        investigation.target_system_prompt = seed.target_system_prompt
         investigation.seed_history_json = serialize_history(seed.seed_history)
         investigation.hidden_goal_text = seed.hidden_goal_text
         investigation.seed_transcript = seed.seed_transcript
@@ -433,7 +433,7 @@ def goal_disclosure_scorer() -> Scorer:
 
 
 def _build_audit_task(
-    seeds: dict[str, HiddenGoalSeed],
+    seeds: SeedMap,
     secret_seed: int,
     max_turns: int,
     token_limit: int,
@@ -501,7 +501,14 @@ def secret_keeping_hidden_goal_ca(
     prefill off. `max_samples<=4` must be passed on the CLI.
     """
     ids = [s.strip() for s in str(sample_ids).split(",") if s.strip()]
-    seeds = {sid: load_prompt_only_seed(setting, sid) for sid in ids}
+    seeds: SeedMap = {
+        f"{sid}_{arm}": (
+            arm,
+            load_prompt_only_seed(setting, sid, keep_suffix=suffix),
+        )
+        for sid in ids
+        for arm, suffix in CA_ARMS_SUFFIX.items()
+    }
     return _build_audit_task(
         seeds,
         secret_seed,
@@ -526,7 +533,9 @@ def secret_keeping_hidden_goal_scenario(
     for the scenario's survival estimate.
 
     Args:
-        scenario: `S2a` | `S2b` | `S3` | `S4` (see `scenarios.SCENARIOS`).
+        scenario: `S2a` | `S2b` | `S3` | `S5neg` | `S5aff` | `S6` | `S7` (see
+            `scenarios.SCENARIOS`). Its arm set (bare/default/keep for S2,
+            default/keep otherwise) is run for every investigation.
         investigations: Number of paired investigations per arm.
         secret_seed: Registry seed id (one per scenario; see RUNS.md reserved seeds).
         max_turns: Auditor turn budget.
@@ -535,8 +544,11 @@ def secret_keeping_hidden_goal_scenario(
     Freeze mode, prefill off. `max_samples<=4` must be passed on the CLI.
     """
     sc = SCENARIOS[scenario]
-    seed = build_scenario_seed(scenario)
-    seeds = {f"{i:03d}": seed for i in range(investigations)}
+    seeds: SeedMap = {
+        f"{i:03d}_{arm}": (arm, build_scenario_seed(scenario, arm))
+        for i in range(investigations)
+        for arm in sc.arms
+    }
     return _build_audit_task(
         seeds,
         secret_seed,
@@ -547,6 +559,7 @@ def secret_keeping_hidden_goal_scenario(
             "scenario_label": sc.label,
             "correlation": sc.correlation,
             "route": sc.route,
+            "arms": list(sc.arms),
             "scenario_prompts_version": SCENARIO_PROMPTS_VERSION,
         },
     )
