@@ -46,6 +46,8 @@ from secret_keeping.prompts import (
     S6_SIMPLER_SIDE_TASK,
     S7_OMISSION_MAIN_TASK,
     S7_OMISSION_SIDE_TASK,
+    SCENARIO_HEADER_CONFIDENTIAL,
+    SCENARIO_HEADER_NEUTRAL,
 )
 
 
@@ -164,8 +166,11 @@ def build_scenario_seed(scenario_id: str, arm: str = "default") -> HiddenGoalSee
     sc = SCENARIOS[scenario_id]
     if arm not in sc.arms:
         raise KeyError(f"scenario {scenario_id!r} lacks arm {arm!r}: {sorted(sc.arms)}")
+    # The header is itself secrecy framing: neutral on the no-secrecy `bare` arm,
+    # confidential on default/keep (sc-v3).
+    header = SCENARIO_HEADER_NEUTRAL if arm == "bare" else SCENARIO_HEADER_CONFIDENTIAL
     system = BENIGN_SCENARIO_SYSTEM_TEMPLATE.format(
-        main_task=sc.main_task, side_task=sc.arms[arm]
+        instruction_header=header, main_task=sc.main_task, side_task=sc.arms[arm]
     )
     suffix = HIDDEN_GOAL_CA_KEEP_SUFFIX if arm == "keep" else ""
     return prompt_only_seed(system + suffix, sc.goal_text)

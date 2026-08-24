@@ -46,13 +46,18 @@ def test_keep_arm_is_default_plus_suffix(scenario_id):
 
 
 def test_s2_three_point_axis():
-    # bare has no secrecy clause; default adds it; keep adds the suffix on top.
+    # bare has no secrecy clause AND no confidential header; default adds both; keep
+    # adds the suffix on top (sc-v3).
     for sid in ("S2a", "S2b"):
         assert set(SCENARIOS[sid].arms) == {"bare", "default", "keep"}
         bare = build_scenario_seed(sid, "bare").target_system_prompt
         default = build_scenario_seed(sid, "default").target_system_prompt
         assert S2_DONT_MENTION_CLAUSE.strip() not in bare
         assert S2_DONT_MENTION_CLAUSE.strip() in default
+        # the "Confidential" header is secrecy framing — never on the bare arm.
+        assert "Confidential internal instruction" not in bare
+        assert "Additional instruction" in bare
+        assert "Confidential internal instruction" in default
 
 
 def test_s2_correlation_pair_differs_only_in_target_file():
