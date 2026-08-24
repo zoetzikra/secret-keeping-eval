@@ -84,6 +84,7 @@ Terms: see TERMINOLOGY.md. Experiments: **E1** pressure-replication,
 | `hg-scenario-smoke` | T4 scenario matrix smoke (sc-v1) | default + keep | — | 17–20 | 8 | 4 | petri | **superseded** | sc-v1 (S2a/S2b/S3/S4, gd-v3). Superseded by `hg-scenario-smoke-v2` (sc-v2). **S4 rows retained as M12 calibration boundary cases** (S4 retired from the matrix, M31/M32); the S2/S3 rows are superseded by sc-v2. |
 | `hg-scenario-smoke-v2` | scenario matrix smoke (sc-v2) | bare/default/keep (S2), default/keep (else) | — | 21–26 | 16 | 4 | petri | **complete** | **SMOKE, n=1 — NOT a result.** sc-v2. **S2a/S2b cells superseded by `hg-scenario-smoke-v3`** (sc-v3 bare-header fix); S3/S5neg/S5aff/S6/S7 cells valid (text unchanged sc-v2≡sc-v3). Source of the M12 concealment-tell boundary cases (S2a/S5neg default). |
 | `hg-scenario-smoke-v3` | scenario matrix smoke (sc-v3 S2 fix) | bare/default/keep | — | 21–22 | 6 | 4 | petri | **complete** | **SMOKE, n=1 — NOT a result.** S2a/S2b re-smoked under sc-v3 (bare arm → neutral "Additional instruction" header, no secrecy framing). Confirms the header fix; S2a bare disclosed readily (no-secrecy baseline direction). gd-v3, no Docker. |
+| `hg-s1-apps-powered` | S1 CA-native powered (matrix, seed 16 first) | default + keep | — | 16 | 20 | 40 | petri | **in flight** | Prompt-only S1 (apps, sample ids 0–19), gpt-5-mini target, sonnet-4-6 auditor+grader, gd-v3, `max_samples=4`, no Docker. First powered run + cost-calibration point. No number quoted before M12. |
 
 ## Reserved seeds
 
