@@ -16,7 +16,7 @@ from secret_keeping.scenarios import (
 )
 
 
-def _arms(scenario_id):
+def _arms(scenario_id: str) -> list[tuple[str, str]]:
     return [(scenario_id, arm) for arm in SCENARIOS[scenario_id].arms]
 
 
@@ -24,7 +24,9 @@ ALL_CELLS = [cell for sid in SCENARIOS for cell in _arms(sid)]
 
 
 @pytest.mark.parametrize("scenario_id,arm", ALL_CELLS)
-def test_scenario_cell_is_prompt_only_with_ground_truth(scenario_id, arm):
+def test_scenario_cell_is_prompt_only_with_ground_truth(
+    scenario_id: str, arm: str
+) -> None:
     sc = SCENARIOS[scenario_id]
     seed = build_scenario_seed(scenario_id, arm)
     # prompt-only: no prior turns.
@@ -37,7 +39,7 @@ def test_scenario_cell_is_prompt_only_with_ground_truth(scenario_id, arm):
 
 
 @pytest.mark.parametrize("scenario_id", sorted(SCENARIOS))
-def test_keep_arm_is_default_plus_suffix(scenario_id):
+def test_keep_arm_is_default_plus_suffix(scenario_id: str) -> None:
     keep = build_scenario_seed(scenario_id, "keep")
     default = build_scenario_seed(scenario_id, "default")
     assert keep.target_system_prompt == default.target_system_prompt + (
@@ -45,7 +47,7 @@ def test_keep_arm_is_default_plus_suffix(scenario_id):
     )
 
 
-def test_s2_three_point_axis():
+def test_s2_three_point_axis() -> None:
     # bare has no secrecy clause AND no confidential header; default adds both; keep
     # adds the suffix on top (sc-v3).
     for sid in ("S2a", "S2b"):
@@ -60,7 +62,7 @@ def test_s2_three_point_axis():
         assert "Confidential internal instruction" in default
 
 
-def test_s2_correlation_pair_differs_only_in_target_file():
+def test_s2_correlation_pair_differs_only_in_target_file() -> None:
     a = build_scenario_seed("S2a", "bare").target_system_prompt
     b = build_scenario_seed("S2b", "bare").target_system_prompt
     assert "CHANGELOG.md" in a and "CONTRIBUTORS.md" in b
@@ -69,23 +71,23 @@ def test_s2_correlation_pair_differs_only_in_target_file():
     assert SCENARIOS["S2a"].main_task == SCENARIOS["S2b"].main_task
 
 
-def test_s5_phrasing_pair_shares_task_and_arms_differs_in_side_task():
+def test_s5_phrasing_pair_shares_task_and_arms_differs_in_side_task() -> None:
     neg, aff = (SCENARIOS[s] for s in S5_PHRASING_PAIR)
     assert neg.main_task == aff.main_task
     assert neg.goal_text != aff.goal_text
     assert set(neg.arms) == set(aff.arms) == {"default", "keep"}
 
 
-def test_constraint_scenarios_are_two_arm():
+def test_constraint_scenarios_are_two_arm() -> None:
     for sid in ("S3", "S5neg", "S5aff", "S6", "S7"):
         assert set(SCENARIOS[sid].arms) == {"default", "keep"}
 
 
-def test_s4_is_retired_not_in_matrix():
+def test_s4_is_retired_not_in_matrix() -> None:
     assert "S4" not in SCENARIOS
 
 
-def test_unknown_scenario_and_arm_raise():
+def test_unknown_scenario_and_arm_raise() -> None:
     with pytest.raises(KeyError):
         build_scenario_seed("S9")
     with pytest.raises(KeyError):

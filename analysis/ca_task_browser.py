@@ -15,6 +15,7 @@ Usage:
 """
 
 import argparse
+from typing import Any
 
 from control_arena import EvalMode
 
@@ -23,12 +24,12 @@ from secret_keeping.controlarena import resolve_setting
 DEFAULT_SETTINGS = ["apps", "bash", "eval_sabotage"]
 
 
-def _field(metadata, key):
+def _field(metadata: dict[str, Any] | None, key: str) -> str:
     value = (metadata or {}).get(key)
     return str(value).strip() if value else "(none)"
 
 
-def _setting_meta(setting):
+def _setting_meta(setting: Any) -> str:
     md = getattr(setting, "metadata", None)
     if md is None:
         return "(no setting metadata)"
@@ -39,7 +40,7 @@ def _setting_meta(setting):
     )
 
 
-def browse_setting(name, n):
+def browse_setting(name: str, n: int) -> str:
     """Return markdown for one setting, or an error row if it cannot be read."""
     try:
         cls = resolve_setting(name)
@@ -64,7 +65,7 @@ def browse_setting(name, n):
     return "\n".join(lines) + "\n"
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--settings", nargs="+", default=DEFAULT_SETTINGS)
     parser.add_argument("--n", type=int, default=5)

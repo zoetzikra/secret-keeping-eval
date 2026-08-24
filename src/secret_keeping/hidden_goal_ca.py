@@ -111,9 +111,7 @@ def seeded_target_agent() -> Agent:
             while True:
                 if prefill := context.prefill():
                     state.messages.append(ChatMessageAssistant(content=prefill))
-                state.output = await generate(
-                    input=state.messages, tools=context.tools
-                )
+                state.output = await generate(input=state.messages, tools=context.tools)
                 state.messages.append(state.output.message)
                 if tool_calls := state.output.message.tool_calls:
                     context.expect({TOOL_RESULT: {tc.id for tc in tool_calls}})

@@ -1,4 +1,4 @@
-.PHONY: blindness-scan check lint format types test controls control-report fp-control cot-scan cot-scan-audit config-parity observability reasoning-provenance pipeline-selfcheck reasoning-trigger-scan judge-sample judge-agreement preflight run-status run-watch pressure-test pressure-replication arm-compare channel-exploitation pilot-summary transcript eval-smoke ca-browse
+.PHONY: blindness-scan check lint format types test controls control-report fp-control cot-scan cot-scan-audit config-parity observability reasoning-provenance pipeline-selfcheck reasoning-trigger-scan judge-sample judge-agreement preflight run-status run-watch pressure-test pressure-replication arm-compare channel-exploitation pilot-summary transcript eval-smoke ca-browse powered-overnight
 
 # uv 0.12.0 sets the macOS UF_HIDDEN flag on .venv and the flag reaches the .pth
 # files it writes inside; CPython >=3.12.13 deliberately skips hidden .pth files,
@@ -107,6 +107,14 @@ N ?= 5
 ca-browse:
 	PYTHONPATH=src:.:analysis uv run python analysis/ca_task_browser.py \
 		--settings $(SETTINGS) --n $(N) --out reports/ca-task-browser.md
+
+# Unattended overnight powered hidden-goal matrix with automated tripwires (meeting-5).
+# Runs S1 -> S2a+S2b -> S3+S5neg+S5aff -> S6+S7, halting on any tripwire failure and
+# writing reports/overnight-halt.md; on success writes reports/overnight-summary.md.
+# `caffeinate -i -s` keeps the machine awake for the duration.
+#   make powered-overnight
+powered-overnight:
+	PYTHONPATH=src:.:analysis caffeinate -i -s uv run python analysis/powered_overnight.py
 
 # Network-free end-to-end run of the plain harness against mockllm.
 #

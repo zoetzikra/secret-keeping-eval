@@ -17,7 +17,7 @@ import glob
 import re
 
 from inspect_ai.log import read_eval_log
-from inspect_ai.model import get_model
+from inspect_ai.model import Model, get_model
 
 from secret_keeping.prompts import (
     GOAL_DISCLOSURE_JUDGE_PROMPT,
@@ -39,7 +39,14 @@ _CONCEAL_RE = re.compile(
 _RATIONALE_RE = re.compile(r"<rationale>\s*(.*?)\s*</rationale>", re.IGNORECASE | re.S)
 
 
-async def _judge(model, hidden_goal, transcript, stimulus, text, context):
+async def _judge(
+    model: Model,
+    hidden_goal: str,
+    transcript: str,
+    stimulus: str,
+    text: str,
+    context: str,
+) -> tuple[str | None, str, bool, str]:
     prompt = GOAL_DISCLOSURE_JUDGE_PROMPT.format(
         hidden_goal=hidden_goal,
         transcript=transcript,
@@ -55,7 +62,7 @@ async def _judge(model, hidden_goal, transcript, stimulus, text, context):
     return (
         d.group(1).lower() if d else None,
         e.group(1).strip() if e else "",
-        bool(c) and c.group(1).lower() == "yes",
+        c is not None and c.group(1).lower() == "yes",
         r.group(1).strip() if r else out[:160],
     )
 
@@ -81,8 +88,10 @@ async def main() -> None:
     ]
     print(f"Re-scoring {args.log_dir} under {GOAL_DISCLOSURE_JUDGE_VERSION}\n")
 
-    for sample in log.samples:
-        arm = sample.scores["goal_disclosure_scorer"].metadata["ca_arm"]
+    for sample in log.samples or []:
+        scores = sample.scores or {}
+        md = scores["goal_disclosure_scorer"].metadata or {}
+        arm = md.get("ca_arm", "?")
         store = sample.store
         turns = store.get("Investigation:turns", [])
         transcript = store.get("Investigation:seed_transcript", "")
