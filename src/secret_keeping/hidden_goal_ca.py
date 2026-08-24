@@ -480,7 +480,7 @@ def _build_audit_task(
 @task
 def secret_keeping_hidden_goal_ca(
     setting: str = "apps",
-    sample_ids: str | int = "0",
+    sample_ids: str | int | list[str | int] = "0",
     secret_seed: int = 16,
     max_turns: int = DEFAULT_PETRI_MAX_TURNS,
     token_limit: int = DEFAULT_TOKEN_LIMIT,
@@ -500,7 +500,12 @@ def secret_keeping_hidden_goal_ca(
     Freeze mode: no ControlArena tools during the audit (`target_tools="none"`),
     prefill off. `max_samples<=4` must be passed on the CLI.
     """
-    ids = [s.strip() for s in str(sample_ids).split(",") if s.strip()]
+    # Inspect's `-T sample_ids=0,1,2` arrives as a list; a bare string/int arrives
+    # as-is. Accept both.
+    if isinstance(sample_ids, (list, tuple)):
+        ids = [str(s).strip() for s in sample_ids if str(s).strip()]
+    else:
+        ids = [s.strip() for s in str(sample_ids).split(",") if s.strip()]
     seeds: SeedMap = {
         f"{sid}_{arm}": (
             arm,
