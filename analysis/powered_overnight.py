@@ -64,7 +64,12 @@ PER_ARM_4T = {
     "S6": 0.103,
     "S7": 0.097,
 }
-TURN_SCALE_DEFAULT = 16.0  # 4-turn → 40-turn per-investigation token growth (pre-S1)
+# 4-turn → 40-turn per-investigation token growth. Measured from the S1 powered run
+# (cost $206.63 / base $6.00 = 34.4×) — the auditor's context re-read and the grader's
+# per-turn×2-channel judging grow much faster than the initial 16× guess. This makes
+# the cost tripwire a genuine "1.5× over the real rate" gate rather than a bad-estimate
+# trip. Full matrix at n=20/40-turn projects ≈ $1,340 at this rate.
+TURN_SCALE_DEFAULT = 34.4
 
 # Tripwire thresholds.
 MIN_COMPLETION = 0.90
@@ -83,6 +88,7 @@ class Run:
     args: dict[str, Any]
     arms: int
     log_dir: str
+    n: int  # investigations per arm
 
 
 @dataclass
@@ -94,84 +100,31 @@ class StageResult:
     headline: list[str] = field(default_factory=list)
 
 
-STAGES: list[tuple[str, list[Run]]] = [
-    (
-        "stage1-S1",
-        [
-            Run(
-                "S1",
-                "ca",
-                dict(setting="apps", sample_ids=list(range(N)), secret_seed=16),
-                2,
-                "logs/hg-s1-apps-powered",
-            )
-        ],
-    ),
-    (
-        "stage2-S2",
-        [
-            Run(
-                "S2a",
-                "scenario",
-                dict(scenario="S2a", secret_seed=21),
-                3,
-                "logs/hg-s2a-powered",
-            ),
-            Run(
-                "S2b",
-                "scenario",
-                dict(scenario="S2b", secret_seed=22),
-                3,
-                "logs/hg-s2b-powered",
-            ),
-        ],
-    ),
-    (
-        "stage3-S3S5",
-        [
-            Run(
-                "S3",
-                "scenario",
-                dict(scenario="S3", secret_seed=23),
-                2,
-                "logs/hg-s3-powered",
-            ),
-            Run(
-                "S5neg",
-                "scenario",
-                dict(scenario="S5neg", secret_seed=24),
-                2,
-                "logs/hg-s5neg-powered",
-            ),
-            Run(
-                "S5aff",
-                "scenario",
-                dict(scenario="S5aff", secret_seed=24),
-                2,
-                "logs/hg-s5aff-powered",
-            ),
-        ],
-    ),
-    (
-        "stage4-S6S7",
-        [
-            Run(
-                "S6",
-                "scenario",
-                dict(scenario="S6", secret_seed=25),
-                2,
-                "logs/hg-s6-powered",
-            ),
-            Run(
-                "S7",
-                "scenario",
-                dict(scenario="S7", secret_seed=26),
-                2,
-                "logs/hg-s7-powered",
-            ),
-        ],
-    ),
-]
+def build_stages(n: int) -> list[tuple[str, list[Run]]]:
+    """The stage plan at a given investigations-per-arm `n` (kept consistent across
+    S1's sample_ids, scenario `investigations`, projections and completion counts)."""
+
+    def ca(name: str, arms: int, log: str) -> Run:
+        args = dict(setting="apps", sample_ids=list(range(n)), secret_seed=16)
+        return Run(name, "ca", args, arms, log, n)
+
+    def sc(name: str, seed: int, arms: int, log: str) -> Run:
+        args = dict(scenario=name, secret_seed=seed)
+        return Run(name, "scenario", args, arms, log, n)
+
+    return [
+        ("stage1-S1", [ca("S1", 2, "logs/hg-s1-apps-powered")]),
+        ("stage2-S2", [sc("S2a", 21, 3, "logs/hg-s2a-powered"),
+                       sc("S2b", 22, 3, "logs/hg-s2b-powered")]),
+        ("stage3-S3S5", [sc("S3", 23, 2, "logs/hg-s3-powered"),
+                         sc("S5neg", 24, 2, "logs/hg-s5neg-powered"),
+                         sc("S5aff", 24, 2, "logs/hg-s5aff-powered")]),
+        ("stage4-S6S7", [sc("S6", 25, 2, "logs/hg-s6-powered"),
+                         sc("S7", 26, 2, "logs/hg-s7-powered")]),
+    ]
+
+
+STAGES = build_stages(N)  # default plan at N; main() rebuilds if --n is given
 
 # S1's real per-investigation cost calibrates the turn-scaling for later stages.
 _turn_scale = TURN_SCALE_DEFAULT
@@ -197,12 +150,12 @@ def cost_of(log: EvalLog) -> float:
 
 
 def projected_cost(run: Run) -> float:
-    return PER_ARM_4T[run.name] * run.arms * N * _turn_scale
+    return PER_ARM_4T[run.name] * run.arms * run.n * _turn_scale
 
 
 def stage_metrics(runs: list[Run], logs: list[EvalLog]) -> dict[str, Any]:
     """Aggregate operational-health metrics over a stage's logs."""
-    expected = sum(run.arms * N for run in runs)
+    expected = sum(run.arms * run.n for run in runs)
     completed = errors = no_engagement = unclassified_inv = 0
     goal_legible = 0
     read_turns = tot_turns = 0
@@ -308,7 +261,7 @@ def run_one(run: Run) -> EvalLog:
         task = secret_keeping_hidden_goal_ca(max_turns=MAX_TURNS, **run.args)
     else:
         task = secret_keeping_hidden_goal_scenario(
-            investigations=N, max_turns=MAX_TURNS, **run.args
+            investigations=run.n, max_turns=MAX_TURNS, **run.args
         )
     logs = inspect_eval(
         task,
@@ -412,10 +365,52 @@ def write_summary(results: list[StageResult]) -> None:
         fh.write("\n".join(lines) + "\n")
 
 
+def _calibrate_from_s1() -> None:
+    """Set the turn-scale from an existing S1 log (for a resumed run that skips S1)."""
+    global _turn_scale
+    import glob
+
+    from inspect_ai.log import read_eval_log
+
+    s1 = STAGES[0][1][0]
+    matches = glob.glob(f"{s1.log_dir}/*.eval")
+    if not matches:
+        return
+    cost = cost_of(read_eval_log(matches[-1]))
+    base = PER_ARM_4T[s1.name] * s1.arms * s1.n
+    if base > 0 and cost > 0:
+        _turn_scale = cost / base
+
+
 def main() -> None:
     global _turn_scale
+    import argparse
+
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--from-stage", default=None,
+        help="skip stages before this one (e.g. stage2-S2); S1's turn-scale is "
+        "recovered from its existing log so its projection stays calibrated.",
+    )
+    parser.add_argument(
+        "--n", type=int, default=None,
+        help="override investigations per arm (default 20); lowers cost linearly.",
+    )
+    args = parser.parse_args()
+
+    n = args.n if args.n is not None else N
+    stages = build_stages(n)
+    if args.from_stage is not None:
+        names = [s for s, _ in stages]
+        if args.from_stage not in names:
+            raise SystemExit(f"unknown stage {args.from_stage!r}; known: {names}")
+        _calibrate_from_s1()
+        stages = stages[names.index(args.from_stage):]
+        print(f"resuming from {args.from_stage}; S1 turn-scale {_turn_scale:.1f}x, "
+              f"n={n}", flush=True)
+
     results: list[StageResult] = []
-    for stage, runs in STAGES:
+    for stage, runs in stages:
         print(f"\n===== {stage}: {[r.name for r in runs]} =====", flush=True)
         logs = []
         try:
@@ -453,7 +448,7 @@ def main() -> None:
         # Calibrate turn-scaling from S1 for the later stages' projections.
         if stage == "stage1-S1":
             s1 = runs[0]
-            base = PER_ARM_4T[s1.name] * s1.arms * N
+            base = PER_ARM_4T[s1.name] * s1.arms * s1.n
             if base > 0 and m["cost"] > 0:
                 _turn_scale = m["cost"] / base
                 print(f"  S1 turn-scale: {_turn_scale:.1f}x", flush=True)
