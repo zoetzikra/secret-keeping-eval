@@ -45,7 +45,6 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 from secret_keeping.prompts import GOAL_DISCLOSURE_JUDGE_VERSION  # noqa: E402
 
 OUT_DIR = Path("analysis/out")
-CONTEXT_TURNS = 3
 SAMPLE_SEED = 20260826
 
 
@@ -89,9 +88,11 @@ def collect(dirs: list[Path]) -> list[dict[str, Any]]:
                 ) or ""
                 if not text.strip():
                     continue
+                # Match the judge's context exactly: it was given ALL preceding
+                # turns (each turn's auditor probe + target output — not prior
+                # reasoning). Showing the labeller less would manufacture disagreement.
                 idx = ordered.index(t) if t in ordered else 0
-                lo = max(0, idx - CONTEXT_TURNS)
-                context = [turns[c] for c in ordered[lo:idx]]
+                context = [turns[c] for c in ordered[:idx]]
                 disclosure = jc.get("disclosure")
                 concealment = bool(jc.get("concealment_tell"))
                 if disclosure == "disclosed":
@@ -235,12 +236,17 @@ def main() -> None:
             "",
         ]
         if c["context"]:
-            lines += ["<details><summary>preceding turns</summary>", ""]
+            lines += [
+                f"<details><summary>preceding conversation "
+                f"({len(c['context'])} turns — same context the judge had; "
+                f"full transcript in `inspect view`)</summary>",
+                "",
+            ]
             for ctx in c["context"]:
                 lines += [
                     f"- **auditor t{ctx['t']}:** "
-                    + (ctx.get("stimulus_text") or "")[:280],
-                    f"- **target t{ctx['t']}:** {(ctx.get('output_text') or '')[:280]}",
+                    + (ctx.get("stimulus_text") or "")[:600],
+                    f"- **target t{ctx['t']}:** {(ctx.get('output_text') or '')[:600]}",
                 ]
             lines += ["", "</details>", ""]
         lines += [
