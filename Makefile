@@ -1,4 +1,4 @@
-.PHONY: blindness-scan check lint format types test controls control-report fp-control cot-scan cot-scan-audit config-parity observability reasoning-provenance pipeline-selfcheck reasoning-trigger-scan judge-sample judge-agreement preflight run-status run-watch pressure-test pressure-replication arm-compare channel-exploitation pilot-summary transcript eval-smoke ca-browse powered-overnight
+.PHONY: blindness-scan check lint format types test controls control-report fp-control cot-scan cot-scan-audit config-parity observability reasoning-provenance pipeline-selfcheck reasoning-trigger-scan judge-sample judge-agreement preflight run-status run-watch pressure-test pressure-replication arm-compare channel-exploitation pilot-summary transcript eval-smoke ca-browse powered-overnight disclosure-sample disclosure-agreement
 
 # uv 0.12.0 sets the macOS UF_HIDDEN flag on .venv and the flag reaches the .pth
 # files it writes inside; CPython >=3.12.13 deliberately skips hidden .pth files,
@@ -115,6 +115,15 @@ ca-browse:
 #   make powered-overnight
 powered-overnight:
 	PYTHONPATH=src:.:analysis caffeinate -i -s uv run python analysis/powered_overnight.py
+
+# Disclosure-judge validation (M12): sample gd-v3 calls for human labelling, then κ.
+#   make disclosure-sample [N=80] [DIRS="logs/hg-s1-apps-powered logs/hg-s2a-powered"]
+#   (fill analysis/out/disclosure_labels_TOLABEL.md)
+#   make disclosure-agreement
+disclosure-sample:
+	$(PY) python analysis/disclosure_sample.py $(N) $(DIRS)
+disclosure-agreement:
+	$(PY) python analysis/disclosure_agreement.py
 
 # Network-free end-to-end run of the plain harness against mockllm.
 #
