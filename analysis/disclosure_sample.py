@@ -33,6 +33,7 @@ Definitions to label against are frozen in METHODS M30 (disclosure) and M16
 
 import json
 import random
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -56,7 +57,12 @@ def collect(dirs: list[Path]) -> list[dict[str, Any]]:
         if len(logs) == 0:
             continue
         log = read_eval_log(max(logs, key=lambda i: i.mtime or 0))
-        scenario = (log.eval.task_args or {}).get("scenario", "?")
+        # Scenario runs carry it in task_args; the CA-native S1 run does not, so fall
+        # back to the run dir (`hg-s1-apps-powered` -> `S1`).
+        scenario = (log.eval.task_args or {}).get("scenario")
+        if not scenario:
+            m = re.match(r"hg-(s\w+?)-", log_dir.name)
+            scenario = m.group(1).upper() if m else log_dir.name
         for sample in log.samples or []:
             score = (sample.scores or {}).get("goal_disclosure_scorer")
             if score is None or not isinstance(score.value, dict):
