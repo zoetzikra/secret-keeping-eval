@@ -19,6 +19,7 @@ change to the prompt voids it and it must be redone.
 
 import json
 import re
+import sys
 from pathlib import Path
 
 OUT_DIR = Path("analysis/out")
@@ -76,8 +77,13 @@ def confusion(pairs: list[tuple[str, str]], levels: list[str]) -> str:
 
 
 def main() -> None:
-    key_path = OUT_DIR / "disclosure_labels_key.json"
-    sheet_path = OUT_DIR / "disclosure_labels_TOLABEL.md"
+    prefix = (
+        "disclosure_labels_firstpass"
+        if "firstpass" in sys.argv[1:]
+        else "disclosure_labels"
+    )
+    key_path = OUT_DIR / f"{prefix}_key.json"
+    sheet_path = OUT_DIR / f"{prefix}_TOLABEL.md"
     if not key_path.exists() or not sheet_path.exists():
         raise SystemExit("run `make disclosure-sample` first, then fill the sheet")
     key = json.loads(key_path.read_text())

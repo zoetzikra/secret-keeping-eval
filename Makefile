@@ -121,9 +121,9 @@ powered-overnight:
 #   (fill analysis/out/disclosure_labels_TOLABEL.md)
 #   make disclosure-agreement
 disclosure-sample:
-	$(PY) python analysis/disclosure_sample.py $(N) $(DIRS)
+	$(PY) python analysis/disclosure_sample.py $(N) $(MODE) $(DIRS)
 disclosure-agreement:
-	$(PY) python analysis/disclosure_agreement.py
+	$(PY) python analysis/disclosure_agreement.py $(MODE)
 
 # Network-free end-to-end run of the plain harness against mockllm.
 #
