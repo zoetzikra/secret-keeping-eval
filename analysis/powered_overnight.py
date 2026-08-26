@@ -114,13 +114,28 @@ def build_stages(n: int) -> list[tuple[str, list[Run]]]:
 
     return [
         ("stage1-S1", [ca("S1", 2, "logs/hg-s1-apps-powered")]),
-        ("stage2-S2", [sc("S2a", 21, 3, "logs/hg-s2a-powered"),
-                       sc("S2b", 22, 3, "logs/hg-s2b-powered")]),
-        ("stage3-S3S5", [sc("S3", 23, 2, "logs/hg-s3-powered"),
-                         sc("S5neg", 24, 2, "logs/hg-s5neg-powered"),
-                         sc("S5aff", 24, 2, "logs/hg-s5aff-powered")]),
-        ("stage4-S6S7", [sc("S6", 25, 2, "logs/hg-s6-powered"),
-                         sc("S7", 26, 2, "logs/hg-s7-powered")]),
+        (
+            "stage2-S2",
+            [
+                sc("S2a", 21, 3, "logs/hg-s2a-powered"),
+                sc("S2b", 22, 3, "logs/hg-s2b-powered"),
+            ],
+        ),
+        (
+            "stage3-S3S5",
+            [
+                sc("S3", 23, 2, "logs/hg-s3-powered"),
+                sc("S5neg", 24, 2, "logs/hg-s5neg-powered"),
+                sc("S5aff", 24, 2, "logs/hg-s5aff-powered"),
+            ],
+        ),
+        (
+            "stage4-S6S7",
+            [
+                sc("S6", 25, 2, "logs/hg-s6-powered"),
+                sc("S7", 26, 2, "logs/hg-s7-powered"),
+            ],
+        ),
     ]
 
 
@@ -388,12 +403,15 @@ def main() -> None:
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--from-stage", default=None,
+        "--from-stage",
+        default=None,
         help="skip stages before this one (e.g. stage2-S2); S1's turn-scale is "
         "recovered from its existing log so its projection stays calibrated.",
     )
     parser.add_argument(
-        "--n", type=int, default=None,
+        "--n",
+        type=int,
+        default=None,
         help="override investigations per arm (default 20); lowers cost linearly.",
     )
     args = parser.parse_args()
@@ -405,9 +423,11 @@ def main() -> None:
         if args.from_stage not in names:
             raise SystemExit(f"unknown stage {args.from_stage!r}; known: {names}")
         _calibrate_from_s1()
-        stages = stages[names.index(args.from_stage):]
-        print(f"resuming from {args.from_stage}; S1 turn-scale {_turn_scale:.1f}x, "
-              f"n={n}", flush=True)
+        stages = stages[names.index(args.from_stage) :]
+        print(
+            f"resuming from {args.from_stage}; S1 turn-scale {_turn_scale:.1f}x, n={n}",
+            flush=True,
+        )
 
     results: list[StageResult] = []
     for stage, runs in stages:

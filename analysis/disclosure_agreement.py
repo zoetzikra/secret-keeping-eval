@@ -106,27 +106,41 @@ def main() -> None:
             continue
         jd = item["judge_disclosure"] or "none"
         disc_pairs.append((hd, jd))
-        bin_pairs.append((
-            "disclosed" if hd == "disclosed" else "other",
-            "disclosed" if jd == "disclosed" else "other",
-        ))
+        bin_pairs.append(
+            (
+                "disclosed" if hd == "disclosed" else "other",
+                "disclosed" if jd == "disclosed" else "other",
+            )
+        )
         if hd == "disclosed" and jd != "disclosed":
-            disclosed_fn.append((n, item["run"], item["investigation"], item["turn"],
-                                 item["channel"], jd))
+            disclosed_fn.append(
+                (
+                    n,
+                    item["run"],
+                    item["investigation"],
+                    item["turn"],
+                    item["channel"],
+                    jd,
+                )
+            )
         if hd != jd:
             disagreements.append((n, hd, jd, item["stratum"]))
         if hc in ("yes", "no"):
             jc = "yes" if item["judge_concealment"] else "no"
             conc_pairs.append((hc, jc))
 
-    print(f"Judge version: {key['judge_prompt_version']}  |  "
-          f"{len(disc_pairs)} labelled of {len(key['items'])}  "
-          f"(unlabelled: {len(unlabelled)})")
+    print(
+        f"Judge version: {key['judge_prompt_version']}  |  "
+        f"{len(disc_pairs)} labelled of {len(key['items'])}  "
+        f"(unlabelled: {len(unlabelled)})"
+    )
     print(f"composition: {key['composition']}\n")
 
     print("=== DISCLOSURE ===")
-    print(f"operative binary (disclosed-vs-rest) kappa: "
-          f"{cohen_kappa(bin_pairs, ['disclosed', 'other']):.3f}")
+    print(
+        f"operative binary (disclosed-vs-rest) kappa: "
+        f"{cohen_kappa(bin_pairs, ['disclosed', 'other']):.3f}"
+    )
     print(f"full 5-way kappa: {cohen_kappa(disc_pairs, DISCLOSURE_LEVELS):.3f}")
     print(f"raw agreement: {sum(1 for a, b in disc_pairs if a == b)}/{len(disc_pairs)}")
     print("\nconfusion (human rows × judge cols):")
@@ -134,16 +148,20 @@ def main() -> None:
 
     n_hd = sum(1 for a, _ in bin_pairs if a == "disclosed")
     fn_rate = len(disclosed_fn) / n_hd if n_hd else float("nan")
-    print(f"\n**GATING — false negatives on `disclosed`: {len(disclosed_fn)}/{n_hd} "
-          f"({fn_rate:.0%})** (human=disclosed, judge weaker)")
+    print(
+        f"\n**GATING — false negatives on `disclosed`: {len(disclosed_fn)}/{n_hd} "
+        f"({fn_rate:.0%})** (human=disclosed, judge weaker)"
+    )
     for n, run, inv, turn, ch, jd in disclosed_fn:
         print(f"  item {n}: {run} {inv} t{turn} {ch} — judge said `{jd}`")
 
     if conc_pairs:
         print("\n=== CONCEALMENT ===")
         print(f"kappa (yes/no): {cohen_kappa(conc_pairs, ['yes', 'no']):.3f}")
-        print(f"raw agreement: "
-              f"{sum(1 for a, b in conc_pairs if a == b)}/{len(conc_pairs)}")
+        print(
+            f"raw agreement: "
+            f"{sum(1 for a, b in conc_pairs if a == b)}/{len(conc_pairs)}"
+        )
         print(confusion(conc_pairs, ["yes", "no"]))
 
     print(f"\n=== disagreements ({len(disagreements)}) ===")

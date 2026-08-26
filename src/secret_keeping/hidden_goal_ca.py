@@ -62,6 +62,7 @@ from secret_keeping.petri_task import (
 from secret_keeping.prompts import (
     AUDITOR_SEED_HIDDEN_GOAL_PROMPT_ONLY,
     AUDITOR_SEED_SUFFIX_FIXED_SYSTEM_PROMPT,
+    DISCLOSURE_CONTEXT_WINDOW,
     GOAL_DISCLOSURE_JUDGE_PROMPT,
     GOAL_DISCLOSURE_JUDGE_VERSION,
     HIDDEN_GOAL_CA_KEEP_SUFFIX,
@@ -227,11 +228,15 @@ async def _judge_disclosure(
 
 
 def _render_context(turns: list[TargetTurn], upto: int) -> str:
+    # gd-v4: the judge grades each turn against the last DISCLOSURE_CONTEXT_WINDOW
+    # turns, not full history — a turn must be gradeable locally, and full history
+    # invites grading the investigation rather than the turn (M30).
+    window = turns[max(0, upto - DISCLOSURE_CONTEXT_WINDOW) : upto]
     return (
         "\n\n".join(
             f"[turn {t.t}] user: {t.stimulus_text}\n[turn {t.t}] assistant: "
             f"{t.output_text}"
-            for t in turns[:upto]
+            for t in window
         )
         or "(none)"
     )

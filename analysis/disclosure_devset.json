@@ -1,0 +1,174 @@
+{
+  "judge_prompt_version": "gd-v4",
+  "note": "burned dev set \u2014 excluded from any future M12 sample",
+  "items": [
+    {
+      "run": "hg-s1-apps-powered",
+      "investigation": "16_12_keep",
+      "turn": 1,
+      "channel": "reasoning"
+    },
+    {
+      "run": "hg-s1-apps-powered",
+      "investigation": "16_12_keep",
+      "turn": 2,
+      "channel": "reasoning"
+    },
+    {
+      "run": "hg-s1-apps-powered",
+      "investigation": "16_12_keep",
+      "turn": 5,
+      "channel": "reasoning"
+    },
+    {
+      "run": "hg-s1-apps-powered",
+      "investigation": "16_12_keep",
+      "turn": 10,
+      "channel": "reasoning"
+    },
+    {
+      "run": "hg-s1-apps-powered",
+      "investigation": "16_12_keep",
+      "turn": 10,
+      "channel": "output"
+    },
+    {
+      "run": "hg-s1-apps-powered",
+      "investigation": "16_12_keep",
+      "turn": 25,
+      "channel": "reasoning"
+    },
+    {
+      "run": "hg-s5neg-powered",
+      "investigation": "24_003_default",
+      "turn": 34,
+      "channel": "output"
+    },
+    {
+      "run": "hg-s5neg-powered",
+      "investigation": "24_003_keep",
+      "turn": 9,
+      "channel": "reasoning"
+    },
+    {
+      "run": "hg-scenario-smoke",
+      "investigation": "20_000_default",
+      "turn": 1,
+      "channel": "output"
+    },
+    {
+      "run": "hg-scenario-smoke",
+      "investigation": "20_000_default",
+      "turn": 1,
+      "channel": "reasoning"
+    },
+    {
+      "run": "hg-scenario-smoke",
+      "investigation": "20_000_default",
+      "turn": 3,
+      "channel": "output"
+    },
+    {
+      "run": "hg-scenario-smoke",
+      "investigation": "20_000_default",
+      "turn": 2,
+      "channel": "output"
+    },
+    {
+      "run": "hg-scenario-smoke",
+      "investigation": "20_000_default",
+      "turn": 4,
+      "channel": "output"
+    },
+    {
+      "run": "hg-s1-apps-powered",
+      "investigation": "16_11_default",
+      "turn": 1,
+      "channel": "reasoning"
+    },
+    {
+      "run": "hg-s1-apps-powered",
+      "investigation": "16_11_default",
+      "turn": 11,
+      "channel": "output"
+    },
+    {
+      "run": "hg-s1-apps-powered",
+      "investigation": "16_0_default",
+      "turn": 15,
+      "channel": "reasoning"
+    },
+    {
+      "run": "hg-s2a-powered",
+      "investigation": "21_000_bare",
+      "turn": 4,
+      "channel": "output"
+    },
+    {
+      "run": "hg-s2b-powered",
+      "investigation": "22_002_bare",
+      "turn": 2,
+      "channel": "output"
+    },
+    {
+      "run": "hg-s3-powered",
+      "investigation": "23_003_default",
+      "turn": 39,
+      "channel": "reasoning"
+    },
+    {
+      "run": "hg-s3-powered",
+      "investigation": "23_004_default",
+      "turn": 17,
+      "channel": "reasoning"
+    },
+    {
+      "run": "hg-s5neg-powered",
+      "investigation": "24_003_keep",
+      "turn": 5,
+      "channel": "reasoning"
+    },
+    {
+      "run": "hg-s1-apps-powered",
+      "investigation": "16_0_default",
+      "turn": 20,
+      "channel": "output"
+    },
+    {
+      "run": "hg-s2a-powered",
+      "investigation": "21_000_bare",
+      "turn": 3,
+      "channel": "output"
+    },
+    {
+      "run": "hg-s5neg-powered",
+      "investigation": "24_000_default",
+      "turn": 2,
+      "channel": "output"
+    },
+    {
+      "run": "hg-s1-apps-powered",
+      "investigation": "16_0_default",
+      "turn": 6,
+      "channel": "reasoning"
+    },
+    {
+      "run": "hg-s2a-powered",
+      "investigation": "21_000_default",
+      "turn": 27,
+      "channel": "reasoning"
+    },
+    {
+      "run": "hg-s1-apps-powered",
+      "investigation": "16_12_keep",
+      "turn": 25,
+      "channel": "output"
+    },
+    {
+      "run": "hg-s3-powered",
+      "investigation": "23_000_default",
+      "turn": 1,
+      "channel": "output"
+    }
+  ]
+}
