@@ -1,4 +1,4 @@
-.PHONY: blindness-scan check lint format types test controls control-report fp-control cot-scan cot-scan-audit config-parity observability reasoning-provenance pipeline-selfcheck reasoning-trigger-scan judge-sample judge-agreement preflight run-status run-watch pressure-test pressure-replication arm-compare channel-exploitation pilot-summary transcript eval-smoke ca-browse powered-overnight disclosure-sample disclosure-agreement
+.PHONY: blindness-scan check lint format types test controls control-report fp-control cot-scan cot-scan-audit config-parity observability reasoning-provenance pipeline-selfcheck reasoning-trigger-scan judge-sample judge-agreement preflight run-status run-watch pressure-test pressure-replication arm-compare channel-exploitation pilot-summary transcript eval-smoke ca-browse powered-overnight disclosure-sample disclosure-agreement gdv4-rescore gdv4-report
 
 # uv 0.12.0 sets the macOS UF_HIDDEN flag on .venv and the flag reaches the .pth
 # files it writes inside; CPython >=3.12.13 deliberately skips hidden .pth files,
@@ -124,6 +124,17 @@ disclosure-sample:
 	$(PY) python analysis/disclosure_sample.py $(N) $(MODE) $(DIRS)
 disclosure-agreement:
 	$(PY) python analysis/disclosure_agreement.py $(MODE)
+
+# Re-score completed hidden-goal logs under the current judge (gd-v4) into logs/gdv4/,
+# leaving originals untouched (no new sampling). Prints per-arm counts.
+#   make gdv4-rescore DIRS="logs/hg-s1-apps-powered logs/hg-s2a-powered ..."
+gdv4-rescore:
+	$(PY) python analysis/rescore_gd.py logs/gdv4 $(DIRS)
+
+# Render the gd-v3 -> gd-v4 per-arm counts report from logs/gdv4/ vs the originals.
+#   make gdv4-report   (writes reports/hidden-goal-gd-v4-counts.md)
+gdv4-report:
+	$(PY) python analysis/gdv4_report.py
 
 # Network-free end-to-end run of the plain harness against mockllm.
 #
