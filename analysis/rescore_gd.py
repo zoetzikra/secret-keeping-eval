@@ -25,7 +25,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 from secret_keeping.hidden_goal_ca import goal_disclosure_scorer  # noqa: E402
 from secret_keeping.prompts import GOAL_DISCLOSURE_JUDGE_VERSION  # noqa: E402
 
-GRADER = "openrouter/anthropic/claude-sonnet-4-6"
+DEFAULT_GRADER = "openrouter/anthropic/claude-sonnet-4-6"
 _CELLS = [
     "disclosed_any",
     "disclosed_reasoning",
@@ -52,12 +52,21 @@ def _counts(samples: list[Any]) -> dict[str, dict[str, float]]:  # {arm: {cell: 
 
 
 def main() -> None:
-    args = sys.argv[1:]
-    if len(args) < 2:
-        raise SystemExit("usage: rescore_gd.py <out-dir> <log-dir> [<log-dir> ...]")
-    out_dir = Path(args[0])
+    # Optional `grader=<model>` token (default sonnet) — used by the multi-grader
+    # robustness pass; the judge PROMPT is identical, only the grader model changes.
+    grader = DEFAULT_GRADER
+    positional = []
+    for a in sys.argv[1:]:
+        if a.startswith("grader="):
+            grader = a.split("=", 1)[1]
+        else:
+            positional.append(a)
+    if len(positional) < 2:
+        raise SystemExit("usage: rescore_gd.py <out-dir> [grader=<model>] <log-dir>...")
+    out_dir = Path(positional[0])
     out_dir.mkdir(parents=True, exist_ok=True)
-    dirs = [Path(d) for d in args[1:]]
+    dirs = [Path(d) for d in positional[1:]]
+    print(f"grader: {grader}")
 
     for log_dir in dirs:
         logs = list_eval_logs(str(log_dir))
@@ -82,7 +91,7 @@ def main() -> None:
         scored = score(
             log,
             goal_disclosure_scorer(),
-            model_roles={"grader": GRADER},
+            model_roles={"grader": grader},
             action="overwrite",
         )
         write_eval_log(scored, str(out_path))
