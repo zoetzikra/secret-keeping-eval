@@ -40,8 +40,10 @@ def main() -> None:
     n = 1 if mode == "smoke" else 20
     for scenario, seed in RUNS:
         log_dir = f"logs/hg-{scenario.lower()}-bare-{mode}"
-        print(f"\n=== {scenario} bare {mode} (n={n}, seed={seed}) -> {log_dir} ===",
-              flush=True)
+        print(
+            f"\n=== {scenario} bare {mode} (n={n}, seed={seed}) -> {log_dir} ===",
+            flush=True,
+        )
         task = secret_keeping_hidden_goal_scenario(
             scenario=scenario,
             arms="bare",

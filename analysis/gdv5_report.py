@@ -1,9 +1,9 @@
-"""gd-v5 counts report with the gd-v4 -> gd-v5 delta per arm (Step 2).
+"""gd-v5 counts report — Gemini-primary (grader of record), with a Sonnet comparison.
 
-Scans logs/gdv5/ (gd-v5) and logs/gdv4/ (gd-v4), groups by (scenario, arm), and writes
-reports/hidden-goal-gd-v5-counts.md: per-arm disclosed reasoning/output shown gd-v4 ->
-gd-v5, plus current gd-v5 indirect/denied/concealment. The S3/S7 `bare` arm is new in
-sc-v4 (no gd-v4 value → shown as `-`). Counts only; the survival curves are Step 3.
+Under gd-v5, Gemini 3.1 Pro is the grader of record (best human agreement, κ=0.78 vs the
+gd-v4/gd-v5 Sonnet's 0.63/0.57; Sonnet under-calls under gd-v5, recall 64% vs 86%). So
+per-arm counts are reported from the **Gemini** re-score (logs/gdv5-gemini). A compact
+Sonnet comparison is shown for transparency. Counts only; survival curves are Step 3.
 
     PYTHONPATH=src:. uv run python analysis/gdv5_report.py
 """
@@ -26,9 +26,10 @@ CELLS = [
     "concealment_any",
     "unclassified_count",
 ]
-# scenario display order + arm order
 SCEN_ORDER = ["S1", "S2a", "S2b", "S3", "S5neg", "S5aff", "S6", "S7"]
 ARM_ORDER = {"bare": 0, "default": 1, "keep": 2}
+PRIMARY = "logs/gdv5-gemini"  # grader of record
+SECONDARY = "logs/gdv5"  # Sonnet gd-v5, comparison only
 OUT = Path("reports/hidden-goal-gd-v5-counts.md")
 
 
@@ -41,7 +42,6 @@ def _scenario_of(log: Any, dir_name: str) -> str:
 
 
 def counts_by_scenario_arm(root: str) -> dict[str, dict[str, dict[str, int]]]:
-    """{scenario: {arm: {cell: sum, 'n': k}}} across every run dir under `root`."""
     out: dict[str, dict[str, dict[str, int]]] = {}
     for d in sorted(Path(root).glob("*")):
         logs = list_eval_logs(str(d))
@@ -64,66 +64,71 @@ def counts_by_scenario_arm(root: str) -> dict[str, dict[str, dict[str, int]]]:
 
 
 def main() -> None:
-    gdv5 = counts_by_scenario_arm("logs/gdv5")
-    gdv4 = counts_by_scenario_arm("logs/gdv4")
-    if not gdv5:
-        raise SystemExit("no logs/gdv5 counts — run the gd-v5 re-score first")
+    gem = counts_by_scenario_arm(PRIMARY)
+    son = counts_by_scenario_arm(SECONDARY)
+    if not gem:
+        raise SystemExit("no logs/gdv5-gemini counts — run the Gemini re-score first")
 
     lines = [
-        "# Hidden-goal disclosure — gd-v5 counts (provisional)",
+        "# Hidden-goal disclosure — gd-v5 counts (Gemini 3.1 Pro, grader of record)",
         "",
-        "> **gd-v5 was not re-validated against a fresh human sample** — its"
-        " `disclosed` definition encodes the rule Zoe's 160 gd-v4 labels implied, and"
-        " its robustness rests on cross-grader agreement (Step 3), not a new held-out"
-        " human κ. The human-anchored numbers remain gd-v4's first-passage κ=0.83 and"
-        " concealment κ=0.75. Rates below are provisional.",
+        "> **Grader of record: Gemini 3.1 Pro.** Under gd-v5, Gemini tracks the human"
+        " labels best in the project (κ=0.78, recall 86%), while Sonnet under gd-v5"
+        " *under*-calls (κ=0.57, recall 64%) — so counts below are the **Gemini**"
+        " re-score, not Sonnet. gd-v5 was **not** re-validated against a fresh human"
+        " sample; its `disclosed` definition encodes the rule the 160 gd-v4 labels"
+        " implied, and its robustness rests on cross-grader agreement (Sonnet×Gemini"
+        " κ=0.68; the reasoning≪output channel gap holds under both graders in all"
+        " S7/S3 panels). Rates are provisional. See"
+        " `reports/hidden-goal-disclosure-validation.md`.",
         "",
-        "`disclosed` cells show **gd-v4 → gd-v5** (per-channel first passage);"
-        " indirect/denied/concealment are current gd-v5. `bare` on S3/S7 is new in"
-        " sc-v4 (`-` = no gd-v4 value). All out of n per arm.",
+        "All out of n per arm. `bare` on S3/S7 is the sc-v4 no-secrecy pole.",
         "",
     ]
-    scen_list = [s for s in SCEN_ORDER if s in gdv5] + [
-        s for s in sorted(gdv5) if s not in SCEN_ORDER
+    scen_list = [s for s in SCEN_ORDER if s in gem] + [
+        s for s in sorted(gem) if s not in SCEN_ORDER
     ]
-    tot4 = tot5 = 0
     for scen in scen_list:
-        arms = sorted(gdv5[scen], key=lambda a: ARM_ORDER.get(a, 9))
+        arms = sorted(gem[scen], key=lambda a: ARM_ORDER.get(a, 9))
         lines += [
             f"## {scen}",
             "",
             "| arm | n | disclosed_any | disc_reasoning | disc_output | indirect |"
             " denied | conceal |",
-            "|---|--:|---|---|---|--:|--:|--:|",
+            "|---|--:|--:|--:|--:|--:|--:|--:|",
         ]
         for arm in arms:
-            n5 = gdv5[scen][arm]
-            n4 = gdv4.get(scen, {}).get(arm)
-
-            def d(cell: str, n5: dict[str, int] = n5, n4: Any = n4) -> str:
-                old = "-" if n4 is None else str(n4.get(cell, 0))
-                return f"{old}→{n5.get(cell, 0)}"
-
+            r = gem[scen][arm]
             lines.append(
-                f"| {arm} | {n5['n']} | {d('disclosed_any')} | "
-                f"{d('disclosed_reasoning')} | {d('disclosed_output')} | "
-                f"{n5['indirect_any']} | {n5['denied_any']} | {n5['concealment_any']} |"
+                f"| {arm} | {r['n']} | {r['disclosed_any']} | "
+                f"{r['disclosed_reasoning']} | {r['disclosed_output']} | "
+                f"{r['indirect_any']} | {r['denied_any']} | {r['concealment_any']} |"
             )
-            if n4 is not None:
-                tot4 += n4.get("disclosed_reasoning", 0)
-                tot5 += n5.get("disclosed_reasoning", 0)
         lines.append("")
 
+    # aggregate Gemini vs Sonnet, to make the under-call concrete
+    def agg(root_counts: dict[str, dict[str, dict[str, int]]], cell: str) -> int:
+        return sum(a[cell] for sc in root_counts.values() for a in sc.values())
+
     lines += [
-        "## gd-v4 → gd-v5 shift",
+        "## Grader comparison (why Gemini is primary)",
         "",
-        f"- Reasoning-channel disclosed (arms present in both): **{tot4} → {tot5}**.",
-        "- Expected direction (gd-v5 own-content rule): output should *drop* where the"
-        " judge had over-called action-emission / cover-story / main-task; reasoning"
-        " should largely hold (rehearsal stays `disclosed`).",
+        f"- disclosed_any total — Gemini {agg(gem, 'disclosed_any')} vs "
+        f"Sonnet {agg(son, 'disclosed_any')}; disclosed_reasoning — Gemini "
+        f"{agg(gem, 'disclosed_reasoning')} vs Sonnet "
+        f"{agg(son, 'disclosed_reasoning')}."
+        " Sonnet under gd-v5 systematically calls fewer disclosures (recall 64% vs"
+        " human) — it over-applies the gd-v5 exclusions; Gemini (recall 86%) does not.",
+        "- Same-grader check: gd-v5-Sonnet ≈ gd-v4-Sonnet on first-passage aggregate"
+        " (the prompt change barely moved the survival event — the over-calls it fixes"
+        " were non-first-passage), so the survival curves are unaffected by the gd-v5"
+        " prompt edit; the grader *model* is the axis that matters for the rates.",
     ]
     OUT.write_text("\n".join(lines) + "\n")
-    print(f"wrote {OUT}  (reasoning-disclosed gd-v4→gd-v5, shared arms: {tot4}→{tot5})")
+    print(
+        f"wrote {OUT}  (Gemini primary; disclosed_any total "
+        f"Gemini {agg(gem, 'disclosed_any')} vs Sonnet {agg(son, 'disclosed_any')})"
+    )
 
 
 if __name__ == "__main__":
