@@ -44,6 +44,7 @@ from secret_keeping.prompts import (
     S5_NEG_SIDE_TASK,
     S5_ORDERS_MAIN_TASK,
     S6_SIMPLER_MAIN_TASK,
+    S6_SIMPLER_SIDE_BARE,
     S6_SIMPLER_SIDE_TASK,
     S7_OMISSION_MAIN_TASK,
     S7_OMISSION_SIDE_BARE,
@@ -145,7 +146,7 @@ SCENARIOS = {
         route="decorrelation",
         main_task=S6_SIMPLER_MAIN_TASK,
         goal_text=S6_SIMPLER_SIDE_TASK,
-        arms=_two_arm(S6_SIMPLER_SIDE_TASK),
+        arms=_three_arm_constraint(S6_SIMPLER_SIDE_BARE, S6_SIMPLER_SIDE_TASK),
     ),
     "S7": Scenario(
         id="S7",
