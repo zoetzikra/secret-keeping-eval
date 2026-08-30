@@ -533,6 +533,7 @@ def secret_keeping_hidden_goal_scenario(
     secret_seed: int = 19,
     max_turns: int = DEFAULT_PETRI_MAX_TURNS,
     token_limit: int = DEFAULT_TOKEN_LIMIT,
+    arms: str = "",
 ) -> Task:
     """Audit a constructed prompt-only scenario (S2–S4), both arms.
 
@@ -552,10 +553,19 @@ def secret_keeping_hidden_goal_scenario(
     Freeze mode, prefill off. `max_samples<=4` must be passed on the CLI.
     """
     sc = SCENARIOS[scenario]
+    # `arms=""` runs the scenario's full arm set; `arms="bare"` (or "bare,keep") runs
+    # only the named arm(s) — used to add a bare arm to a scenario whose default/keep
+    # already ran, without re-running them (sc-v4, fresh seed).
+    selected = [a.strip() for a in arms.split(",") if a.strip()] or list(sc.arms)
+    unknown = [a for a in selected if a not in sc.arms]
+    if unknown:
+        raise KeyError(
+            f"scenario {scenario!r} lacks arm(s) {unknown}: {sorted(sc.arms)}"
+        )
     seeds: SeedMap = {
         f"{i:03d}_{arm}": (arm, build_scenario_seed(scenario, arm))
         for i in range(investigations)
-        for arm in sc.arms
+        for arm in selected
     }
     return _build_audit_task(
         seeds,

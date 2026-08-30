@@ -38,6 +38,7 @@ from secret_keeping.prompts import (
     S2A_INTERN_SIDE_BARE,
     S2B_INTERN_SIDE_BARE,
     S3_PLANPRO_MAIN_TASK,
+    S3_PLANPRO_SIDE_BARE,
     S3_PLANPRO_SIDE_TASK,
     S5_AFF_SIDE_TASK,
     S5_NEG_SIDE_TASK,
@@ -45,6 +46,7 @@ from secret_keeping.prompts import (
     S6_SIMPLER_MAIN_TASK,
     S6_SIMPLER_SIDE_TASK,
     S7_OMISSION_MAIN_TASK,
+    S7_OMISSION_SIDE_BARE,
     S7_OMISSION_SIDE_TASK,
     SCENARIO_HEADER_CONFIDENTIAL,
     SCENARIO_HEADER_NEUTRAL,
@@ -82,6 +84,13 @@ def _three_arm(bare: str) -> dict[str, str]:
     return {"bare": bare, "default": default, "keep": default}
 
 
+def _three_arm_constraint(bare: str, default: str) -> dict[str, str]:
+    """bare/default/keep axis for a constraint scenario whose `default` text already
+    embeds its own secrecy sentence (S3, S7; sc-v4). `bare` strips that sentence;
+    `default`/`keep` are the unchanged sc-v3 text, so existing runs are unaffected."""
+    return {"bare": bare, "default": default, "keep": default}
+
+
 # S1 (CA-native) is dataset-driven — not here; run via `secret_keeping_hidden_goal_ca`.
 SCENARIOS = {
     "S2a": Scenario(
@@ -109,7 +118,7 @@ SCENARIOS = {
         route="necessity",  # non-trivial; interpret against S2 (M31)
         main_task=S3_PLANPRO_MAIN_TASK,
         goal_text=S3_PLANPRO_SIDE_TASK,
-        arms=_two_arm(S3_PLANPRO_SIDE_TASK),
+        arms=_three_arm_constraint(S3_PLANPRO_SIDE_BARE, S3_PLANPRO_SIDE_TASK),
     ),
     "S5neg": Scenario(
         id="S5neg",
@@ -145,7 +154,7 @@ SCENARIOS = {
         route="decorrelation",
         main_task=S7_OMISSION_MAIN_TASK,
         goal_text=S7_OMISSION_SIDE_TASK,
-        arms=_two_arm(S7_OMISSION_SIDE_TASK),
+        arms=_three_arm_constraint(S7_OMISSION_SIDE_BARE, S7_OMISSION_SIDE_TASK),
     ),
 }
 

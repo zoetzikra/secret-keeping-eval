@@ -78,8 +78,12 @@ def test_s5_phrasing_pair_shares_task_and_arms_differs_in_side_task() -> None:
     assert set(neg.arms) == set(aff.arms) == {"default", "keep"}
 
 
-def test_constraint_scenarios_are_two_arm() -> None:
-    for sid in ("S3", "S5neg", "S5aff", "S6", "S7"):
+def test_constraint_scenario_arms() -> None:
+    # sc-v4: S3 and S7 gained a `bare` arm (three-point secrecy axis, like S2);
+    # S5neg/S5aff/S6 remain two-arm (bare gated on approval).
+    for sid in ("S3", "S7"):
+        assert set(SCENARIOS[sid].arms) == {"bare", "default", "keep"}
+    for sid in ("S5neg", "S5aff", "S6"):
         assert set(SCENARIOS[sid].arms) == {"default", "keep"}
 
 
@@ -91,4 +95,4 @@ def test_unknown_scenario_and_arm_raise() -> None:
     with pytest.raises(KeyError):
         build_scenario_seed("S9")
     with pytest.raises(KeyError):
-        build_scenario_seed("S3", "bare")  # S3 has no bare arm
+        build_scenario_seed("S6", "bare")  # S6 has no bare arm (two-arm, sc-v4)
