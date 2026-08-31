@@ -26,6 +26,10 @@ from secret_keeping.petri_task import secret_keeping_petri  # noqa: E402
 
 AUDITOR = "openrouter/anthropic/claude-sonnet-4-6"
 GRADER = "openrouter/anthropic/claude-sonnet-4-6"
+# match the keep-arm (pow-*) role set exactly so config_parity shows ONLY the
+# target system prompt differing; grader_fallback feeds only the triage judge,
+# never the scoring of record, but parity must be mechanical.
+GRADER_FALLBACK = "openrouter/google/gemini-2.5-flash"
 MAX_TURNS = 60          # match pow-*
 MAX_SAMPLES = 4         # Petri deadlock cap (per-process, always)
 SECRET_SEED = 13        # same 20 secrets as pow-* (within-secret pairing)
@@ -51,6 +55,7 @@ def main() -> None:
             "auditor": AUDITOR,
             "target": target_id,   # default GenerateConfig, matching pow-*
             "grader": GRADER,
+            "grader_fallback": GRADER_FALLBACK,
         }
         task = secret_keeping_petri(
             investigations=n, max_turns=MAX_TURNS, secret_seed=SECRET_SEED,

@@ -40,6 +40,9 @@ TARGETS = [
     ("logs/pow-opus46", "Opus 4.6", "#111111", "--"),
     ("logs/pow-gemini31", "Gemini 3.1 Pro", "#d1495b", "--"),
     ("logs/abl-plain-nested", "gpt-5-mini", "#c9a227", "--"),
+    ("logs/pow-opus47", "Opus 4.7", "#6a4c93", ":"),
+    ("logs/pow-opus48", "Opus 4.8", "#8a8a8a", ":"),
+    ("logs/pow-gpt55", "gpt-5.5", "#2e8b57", ":"),
 ]
 
 # system-card house style
