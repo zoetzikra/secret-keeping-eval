@@ -28,17 +28,13 @@ from secret_keeping.hidden_goal_ca import (  # noqa: E402
 
 TARGET_ID = "openrouter/deepseek/deepseek-v4-pro"
 AUDITOR = "openrouter/anthropic/claude-sonnet-4-6"
-# Grader of record (best human agreement). Used for the POST-HOC re-score, not the run.
+# Grader of record (best human agreement). Scored inline / natively — the DeepSeek target
+# is the wall-time bottleneck (26-turn audits × heavy reasoning), so a throwaway grader +
+# post-hoc re-score buys little and breaks consistency with S7/S2a. Keep it native.
 GRADER = "openrouter/google/gemini-3.1-pro-preview"
-# Fast throwaway grader at RUN time: mockllm is instant (no API), so audit wall-time is
-# bounded only by the DeepSeek target + Sonnet auditor, not the slow reasoning grader.
-# Its disclosure scores are meaningless — re-score with GRADER afterward:
-#   rescore_gd.py logs/gdv5-deepseek grader=<GRADER> logs/gdv5-deepseek-audit/hg-*
-# Reasoning capture happens during the audit, independent of the grader, so it is intact.
-RUN_GRADER = "mockllm/model"
 MAX_TURNS = 40
 MAX_SAMPLES = 4
-OUT_ROOT = "logs/gdv5-deepseek-audit"  # raw audits; re-scored into logs/gdv5-deepseek/
+OUT_ROOT = "logs/gdv5-deepseek"
 
 # (kind, scenario, arms-filter, fresh seed). kind: "scenario" | "ca" (S1).
 RUNS = [
@@ -74,7 +70,7 @@ def main() -> None:
     roles: dict[str, str | Model] = {
         "auditor": AUDITOR,
         "target": _target(),
-        "grader": RUN_GRADER,  # throwaway; real scores come from the GRADER re-score
+        "grader": GRADER,
     }
     for kind, scen, arms, seed in RUNS:
         if only is not None and scen.upper() not in only:
