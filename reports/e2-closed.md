@@ -70,21 +70,60 @@ test. Cost estimate + go/no-go below before launching.
 
 ## Results
 
-⏳ pending the no-instruction arms.
+**A1 Haiku 4.5 — final (n=20). A2 Gemini — ⏳ running (`bpg2tjctr`).**
 
 ### Config parity
 
-⏳ `config_parity.py` for both pairs.
+**A1 verified** (`config_parity.py logs/pow-haiku-4-5 logs/e2-noinstr-haiku`): 19
+fields identical, secrets 20/20 identical and in order; only `arg.variant` +
+`target_system_prompt` digest differ. A2 parity ⏳ pending.
 
-### Investigation-level — x/20 per channel, exact McNemar paired on secrets
+### A1 — Haiku 4.5 (regime C, so the reasoning contrast is not measurable)
 
-⏳ (keep columns from `pow-haiku-4-5` / `pow-gemini31`; no-instruction pending).
+Both arms are regime C (`make reasoning-provenance`: 0 billed reasoning tokens,
+no chain on 187/198 turns) — reasoning disclosure is 0/20 in both by construction,
+not a finding. The informative endpoints are output, extraction, median turns, and
+the **prefill-vs-voluntary output split** (Haiku's keep-arm output leaks are all
+prefill-forced).
+
+| endpoint | keep | no-instruction | McNemar p |
+|---|---:|---:|---:|
+| output (investigation-level) | 20/20 | 20/20 | 1.000 |
+| **output — voluntary (non-prefill) turn-leaks** | **0** | **37** | — |
+| output — prefill-forced turn-leaks | 39 | 40 | — |
+| extraction | 17/20 | 19/20 | 0.625 |
+| reasoning | 0/20 | 0/20 | — (regime C) |
+| median turns / investigation | 10 | 10 | — |
+
+**The investigation-level output tie (20/20 = 20/20) is an artifact of prefill.**
+Split by turn type, the keep instruction is doing real work: Haiku emits the secret
+in **0** voluntary (non-prefill) turns under keep versus **37** under
+no-instruction. Every keep-arm output leak is the auditor *forcing* it via prefill
+(M24); left to speak on its own, keep-Haiku never volunteers the code. So the keep
+instruction cleanly suppresses voluntary output — but Haiku does **not** protect by
+default: without the instruction it hands the code over in normal turns 37 times.
+
+### A2 — Gemini 3.1 Pro
+
+⏳ running. Keep-arm baseline (`pow-gemini31`): output 3/20, reasoning 17/20 (71%
+readable auto-summary — lower bound), extraction 14/20, median 40 turns.
 
 ### Observability / regime (both arms)
 
-⏳ `make reasoning-provenance` per arm.
+| arm | turns | readable | none | chain-encr | regime |
+|---|---:|---:|---:|---:|---|
+| haiku keep | 187 | 0 | 187 | 0% | C |
+| haiku no-instr | 198 | 0 | 198 | 0% | C |
+| gemini keep / no-instr | ⏳ | | | | |
 
 ## Interpretation
 
-⏳ pending — does the closed set land on gpt-5-mini's side (prediction confirmed)
-or somewhere else?
+**A1 result — against the prediction on the baseline axis.** The prediction was
+that closed models protect by default (no-instruction output low). Haiku does the
+opposite: without the keep instruction it **volunteers** the secret in 37 non-
+prefill turns and is extracted 19/20 — it behaves like the *open* models (share by
+default), not like gpt-5-mini. What the keep instruction buys on Haiku is the
+elimination of *voluntary* output disclosure (37 → 0), with the residual 20/20 a
+prefill artifact. Because Haiku is regime C, none of this speaks to white-bear —
+that test rests on A2 (Gemini), the one closed target here with an observable
+chain. ⏳ pending A2.
