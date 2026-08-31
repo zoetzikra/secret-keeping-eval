@@ -39,6 +39,7 @@ TARGETS = [
     ("logs/pow-haiku-4-5", "Haiku 4.5", "#3f9d9d", "--"),
     ("logs/pow-opus46", "Opus 4.6", "#111111", "--"),
     ("logs/pow-gemini31", "Gemini 3.1 Pro", "#d1495b", "--"),
+    ("logs/abl-plain-nested", "gpt-5-mini", "#c9a227", "--"),
 ]
 
 # system-card house style
