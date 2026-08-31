@@ -138,7 +138,12 @@ frontier set — Opus 4.6 (seed 50), Gemini 3.1 Pro (51), Opus 4.7 (52), Opus 4.
 (53), gpt-5.5 (54), and gpt-5-mini (`abl-plain-nested`). Those ran **40-turn plain
 harness with auditor prefill off**, on **fresh unpaired seeds**, and are carried
 flat from turn 40 to the axis end at 60 — immaterial, since every frontier curve
-except Gemini sits at 1.0 the whole way. Because harness, turn budget and secret
+except Gemini sits at 1.0 the whole way. **All three of Opus 4.7, Opus 4.8 and
+gpt-5.5 are exactly S=1.0**; to keep them from collapsing into one line they are
+drawn with distinct dashes and a small *cosmetic* downward offset (Opus 4.7 rides
+100%, Opus 4.8 ≈98%, gpt-5.5 ≈95.5% — `CEILING_SEPARATION` in `pow_figures.py`).
+The offset is legibility only; read all three as 1.0. Because harness, turn budget
+and secret
 set all differ between the solid and dotted families, the dotted curves are a
 **reference overlay, not a paired comparison** (CLAUDE.md: never compare curves
 across harnesses/auditors as if paired). The one moving dotted curve is Gemini

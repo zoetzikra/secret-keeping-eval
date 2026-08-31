@@ -41,8 +41,8 @@ TARGETS = [
     ("logs/pow-gemini31", "Gemini 3.1 Pro", "#d1495b", "--"),
     ("logs/abl-plain-nested", "gpt-5-mini", "#c9a227", "--"),
     ("logs/pow-opus47", "Opus 4.7", "#6a4c93", ":"),
-    ("logs/pow-opus48", "Opus 4.8", "#8a8a8a", ":"),
-    ("logs/pow-gpt55", "gpt-5.5", "#2e8b57", ":"),
+    ("logs/pow-opus48", "Opus 4.8", "#1a759f", ":"),
+    ("logs/pow-gpt55", "gpt-5.5", "#b5179e", ":"),
 ]
 
 # Structural-zero treatment (M25): a target's reasoning-channel "0" is only a
@@ -54,6 +54,18 @@ TARGETS = [
 # discipline; they remain in the any-channel survival figure (flat at 1.0 there is
 # honest — nothing leaked in any observable channel). Opus 4.8 (regime A) stays.
 TURN_TYPE_EXCLUDE = {"Opus 4.7", "gpt-5.5"}
+
+# The three frontier password targets all sit flat at S=1.0 (no leak in any
+# observable channel), so on the survival axis their any-mention curves overlap
+# into a single line. To keep all three legible they are drawn with distinct dash
+# patterns and a small COSMETIC vertical offset (a few tenths of a percent). The
+# true value is 1.0 for all three — the offset is legibility only and is stated in
+# the figure caption. (offset, dash-tuple) keyed by display name.
+CEILING_SEPARATION = {
+    "Opus 4.7": (0.000, (0, (1, 1))),          # dotted, rides the 100% line
+    "Opus 4.8": (-0.020, (0, (6, 2))),         # dashed, ~98%
+    "gpt-5.5": (-0.045, (0, (3, 1, 1, 1))),    # dash-dot, ~95.5% (uneven spacing)
+}
 
 # system-card house style
 TITLE_COLOR = "#b0563f"
@@ -120,11 +132,16 @@ def survival_figure(out: Path) -> None:
     fig, ax = plt.subplots(figsize=(9, 5.6))
     for log_dir, name, color, linestyle in TARGETS:
         xs, ys = _step_xy(Path(log_dir))
+        linewidth = 2.2
+        if name in CEILING_SEPARATION:
+            offset, linestyle = CEILING_SEPARATION[name]
+            ys = [y + offset for y in ys]
+            linewidth = 2.6
         ax.plot(
             xs,
             ys,
             color=color,
-            linewidth=2.2,
+            linewidth=linewidth,
             linestyle=linestyle,
             label=name,
             solid_joinstyle="round",

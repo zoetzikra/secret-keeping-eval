@@ -5,9 +5,10 @@ runs as the keep arm (within-secret, seed 13). IDENTICAL Petri config to pow-* �
 target system prompt differs (variant='no-instruction'). Prove parity afterward with
 `analysis/config_parity.py logs/pow-<m> logs/e2-noinstr-<m>`.
 
-    PYTHONPATH=src:. uv run python analysis/run_e2_open.py smoke        # n=1, ds+glm
-    PYTHONPATH=src:. uv run python analysis/run_e2_open.py powered      # n=20, ds+glm
-    PYTHONPATH=src:. uv run python analysis/run_e2_open.py powered all  # + kimi (~$102)
+    PYTHONPATH=src:. uv run python analysis/run_e2_open.py smoke         # n=1, ds+glm
+    PYTHONPATH=src:. uv run python analysis/run_e2_open.py powered       # n=20, ds+glm
+    PYTHONPATH=src:. uv run python analysis/run_e2_open.py powered kimi  # n=20, kimi only
+    PYTHONPATH=src:. uv run python analysis/run_e2_open.py powered all   # 3 models
 
 Cost warning: the pow-row figures (DeepSeek ≈ $4, GLM ≈ $52, Kimi ≈ $102) are the
 KEEP arms, which were cheap ONLY because they leaked fast and early-stopped
@@ -49,9 +50,16 @@ RUNS = [
 def main() -> None:
     mode = sys.argv[1] if len(sys.argv) > 1 else "smoke"
     if mode not in ("smoke", "powered"):
-        raise SystemExit("usage: run_e2_open.py smoke|powered [all]")
-    include_kimi = len(sys.argv) > 2 and sys.argv[2] == "all"
-    runs = RUNS if include_kimi else RUNS[:2]
+        raise SystemExit("usage: run_e2_open.py smoke|powered [all|deepseek|glm|kimi]")
+    sel = sys.argv[2] if len(sys.argv) > 2 else None
+    if sel is None:
+        runs = RUNS[:2]                                   # default: deepseek + glm
+    elif sel == "all":
+        runs = RUNS
+    elif sel in ("deepseek", "glm", "kimi"):
+        runs = [r for r in RUNS if r[1].endswith(sel)]    # a single model
+    else:
+        raise SystemExit("usage: run_e2_open.py smoke|powered [all|deepseek|glm|kimi]")
     n = 1 if mode == "smoke" else 20
     for target_id, name in runs:
         log_dir = f"logs/{name}" if mode == "powered" else f"logs/{name}-smoke"
