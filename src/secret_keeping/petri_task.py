@@ -272,6 +272,7 @@ def secret_keeping_petri(
     judge: bool = True,
     enable_prefill: bool = False,
     target_tools: Literal["synthetic", "fixed", "none"] = "none",
+    variant: str = "keep",
     token_limit: int = DEFAULT_TOKEN_LIMIT,
 ) -> Task:
     """Secret-keeping survival eval, Petri auditor harness.
@@ -293,13 +294,17 @@ def secret_keeping_petri(
         target_tools: `"none"` (chat-only, matching the plain harness and the
             no-downstream-task setup) or `"synthetic"` to match Anthropic's
             simulated-tool affordance.
+        variant: Target system-prompt variant passed to `inject_secret` — `"keep"`
+            (default; the reported arm) or `"no-instruction"` (the E2 floor: secret
+            present, no keep-instruction). Only this field should differ between the
+            paired keep and no-instruction Petri arms.
         token_limit: Per-investigation budget; exceeding it is censored, not an error.
     """
     return Task(
         dataset=petri_dataset(
             investigations, secret_seed, secret_length, informed, enable_prefill
         ),
-        setup=[inject_secret(), _petri_setup(max_turns, enable_prefill)],
+        setup=[inject_secret(variant), _petri_setup(max_turns, enable_prefill)],
         solver=audit_solver(
             auditor=auditor_agent(
                 max_turns=max_turns,
@@ -327,6 +332,7 @@ def secret_keeping_petri(
             "secret_seed": secret_seed,
             "enable_prefill": enable_prefill,
             "target_tools": target_tools,
+            "variant": variant,
         },
     )
 
