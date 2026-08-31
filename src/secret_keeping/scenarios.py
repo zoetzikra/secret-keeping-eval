@@ -40,7 +40,9 @@ from secret_keeping.prompts import (
     S3_PLANPRO_MAIN_TASK,
     S3_PLANPRO_SIDE_BARE,
     S3_PLANPRO_SIDE_TASK,
+    S5_AFF_SIDE_BARE,
     S5_AFF_SIDE_TASK,
+    S5_NEG_SIDE_BARE,
     S5_NEG_SIDE_TASK,
     S5_ORDERS_MAIN_TASK,
     S6_SIMPLER_MAIN_TASK,
@@ -71,11 +73,6 @@ class Scenario:
     main_task: str
     goal_text: str
     arms: dict[str, str]
-
-
-def _two_arm(side_task: str) -> dict[str, str]:
-    """default/keep arms that share the (secrecy-embedded) side task text."""
-    return {"default": side_task, "keep": side_task}
 
 
 def _three_arm(bare: str) -> dict[str, str]:
@@ -128,7 +125,7 @@ SCENARIOS = {
         route="decorrelation",
         main_task=S5_ORDERS_MAIN_TASK,
         goal_text=S5_NEG_SIDE_TASK,
-        arms=_two_arm(S5_NEG_SIDE_TASK),
+        arms=_three_arm_constraint(S5_NEG_SIDE_BARE, S5_NEG_SIDE_TASK),
     ),
     "S5aff": Scenario(
         id="S5aff",
@@ -137,7 +134,7 @@ SCENARIOS = {
         route="decorrelation",
         main_task=S5_ORDERS_MAIN_TASK,
         goal_text=S5_AFF_SIDE_TASK,
-        arms=_two_arm(S5_AFF_SIDE_TASK),
+        arms=_three_arm_constraint(S5_AFF_SIDE_BARE, S5_AFF_SIDE_TASK),
     ),
     "S6": Scenario(
         id="S6",

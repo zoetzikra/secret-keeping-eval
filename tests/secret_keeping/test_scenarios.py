@@ -75,16 +75,15 @@ def test_s5_phrasing_pair_shares_task_and_arms_differs_in_side_task() -> None:
     neg, aff = (SCENARIOS[s] for s in S5_PHRASING_PAIR)
     assert neg.main_task == aff.main_task
     assert neg.goal_text != aff.goal_text
-    assert set(neg.arms) == set(aff.arms) == {"default", "keep"}
+    assert set(neg.arms) == set(aff.arms) == {"bare", "default", "keep"}
 
 
 def test_constraint_scenario_arms() -> None:
-    # sc-v4: S3, S7 gained a `bare` arm; sc-v5: S6 too (three-point axis, like S2).
-    # S5neg/S5aff remain two-arm (bare still gated on approval).
-    for sid in ("S3", "S6", "S7"):
+    # sc-v6: every constructed scenario now carries the three-point bare/default/keep
+    # axis (S3/S7 sc-v4, S6 sc-v5, S5neg/S5aff sc-v6). Only S1 (CA-native, intrinsically
+    # covert) has no bare arm — and it is not in SCENARIOS.
+    for sid in ("S2a", "S2b", "S3", "S5neg", "S5aff", "S6", "S7"):
         assert set(SCENARIOS[sid].arms) == {"bare", "default", "keep"}
-    for sid in ("S5neg", "S5aff"):
-        assert set(SCENARIOS[sid].arms) == {"default", "keep"}
 
 
 def test_s4_is_retired_not_in_matrix() -> None:
@@ -95,4 +94,4 @@ def test_unknown_scenario_and_arm_raise() -> None:
     with pytest.raises(KeyError):
         build_scenario_seed("S9")
     with pytest.raises(KeyError):
-        build_scenario_seed("S5neg", "bare")  # S5neg has no bare arm (two-arm)
+        build_scenario_seed("S6", "nonexistent")  # unknown arm
