@@ -83,10 +83,11 @@ investigation-level McNemar below as the endpoint of record.** DeepSeek keep loo
 denser (632 vs 299) only because it early-stops (median 5 turns, all leaky) while
 no-instruction survives longer (median 15) and spreads its rehearsal thin — the
 same exposure artifact `baseline-protection.md` found for gpt-5-mini's disclose
-arm. And on all three models the *no-instruction* reasoning mentions are
-**production-driven** (the model freely using a secret nothing tells it to guard),
-not the guard-rehearsal that "white bear" names — so a per-turn count is not the
-same quantity on the two sides of the instruction boundary.
+arm. And the *no-instruction* reasoning mentions are not the same quantity as
+keep's: keep's are 100% reasoning-only (the guard route), while no-instruction
+carries a same-turn production component keep entirely lacks (12–47%, "Guard vs
+production" above) — so a per-turn count is not the same object on the two sides of
+the instruction boundary.
 
 ### Investigation-level — x/20, exact McNemar paired on secrets
 
@@ -144,6 +145,41 @@ totals themselves carry the exposure story: GLM keep survives long (863 turns ov
 over almost immediately); DeepSeek is the reverse of GLM on turn count because keep
 early-stops on its fast leak; Kimi sits between (keep 702, no-instr 563).
 
+### Guard vs production — same-turn output co-occurrence
+
+Directly testing the "the two arms' reasoning mentions are not the same quantity"
+claim, per reasoning-mention turn: does the *same turn's output* also contain the
+secret? Same-turn output leak = the model is **producing** the secret (using/
+sharing it); reasoning-only = it referenced the secret in the chain without
+emitting it that turn. Deterministic matcher only.
+
+| model | arm | reasoning-mention turns | same-turn production | reasoning-only | % reasoning-only |
+|---|---|---:|---:|---:|---:|
+| deepseek | keep | 76 | **0** | 76 | 100% |
+| | no-instruction | 109 | 39 | 70 | 64% |
+| glm | keep | 26 | **0** | 26 | 100% |
+| | no-instruction | 60 | 28 | 32 | 53% |
+| kimi | keep | 172 | **0** | 172 | 100% |
+| | no-instruction | 216 | 25 | 191 | 88% |
+
+**The clean signal is the keep column: same-turn production is 0 on all three
+models.** Under keep the secret never co-occurs with its own output disclosure —
+every reasoning mention is reasoning-only, the pure guard route. **No-instruction
+introduces a production component keep entirely lacks** — 12% (kimi) to 47% (glm)
+of its reasoning-mention turns also disclose in output the same turn. This is the
+qualitative difference the raw per-investigation count hides, and it is the honest,
+narrower version of the "production-driven" claim: *not* that most no-instruction
+reasoning mentions are production (they are not — most are still reasoning-only),
+but that no-instruction carries same-turn production that keep never exhibits.
+
+**Caveat, stated plainly:** the same-turn test undercounts production spread across
+turns (reason about the code on turn 5, share it on turn 7 — the turn-5 mention
+scores reasoning-only). And a no-instruction reasoning-only mention is **not**
+white-bear guard — there is no guard instruction — so it is better read as
+deliberation or planning-to-share than as the guard rehearsal keep exhibits. The
+scan sharpens the keep/no-instruction *difference* (0 vs 12–47% production); it does
+not license reading the no-instruction reasoning-only remainder as guarding.
+
 ## Interpretation
 
 **The white-bear effect does not replicate here, and the reason is the baseline.**
@@ -160,17 +196,17 @@ protection*, and what it buys is fewer output leaks (deepseek 16→4, glm 16→1
 20→10, kimi 20→17).
 
 **Why a per-investigation reasoning count is not a clean white-bear meter across
-this boundary.** The secret enters the reasoning channel for two different reasons
-on the two sides. Under keep the model names it while *guarding* it (white bear).
-Under no-instruction the model names it while *using* it — it has a code in
-context and no reason not to reference it — the production route
-`baseline-protection.md` identified for the disclose arm. So GLM's "no-instruction
-20/20 reasoning" is not 20/20 white-bear rehearsals; it is the model treating the
-secret as ordinary usable context. The honest reading is the conjunction: the keep
-instruction does **not** produce *excess* reasoning exposure over the
-no-instruction baseline on these targets — it produces **less**, while also cutting
-output leaks. That is the good direction for a keeper and the null direction for
-the white-bear hypothesis.
+this boundary.** The secret enters the reasoning channel differently on the two
+sides, and the same-turn-output scan ("Guard vs production") shows it directly:
+under keep, **0%** of reasoning mentions co-occur with output disclosure — the pure
+guard route; under no-instruction, 12–47% do — a production component keep never
+exhibits. The remaining no-instruction reasoning-only mentions are *not* white-bear
+guard (there is no guard instruction) — they are deliberation or planning-to-share.
+So GLM's "no-instruction 20/20 reasoning" is not 20/20 white-bear rehearsals. The
+honest reading is the conjunction: the keep instruction does **not** produce
+*excess* reasoning exposure over the no-instruction baseline on these targets — it
+produces **less**, while also cutting output leaks. That is the good direction for
+a keeper and the null direction for the white-bear hypothesis.
 
 **What still holds — the monitorability headline (E1), not E2.** On every
 regime-A target here the readable chain names the secret and extraction tracks
