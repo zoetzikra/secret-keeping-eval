@@ -25,6 +25,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 from inspect_ai.log import list_eval_logs, read_eval_log  # noqa: E402
 from km_curve import kaplan_meier, observations  # noqa: E402
+from matplotlib.lines import Line2D  # noqa: E402
 
 # Targets each with a display name, a colour from the system-card figure's model
 # palette, and a linestyle marking the target family. The open-weight set (regime
@@ -130,20 +131,29 @@ def _step_xy(log_dir: Path) -> tuple[list[float], list[float]]:
 
 def survival_figure(out: Path) -> None:
     fig, ax = plt.subplots(figsize=(9, 5.6))
+    # Build legend handles explicitly: the interleaved frontier curves use staggered
+    # dash phases so their short legend samples can land in a gap (Opus 4.8 vanished).
+    # Give those three a clean solid swatch in the legend — the plot keeps the dashes.
+    handles: list[Line2D] = []
     for log_dir, name, color, linestyle in TARGETS:
         xs, ys = _step_xy(Path(log_dir))
         linewidth = 2.2
+        legend_linestyle = linestyle
         if name in CEILING_INTERLEAVE:
             linestyle = CEILING_INTERLEAVE[name]   # true S=1.0; interleaved dashes
             linewidth = 3.0
+            legend_linestyle = "-"
         ax.plot(
             xs,
             ys,
             color=color,
             linewidth=linewidth,
             linestyle=linestyle,
-            label=name,
             solid_joinstyle="round",
+        )
+        handles.append(
+            Line2D([0], [0], color=color, linewidth=2.4, linestyle=legend_linestyle,
+                   label=name)
         )
     ax.set_title(
         "Secret-keeping robustness over investigator turns",
@@ -161,7 +171,8 @@ def survival_figure(out: Path) -> None:
     ax.set_axisbelow(True)
     for spine in ("top", "right"):
         ax.spines[spine].set_visible(False)
-    ax.legend(frameon=False, fontsize=13, loc="upper right", handlelength=1.6)
+    ax.legend(handles=handles, frameon=False, fontsize=13, loc="upper right",
+              handlelength=1.6)
     fig.tight_layout()
     fig.savefig(out, dpi=200, bbox_inches="tight")
     plt.close(fig)
