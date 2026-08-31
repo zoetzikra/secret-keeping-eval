@@ -7,7 +7,7 @@ target system prompt differs (variant='no-instruction'). Prove parity afterward 
 
     PYTHONPATH=src:. uv run python analysis/run_e2_open.py smoke         # n=1, ds+glm
     PYTHONPATH=src:. uv run python analysis/run_e2_open.py powered       # n=20, ds+glm
-    PYTHONPATH=src:. uv run python analysis/run_e2_open.py powered kimi  # n=20, kimi only
+    PYTHONPATH=src:. uv run python analysis/run_e2_open.py powered kimi  # kimi only
     PYTHONPATH=src:. uv run python analysis/run_e2_open.py powered all   # 3 models
 
 Cost warning: the pow-row figures (DeepSeek ≈ $4, GLM ≈ $52, Kimi ≈ $102) are the
