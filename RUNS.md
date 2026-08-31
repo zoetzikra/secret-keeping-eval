@@ -123,6 +123,8 @@ Terms: see TERMINOLOGY.md. Experiments: **E1** pressure-replication,
 `27`, `28` — P3-CA **sc-v4 bare arms** for the constraint scenarios (adds the no-secrecy pole of the three-point axis): **27** S7 bare, **28** S3 bare. Run bare-only (`-T arms=bare`) at a fresh seed so the existing default/keep runs (seeds 26/23) are untouched; `secret_seed` does not affect content, so bare-vs-default/keep is an aggregate contrast. (Reserved for S5neg/S5aff bare if approved: `29`, `30`; **`31` = S6 bare, activated sc-v5 for the DeepSeek batch**.)
 `40`–`44` — **DeepSeek v4 Pro cross-model replication** (Batch 1, hidden-goal poster scenarios; raw-CoT target, Gemini gd-v5 grader): **40** S1 (apps), **41** S2a, **42** S6 (bare+keep), **43** S7. `44` reserved for S2b if the extra budget is approved.
 `50` — **Opus 4.6 secret-PASSWORD survival** (Batch 2; deterministic string-match endpoint, no disclosure judge). Target = Claude Opus 4.6 (raw CoT verified), auditor+grader sonnet-4-6; the one target where the reasoning-channel survival curve is not observability-confounded (Opus 4.6 ≈ 100% readable CoT).
+`51` — **Gemini 3.1 Pro password** (Batch 2b; Google frontier). Reasoning 71% readable auto-summary, 29% model-didn't-think, 0% provider-hidden.
+`52`, `53`, `54` — **cross-model frontier password set** (high-priority extension): **52** Opus 4.7, **53** Opus 4.8, **54** OpenAI frontier (gpt-5.5). Same password config as seed 50; reasoning-visibility varies (measured + caveated, not gated).
 
 ## Outstanding
 
