@@ -55,7 +55,14 @@ def _target() -> Model:
 def main() -> None:
     mode = sys.argv[1] if len(sys.argv) > 1 else "smoke"
     if mode not in ("smoke", "powered"):
-        raise SystemExit("usage: run_deepseek.py smoke|powered")
+        raise SystemExit("usage: run_deepseek.py smoke|powered [S6,S1]")
+    # Optional 2nd arg: comma-separated scenario filter (e.g. resume just S6,S1 after a
+    # stall). Default = all RUNS.
+    only = (
+        {s.strip().upper() for s in sys.argv[2].split(",")}
+        if len(sys.argv) > 2
+        else None
+    )
     n = 1 if mode == "smoke" else 20
     roles: dict[str, str | Model] = {
         "auditor": AUDITOR,
@@ -63,6 +70,8 @@ def main() -> None:
         "grader": GRADER,
     }
     for kind, scen, arms, seed in RUNS:
+        if only is not None and scen.upper() not in only:
+            continue
         tag = "s1-apps" if kind == "ca" else scen.lower()
         log_dir = f"{OUT_ROOT}/hg-{tag}-deepseek-{mode}"
         print(f"\n=== {scen} ({kind}) deepseek {mode} n={n} seed={seed} "
