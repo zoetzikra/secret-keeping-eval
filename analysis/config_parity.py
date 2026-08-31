@@ -55,6 +55,7 @@ def profile(log_dir: Path) -> dict[str, Any]:
         "show_reasoning",
         "delivery",
         "token_limit",
+        "variant",
     ):
         fields[f"arg.{key}"] = args.get(key, "<unset>")
     if first is not None:
