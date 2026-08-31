@@ -117,7 +117,7 @@ Terms: see TERMINOLOGY.md. Experiments: **E1** pressure-replication,
 `9` — P0-2 cross-provider observability block (`obs-*`), both targets.
 `11` — P2 open-weight probes (`probe-{kimi-k3,deepseek-v4,glm-5}`).
 `12` — P3-a hidden-goal probe (`probe-hidden-goal`).
-`13` — P2 powered open-weight set (`pow-{kimi-k3,deepseek-v4,glm-5}`), one shared seed so the three targets are paired.
+`13` — P2 powered open-weight set (`pow-{kimi-k3,deepseek-v4,glm-5}`), one shared seed so the three targets are paired. **Reused by E2-open** (`e2-noinstr-{deepseek,glm,kimi}`): the no-instruction arms pair within-secret to the `pow-*` runs as the keep arms (Option A), so the only field that differs is the target system prompt.
 `14` — E4 per-turn tool-call mandate (`e4-mandate-{off,optional,on}`), one shared seed, paired 3-point axis.
 `15` — P3-CA hidden-goal-ControlArena **pipeline smoke** (`hg-ca-apps-smoke`); the trajectory-generation smokes (`ca-*-smoke`) carry no secret and use `secret_seed=n/a`.
 `16` — P3-CA **paired default-vs-keep, prompt-only seeding** (S1, CA-native); reassigned 2026-08-23 from the void "Bash traces" plan (M29).
