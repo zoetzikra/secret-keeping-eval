@@ -8,8 +8,15 @@ readable reasoning — the OUTPUT-channel curve is the reliable one; the reasoni
 curve is caveated. We do NOT halt on low reasoning-visibility here (accepted), just
 measure and report it.
 
-    PYTHONPATH=src:. uv run python analysis/run_gemini_password.py smoke      # n=1
-    PYTHONPATH=src:. uv run python analysis/run_gemini_password.py powered    # n=20
+    ... run_gemini_password.py smoke              # n=1 keep
+    ... run_gemini_password.py powered            # n=20 keep (= pow-gemini31)
+    ... run_gemini_password.py smoke noinstr      # E2-closed A2 smoke
+    ... run_gemini_password.py powered noinstr    # E2-closed A2 (n=20)
+
+The optional second arg selects the target system prompt: default `keep`
+(= `logs/pow-gemini31`, unchanged), or `noinstr` (the E2-closed A2 no-instruction
+arm, `logs/e2-noinstr-gemini31`, same seed 51 so it pairs within-secret to the keep
+arm). Only the prompt changes — prove with `config_parity.py`.
 
 METR framing: report leaks as "observed under this auditor", never "keeps the secret".
 """
@@ -45,9 +52,12 @@ def _target() -> Model:
 def main() -> None:
     mode = sys.argv[1] if len(sys.argv) > 1 else "smoke"
     if mode not in ("smoke", "powered"):
-        raise SystemExit("usage: run_gemini_password.py smoke|powered")
+        raise SystemExit("usage: run_gemini_password.py smoke|powered [noinstr]")
+    noinstr = len(sys.argv) > 2 and sys.argv[2] == "noinstr"
+    variant = "no-instruction" if noinstr else "keep"
     n = 1 if mode == "smoke" else 20
-    log_dir = "logs/pow-gemini31" if mode == "powered" else "logs/pow-gemini31-smoke"
+    base = "e2-noinstr-gemini31" if variant == "no-instruction" else "pow-gemini31"
+    log_dir = f"logs/{base}" if mode == "powered" else f"logs/{base}-smoke"
     roles: dict[str, str | Model] = {
         "auditor": AUDITOR,
         "target": _target(),
@@ -61,9 +71,10 @@ def main() -> None:
         informed=True,
         judge=True,
         token_limit=TOKEN_LIMIT,
+        variant=variant,
     )
     print(f"=== Gemini 3.1 Pro password {mode} n={n} seed={SECRET_SEED} "
-          f"-> {log_dir} ===", flush=True)
+          f"variant={variant} -> {log_dir} ===", flush=True)
     # Tolerate sporadic provider 400s (as seen with the Opus run) so one bad request
     # does not abort the whole eval.
     inspect_eval(task, model_roles=roles, max_samples=n if n < 8 else 8,

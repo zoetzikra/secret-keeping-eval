@@ -139,8 +139,9 @@ def survival_figure(out: Path) -> None:
         xs, ys = _step_xy(Path(log_dir))
         linewidth = 2.2
         legend_linestyle = linestyle
+        plot_linestyle: object = linestyle
         if name in CEILING_INTERLEAVE:
-            linestyle = CEILING_INTERLEAVE[name]   # true S=1.0; interleaved dashes
+            plot_linestyle = CEILING_INTERLEAVE[name]  # true S=1.0; interleaved dashes
             linewidth = 3.0
             legend_linestyle = "-"
         ax.plot(
@@ -148,7 +149,7 @@ def survival_figure(out: Path) -> None:
             ys,
             color=color,
             linewidth=linewidth,
-            linestyle=linestyle,
+            linestyle=plot_linestyle,
             solid_joinstyle="round",
         )
         handles.append(
@@ -161,7 +162,7 @@ def survival_figure(out: Path) -> None:
         fontsize=19,
         pad=18,
     )
-    ax.set_xlabel("turn index")
+    ax.set_xlabel("Turn index")
     ax.set_ylabel("Fraction of runs with secret kept")
     ax.set_xlim(0, MAX_T)
     ax.set_ylim(0, 1.002)
@@ -171,8 +172,9 @@ def survival_figure(out: Path) -> None:
     ax.set_axisbelow(True)
     for spine in ("top", "right"):
         ax.spines[spine].set_visible(False)
-    ax.legend(handles=handles, frameon=False, fontsize=13, loc="upper right",
-              handlelength=1.6)
+    # White backing (no border) so ceiling curves don't strike through the labels.
+    ax.legend(handles=handles, frameon=True, facecolor="white", edgecolor="none",
+              framealpha=0.9, fontsize=10, loc="upper right", handlelength=1.6)
     fig.tight_layout()
     fig.savefig(out, dpi=200, bbox_inches="tight")
     plt.close(fig)

@@ -39,27 +39,35 @@ MAX_TURNS = 60          # match pow-*
 MAX_SAMPLES = 4         # Petri deadlock cap (per-process, always)
 SECRET_SEED = 13        # same 20 secrets as pow-* (within-secret pairing)
 SECRET_LENGTH = 7
-# (target id, log-dir short name). Default runs the first two; `all` adds Kimi.
+# (target id, log-dir short name). Every entry is a Petri no-instruction arm paired
+# within-secret to the identically-configured pow-* keep arm. deepseek/glm/kimi are
+# the E2-open set (open-weight raw CoT); haiku is the E2-closed A1 arm, paired to
+# `pow-haiku-4-5` (regime C — no reasoning chain, so its informative endpoints are
+# output/extraction/median-turns, not the reasoning contrast). Default runs
+# deepseek + glm; name a single target to run it alone; `all` runs the open set.
 RUNS = [
     ("openrouter/deepseek/deepseek-v4-pro", "e2-noinstr-deepseek"),
     ("openrouter/z-ai/glm-5.2", "e2-noinstr-glm"),
-    ("openrouter/moonshotai/kimi-k3", "e2-noinstr-kimi"),  # HELD unless `all`
+    ("openrouter/moonshotai/kimi-k3", "e2-noinstr-kimi"),
+    ("openrouter/anthropic/claude-haiku-4.5", "e2-noinstr-haiku"),
 ]
+_TARGETS = {name.rsplit("-", 1)[-1] for _, name in RUNS}
 
 
 def main() -> None:
+    usage = f"usage: run_e2_open.py smoke|powered [all|{'|'.join(sorted(_TARGETS))}]"
     mode = sys.argv[1] if len(sys.argv) > 1 else "smoke"
     if mode not in ("smoke", "powered"):
-        raise SystemExit("usage: run_e2_open.py smoke|powered [all|deepseek|glm|kimi]")
+        raise SystemExit(usage)
     sel = sys.argv[2] if len(sys.argv) > 2 else None
     if sel is None:
         runs = RUNS[:2]                                   # default: deepseek + glm
     elif sel == "all":
-        runs = RUNS
-    elif sel in ("deepseek", "glm", "kimi"):
-        runs = [r for r in RUNS if r[1].endswith(sel)]    # a single model
+        runs = RUNS[:3]                                   # the open-weight set
+    elif sel in _TARGETS:
+        runs = [r for r in RUNS if r[1].rsplit("-", 1)[-1] == sel]   # single target
     else:
-        raise SystemExit("usage: run_e2_open.py smoke|powered [all|deepseek|glm|kimi]")
+        raise SystemExit(usage)
     n = 1 if mode == "smoke" else 20
     for target_id, name in runs:
         log_dir = f"logs/{name}" if mode == "powered" else f"logs/{name}-smoke"

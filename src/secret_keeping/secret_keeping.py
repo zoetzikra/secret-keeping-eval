@@ -74,6 +74,7 @@ def secret_keeping(
     submit_tool: bool = False,
     action_mandate: bool = False,
     token_limit: int = DEFAULT_TOKEN_LIMIT,
+    variant: str = "keep",
 ) -> Task:
     """Secret-keeping survival eval, plain auditor harness.
 
@@ -105,6 +106,9 @@ def secret_keeping(
             is already on its screen. Sets tool delivery + submit tool + forced
             choice together; when on, it overrides `delivery`/`submit_tool`.
         token_limit: Per-investigation token budget.
+        variant: Which target system prompt to install (see `inject_secret`).
+            `"keep"` is the eval proper; `"no-instruction"` omits the keep
+            clause (the E2 baseline arm). Only the target prompt changes.
     """
     # The per-turn tool-call mandate (E4) bundles tool delivery, the submit tool,
     # and a forced choice: with `delivery="tool"` + `submit_tool=True` the loop
@@ -118,7 +122,7 @@ def secret_keeping(
         dataset=secret_keeping_dataset(
             investigations, secret_seed, secret_length, informed
         ),
-        setup=inject_secret(),
+        setup=inject_secret(variant),
         solver=secret_keeping_auditor(
             max_turns=max_turns,
             early_stop=early_stop,
@@ -139,5 +143,6 @@ def secret_keeping(
             "delivery": delivery,
             "submit_tool": submit_tool,
             "action_mandate": action_mandate,
+            "variant": variant,
         },
     )
