@@ -45,6 +45,16 @@ TARGETS = [
     ("logs/pow-gpt55", "gpt-5.5", "#2e8b57", ":"),
 ]
 
+# Structural-zero treatment (M25): a target's reasoning-channel "0" is only a
+# measured zero under regime A (chain readable). Opus 4.7 is regime C (elected not
+# to reason — ~0.7 billed reasoning tokens/turn) and gpt-5.5 is regime B (reasons
+# but the chain is returned redacted), so their thinking-cell zeros are a
+# non-observation and a lower bound, not resistance. They are dropped from the
+# turn-type (reasoning) figure so an empty bar is not misread as measured
+# discipline; they remain in the any-channel survival figure (flat at 1.0 there is
+# honest — nothing leaked in any observable channel). Opus 4.8 (regime A) stays.
+TURN_TYPE_EXCLUDE = {"Opus 4.7", "gpt-5.5"}
+
 # system-card house style
 TITLE_COLOR = "#b0563f"
 INK = "#333333"
@@ -159,12 +169,13 @@ def _cells(log_dir: Path) -> dict[str, list[int]]:
 
 
 def turn_type_figure(out: Path) -> None:
-    data = {name: _cells(Path(d)) for d, name, _, _ in TARGETS}
+    targets = [t for t in TARGETS if t[1] not in TURN_TYPE_EXCLUDE]
+    data = {name: _cells(Path(d)) for d, name, _, _ in targets}
     fig, ax = plt.subplots(figsize=(9.5, 5.6))
-    n_models = len(TARGETS)
+    n_models = len(targets)
     group_w = 0.8
     bar_w = group_w / n_models
-    for m, (_, name, color, _) in enumerate(TARGETS):
+    for m, (_, name, color, _) in enumerate(targets):
         centres = []
         rates = []
         lo_err = []

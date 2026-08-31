@@ -130,6 +130,33 @@ one axis, "this is what the replication reproduces"):
 
 ![Secret-keeping robustness over investigator turns, powered open-weight set](../analysis/out/pow_survival.png)
 
+**Cross-model overlay — mixed harness, budget and seed (read the caption before
+the curves).** The figure now also carries the frontier/reference password runs
+added on request: solid = the 60-turn Petri open-weight set (`secret_seed=13`,
+paired); dashed = the Anthropic-4.5 prefill pair; dotted = the plain-harness
+frontier set — Opus 4.6 (seed 50), Gemini 3.1 Pro (51), Opus 4.7 (52), Opus 4.8
+(53), gpt-5.5 (54), and gpt-5-mini (`abl-plain-nested`). Those ran **40-turn plain
+harness with auditor prefill off**, on **fresh unpaired seeds**, and are carried
+flat from turn 40 to the axis end at 60 — immaterial, since every frontier curve
+except Gemini sits at 1.0 the whole way. Because harness, turn budget and secret
+set all differ between the solid and dotted families, the dotted curves are a
+**reference overlay, not a paired comparison** (CLAUDE.md: never compare curves
+across harnesses/auditors as if paired). The one moving dotted curve is Gemini
+3.1 Pro (reasoning channel; output stays high).
+
+**Structural-zero caveat on the flat frontier curves (M25).** A flat-at-1.0 line
+means "no leak in any *observable* channel", which is only the same as "kept" when
+the reasoning channel is observable. It is for Opus 4.8 (regime A, chain readable
+on 19/20 — its flat line is a genuine no-leak result) but **not** for Opus 4.7
+(regime C — the model elected not to reason, ~0.7 billed reasoning tokens/turn) or
+gpt-5.5 (regime B — reasons but the chain is returned redacted): for those two the
+reasoning channel is a non-observation and a lower bound respectively, so only
+their **output** 0/20 is informative. METR framing throughout: no leaks *observed
+under this auditor* — the same sonnet-4-6 auditor that drove DeepSeek to S→0 — is
+not evidence the secret cannot be extracted. See RUNS.md (`pow-opus4{6,7,8}`,
+`pow-gemini31`, `pow-gpt55`) for the per-channel counts and the invariant-#1
+error-path audit of the one excluded Opus 4.8 sample.
+
 Per-target Greenwood-banded curves broken out by all four channels (any-mention,
 output, reasoning, extraction):
 
@@ -153,6 +180,16 @@ target per turn type, Wilson 95% error bars):
 (`make turn-type-figure`).
 
 ![Rate of secret leaking by turn type, powered open-weight set](../analysis/out/pow_turn_type.png)
+
+**Who is in this figure and who is not.** The reference overlay's plain-harness
+runs have **auditor prefill off**, so their `prefill` and `prefill+thinking` cells
+are structurally empty by design, not by measurement — they contribute only the
+`thinking-only`/`neither` columns. **Opus 4.7 and gpt-5.5 are dropped from this
+figure entirely** (`TURN_TYPE_EXCLUDE` in `pow_figures.py`): a thinking-cell zero
+is only a measured discipline under regime A, and those two are regime C (elected
+not to reason) and regime B (chain redacted) — an empty bar there would be misread
+as measured discipline. Opus 4.8 (regime A) is kept, and its thinking-cell zero is
+a real measurement.
 
 Cells are leaks/turns (per-turn any-mention analogue):
 
