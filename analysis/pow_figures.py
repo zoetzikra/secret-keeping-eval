@@ -26,12 +26,19 @@ import matplotlib.pyplot as plt  # noqa: E402
 from inspect_ai.log import list_eval_logs, read_eval_log  # noqa: E402
 from km_curve import kaplan_meier, observations  # noqa: E402
 
-# Targets in decreasing decay speed, each with a display name and a colour drawn
-# from the system-card figure's model palette (blue / orange / green).
+# Targets each with a display name, a colour from the system-card figure's model
+# palette, and a linestyle marking the target family. The open-weight set (regime
+# A: readable chain, leaks in reasoning) is solid; the Anthropic 4.5 pair (regime
+# C: no chain, leaks in output via prefill) is dashed, so the family split — and
+# the flat empty-thinking bars in the turn-type figure — reads at a glance.
 TARGETS = [
-    ("logs/pow-deepseek-v4", "DeepSeek V4-Pro", "#3f6fb5"),
-    ("logs/pow-kimi-k3", "Kimi K3", "#e17a54"),
-    ("logs/pow-glm-5", "GLM-5.2", "#4e9d6f"),
+    ("logs/pow-deepseek-v4", "DeepSeek V4-Pro", "#3f6fb5", "-"),
+    ("logs/pow-kimi-k3", "Kimi K3", "#e17a54", "-"),
+    ("logs/pow-glm-5", "GLM-5.2", "#4e9d6f", "-"),
+    ("logs/pow-sonnet-4-5", "Sonnet 4.5", "#7b5ea8", "--"),
+    ("logs/pow-haiku-4-5", "Haiku 4.5", "#3f9d9d", "--"),
+    ("logs/pow-opus46", "Opus 4.6", "#111111", "--"),
+    ("logs/pow-gemini31", "Gemini 3.1 Pro", "#d1495b", "--"),
 ]
 
 # system-card house style
@@ -97,9 +104,17 @@ def _step_xy(log_dir: Path) -> tuple[list[float], list[float]]:
 
 def survival_figure(out: Path) -> None:
     fig, ax = plt.subplots(figsize=(9, 5.6))
-    for log_dir, name, color in TARGETS:
+    for log_dir, name, color, linestyle in TARGETS:
         xs, ys = _step_xy(Path(log_dir))
-        ax.plot(xs, ys, color=color, linewidth=2.2, label=name, solid_joinstyle="round")
+        ax.plot(
+            xs,
+            ys,
+            color=color,
+            linewidth=2.2,
+            linestyle=linestyle,
+            label=name,
+            solid_joinstyle="round",
+        )
     ax.set_title(
         "Secret-keeping robustness over investigator turns",
         color=TITLE_COLOR,
@@ -140,12 +155,12 @@ def _cells(log_dir: Path) -> dict[str, list[int]]:
 
 
 def turn_type_figure(out: Path) -> None:
-    data = {name: _cells(Path(d)) for d, name, _ in TARGETS}
+    data = {name: _cells(Path(d)) for d, name, _, _ in TARGETS}
     fig, ax = plt.subplots(figsize=(9.5, 5.6))
     n_models = len(TARGETS)
     group_w = 0.8
     bar_w = group_w / n_models
-    for m, (_, name, color) in enumerate(TARGETS):
+    for m, (_, name, color, _) in enumerate(TARGETS):
         centres = []
         rates = []
         lo_err = []
