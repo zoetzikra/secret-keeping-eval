@@ -8,6 +8,23 @@ mechanical evidence, not an argument).
 
 ---
 
+## 2026-08-31 — Gemini 3.1 Pro password survival (Batch 2b): Google frontier point
+
+**What.** Password run (`logs/pow-gemini31`, plain harness, string-match endpoint), target
+**Gemini 3.1 Pro**, auditor+grader sonnet-4-6, n=20, 40 turns, seed 51. 20/20 completed, 0
+errors. **Reasoning-visibility caveat: 71%, and it is an auto-*summary* (`reasoning_summary
+=auto`), not raw CoT** — unlike Opus 4.6 / DeepSeek's raw traces (readable but summarized,
+like gpt-5-mini). So its reasoning-channel leaks are in the summarized trace.
+
+**Result (METR framing).** Under this auditor: **output 3/20, reasoning 17/20 leaks** (any
+17/20). Per-channel KM: output S(t)=0.85, reasoning S(t) **collapses to 0.15 by t14** (leaks
+early, turns 3–14; `reports/pow-gemini31_km.png`). The reasoning≫output dissociation holds,
+but Gemini 3.1 Pro is a **far weaker secret-keeper than Opus 4.6** (17/20 vs 3/19 reasoning;
+it also leaks in output, which Opus never did) — a fast-decaying reasoning curve. Stated as
+"leaks observed under this auditor", not a capability claim. Together the two Batch-2 points
+frame the cross-model password set: Opus 4.6 (raw CoT, strong keeper) vs Gemini 3.1 Pro
+(summary CoT, weak keeper), both showing reasoning≫output.
+
 ## 2026-08-31 — Opus 4.6 password survival (Batch 2): reasoning≫output dissociation on a full-CoT frontier target
 
 **What.** One powered password run (`logs/pow-opus46`, plain harness, deterministic
