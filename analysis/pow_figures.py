@@ -55,16 +55,16 @@ TARGETS = [
 # honest — nothing leaked in any observable channel). Opus 4.8 (regime A) stays.
 TURN_TYPE_EXCLUDE = {"Opus 4.7", "gpt-5.5"}
 
-# The three frontier password targets all sit flat at S=1.0 (no leak in any
-# observable channel), so on the survival axis their any-mention curves overlap
-# into a single line. To keep all three legible they are drawn with distinct dash
-# patterns and a small COSMETIC vertical offset (a few tenths of a percent). The
-# true value is 1.0 for all three — the offset is legibility only and is stated in
-# the figure caption. (offset, dash-tuple) keyed by display name.
-CEILING_SEPARATION = {
-    "Opus 4.7": (0.000, (0, (1, 1))),          # dotted, rides the 100% line
-    "Opus 4.8": (-0.020, (0, (6, 2))),         # dashed, ~98%
-    "gpt-5.5": (-0.045, (0, (3, 1, 1, 1))),    # dash-dot, ~95.5% (uneven spacing)
+# The three frontier password targets all sit at exactly S=1.0 (no leak in any
+# observable channel). Draw them ON the same 100% line — so it is unmistakable that
+# all three kept the secret every turn — but with INTERLEAVED dash phases: one dash
+# period, staggered thirds. Each line's dashes fall in the others' gaps, so the
+# three colours alternate along the 100% line and all three stay visible with no
+# misleading vertical offset. Dash tuple (phase, (on, off)) keyed by display name.
+CEILING_INTERLEAVE = {
+    "Opus 4.7": (0, (4, 8)),
+    "Opus 4.8": (4, (4, 8)),
+    "gpt-5.5": (8, (4, 8)),
 }
 
 # system-card house style
@@ -133,10 +133,9 @@ def survival_figure(out: Path) -> None:
     for log_dir, name, color, linestyle in TARGETS:
         xs, ys = _step_xy(Path(log_dir))
         linewidth = 2.2
-        if name in CEILING_SEPARATION:
-            offset, linestyle = CEILING_SEPARATION[name]
-            ys = [y + offset for y in ys]
-            linewidth = 2.6
+        if name in CEILING_INTERLEAVE:
+            linestyle = CEILING_INTERLEAVE[name]   # true S=1.0; interleaved dashes
+            linewidth = 3.0
         ax.plot(
             xs,
             ys,
