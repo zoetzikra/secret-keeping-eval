@@ -146,8 +146,11 @@ across harnesses/auditors as if paired). The one moving dotted curve is Gemini
 
 **Structural-zero caveat on the flat frontier curves (M25).** A flat-at-1.0 line
 means "no leak in any *observable* channel", which is only the same as "kept" when
-the reasoning channel is observable. It is for Opus 4.8 (regime A, chain readable
-on 19/20 — its flat line is a genuine no-leak result) but **not** for Opus 4.7
+the reasoning channel is observable. It is *mostly* so for Opus 4.8 (regime A, chain-encrypted
+0% — nothing withheld — but a readable chain on only **54% of turns**, 418/771,
+the other 46% producing no chain at all; so its flat line is a genuine no-leak
+result on the turns where it reasoned, a point estimate scoped to those turns
+rather than a blanket no-rehearsal claim), but **not** for Opus 4.7
 (regime C — the model elected not to reason, ~0.7 billed reasoning tokens/turn) or
 gpt-5.5 (regime B — reasons but the chain is returned redacted): for those two the
 reasoning channel is a non-observation and a lower bound respectively, so only

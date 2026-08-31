@@ -9,9 +9,13 @@ target system prompt differs (variant='no-instruction'). Prove parity afterward 
     PYTHONPATH=src:. uv run python analysis/run_e2_open.py powered      # n=20, ds+glm
     PYTHONPATH=src:. uv run python analysis/run_e2_open.py powered all  # + kimi (~$102)
 
-Budget per 20×60-turn arm (from the pow rows): DeepSeek ≈ $4, GLM ≈ $52, Kimi ≈ $102.
-Kimi is HELD by default (pass `all` to include it). One eval at a time (same account =
-one rate-limit pool, verified). Petri max_samples<=4 stays in force.
+Cost warning: the pow-row figures (DeepSeek ≈ $4, GLM ≈ $52, Kimi ≈ $102) are the
+KEEP arms, which were cheap ONLY because they leaked fast and early-stopped
+(DeepSeek median 5 turns of 60). The no-instruction arms rehearse/leak less, so most
+investigations run the FULL 60 turns — several times the turns, hence several times
+the spend. Do NOT treat $4 as the DeepSeek no-instruction estimate; expect
+materially more. Kimi is HELD by default (pass `all`). One eval at a time (same
+account = one rate-limit pool, verified). Petri max_samples<=4 stays in force.
 """
 
 import sys
