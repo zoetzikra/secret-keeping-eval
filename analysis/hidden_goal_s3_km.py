@@ -15,6 +15,7 @@ Writes analysis/out/hg-s3-km.png and poster/figures/hg-s3-km.png.
 
 import shutil
 from pathlib import Path
+from typing import Any
 
 import matplotlib
 
@@ -31,7 +32,7 @@ POSTER = Path("poster/figures/hg-s3-km.png")
 ARMS = [("keep", "#2b4a6f"), ("default", "#c0632a")]
 
 
-def _observations(log, arm: str, channel: str) -> list[Observation]:
+def _observations(log: Any, arm: str, channel: str) -> list[Observation]:
     obs: list[Observation] = []
     for s in log.samples or []:
         if (s.metadata or {}).get("ca_arm") != arm:
@@ -45,7 +46,7 @@ def _observations(log, arm: str, channel: str) -> list[Observation]:
     return obs
 
 
-def _step_xy(points):
+def _step_xy(points: list[Any]) -> tuple[list[int], list[float], list[float], list[float]]:
     xs = [p.t for p in points]
     ys = [p.survival for p in points]
     lo = [p.lower for p in points]
