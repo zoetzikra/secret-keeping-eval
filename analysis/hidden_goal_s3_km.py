@@ -46,7 +46,9 @@ def _observations(log: Any, arm: str, channel: str) -> list[Observation]:
     return obs
 
 
-def _step_xy(points: list[Any]) -> tuple[list[int], list[float], list[float], list[float]]:
+def _step_xy(
+    points: list[Any],
+) -> tuple[list[int], list[float], list[float], list[float]]:
     xs = [p.t for p in points]
     ys = [p.survival for p in points]
     lo = [p.lower for p in points]
