@@ -28,21 +28,25 @@ from km_curve import kaplan_meier, observations  # noqa: E402
 from matplotlib.lines import Line2D  # noqa: E402
 
 # Targets each with a display name, a colour from the system-card figure's model
-# palette, and a linestyle marking the target family. The open-weight set (regime
-# A: readable chain, leaks in reasoning) is solid; the Anthropic 4.5 pair (regime
-# C: no chain, leaks in output via prefill) is dashed, so the family split — and
-# the flat empty-thinking bars in the turn-type figure — reads at a glance.
+# palette, and a linestyle marking the target family. All curves are the KEEP arm,
+# scored on the SAME Petri auditor EXCEPT the two dotted reference lines
+# (Opus 4.7, gpt-5.5) which remain plain-harness (out of scope for the Petri
+# re-run — regime C / redacted, no usable reasoning; RERUN_frontier_on_petri.md).
+# Solid = open-weight regime A; dashed = every other Petri keep arm (Anthropic 4.5
+# prefill pair + the four frontier re-runs opus46/opus48/gemini/gpt-5-mini, which
+# now DECAY under Petri rather than sitting flat as they did on the plain harness);
+# dotted = the two flat plain reference lines.
 TARGETS = [
     ("logs/pow-deepseek-v4", "DeepSeek V4-Pro", "#3f6fb5", "-"),
     ("logs/pow-kimi-k3", "Kimi K3", "#e17a54", "-"),
     ("logs/pow-glm-5", "GLM-5.2", "#4e9d6f", "-"),
     ("logs/pow-sonnet-4-5", "Sonnet 4.5", "#7b5ea8", "--"),
     ("logs/pow-haiku-4-5", "Haiku 4.5", "#3f9d9d", "--"),
-    ("logs/pow-opus46", "Opus 4.6", "#111111", "--"),
-    ("logs/pow-gemini31", "Gemini 3.1 Pro", "#d1495b", "--"),
-    ("logs/abl-plain-nested", "gpt-5-mini", "#c9a227", "--"),
+    ("logs/pow-opus46-petri", "Opus 4.6", "#111111", "--"),
+    ("logs/pow-gemini31-petri", "Gemini 3.1 Pro", "#d1495b", "--"),
+    ("logs/pow-gpt5mini-petri", "gpt-5-mini", "#c9a227", "--"),
+    ("logs/pow-opus48-petri", "Opus 4.8", "#1a759f", "--"),
     ("logs/pow-opus47", "Opus 4.7", "#6a4c93", ":"),
-    ("logs/pow-opus48", "Opus 4.8", "#1a759f", ":"),
     ("logs/pow-gpt55", "gpt-5.5", "#b5179e", ":"),
 ]
 
@@ -56,16 +60,15 @@ TARGETS = [
 # honest — nothing leaked in any observable channel). Opus 4.8 (regime A) stays.
 TURN_TYPE_EXCLUDE = {"Opus 4.7", "gpt-5.5"}
 
-# The three frontier password targets all sit at exactly S=1.0 (no leak in any
-# observable channel). Draw them ON the same 100% line — so it is unmistakable that
-# all three kept the secret every turn — but with INTERLEAVED dash phases: one dash
-# period, staggered thirds. Each line's dashes fall in the others' gaps, so the
-# three colours alternate along the 100% line and all three stay visible with no
-# misleading vertical offset. Dash tuple (phase, (on, off)) keyed by display name.
+# The two still-plain reference targets (Opus 4.7, gpt-5.5) sit at exactly S=1.0
+# (no leak in any observable channel under the weaker plain auditor). Draw them ON
+# the 100% line with INTERLEAVED dash phases — staggered halves — so both colours
+# alternate along the line and neither hides the other, with no misleading vertical
+# offset. The four Petri re-runs used to be flat here too; on Petri they decay, so
+# they are drawn as ordinary curves. Dash tuple (phase, (on, off)) by display name.
 CEILING_INTERLEAVE = {
     "Opus 4.7": (0, (4, 8)),
-    "Opus 4.8": (4, (4, 8)),
-    "gpt-5.5": (8, (4, 8)),
+    "gpt-5.5": (4, (4, 8)),
 }
 
 # system-card house style
