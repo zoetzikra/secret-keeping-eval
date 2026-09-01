@@ -25,6 +25,7 @@ under both. No new judge calls — counts come straight off the re-scored logs.
 """
 
 from pathlib import Path
+from typing import Any
 
 import matplotlib
 
@@ -62,16 +63,16 @@ def _style() -> None:
     )
 
 
-def _load(scenario_dir: str):
+def _load(scenario_dir: str) -> Any:
     d = f"{GRADER_DIR}/{scenario_dir}"
     return read_eval_log(max(list_eval_logs(d), key=lambda i: i.mtime or 0))
 
 
-def _arm(sample) -> str:
+def _arm(sample: Any) -> str:
     return (sample.metadata or {}).get("ca_arm") or ""
 
 
-def _observations(log, arm: str, channel: str) -> list[Observation]:
+def _observations(log: Any, arm: str, channel: str) -> list[Observation]:
     """First-passage survival obs for one arm/channel of the disclosure scorer.
 
     event = disclosed on that channel; time = the disclosure turn if disclosed,
