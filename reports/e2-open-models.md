@@ -1,19 +1,22 @@
-# E2 on the open-weight raw-CoT targets — does the keep-instruction induce reasoning rehearsal?
+# E2 across open-weight and frontier targets — does the keep-instruction induce reasoning rehearsal?
 
-> **Status: complete (all three targets, n=20 per arm).** Awaiting Zoe's review.
+> **Status: complete — 3 open-weight + 4 frontier targets on Petri, n=20/arm.**
+> Awaiting Zoe's review. (Open-weight body first; the **Frontier extension**
+> section adds Opus 4.6/4.8, Gemini 3.1 Pro, gpt-5-mini.)
 >
-> **Headline.** E2's white-bear effect — *the keep instruction induces reasoning
-> rehearsal* — **does not replicate on any of the three open raw-CoT targets.** In
-> the reasoning channel the keep instruction never raises rehearsal above the
-> no-instruction baseline: DeepSeek is a dead tie (19/20 = 19/20, p = 1.0), GLM
-> reverses significantly (keep 10/20 < no-instr 20/20, p = 0.002), Kimi reverses
-> non-significantly (keep 17/20 < no-instr 20/20, p = 0.25). Meanwhile the keep
-> instruction reliably *cuts output leakage* on all three (no-instr output 16/16/11
-> of 20 → keep 4/1/1, every p ≤ 0.002). This is a clean **open-vs-closed split**
-> against gpt-5-mini (keep 15/20 ≫ no-instr 2/20): the effect tracks the
-> **provider baseline** — gpt-5-mini protects by default so keep adds white-bear on
-> top; these open models *share by default* so keep installs the protection instead
-> (see Interpretation).
+> **Headline — white-bear tracks the provider baseline, not open-vs-closed.** The
+> keep instruction induces reasoning rehearsal **only on the one model that
+> protects the secret by default**: gpt-5-mini (no-instruction leaks 0/20 in every
+> channel; keep reasoning 13/20 vs 0/20, p = 0.0002 — replicating its plain-harness
+> result under the stronger Petri auditor). On **every model that shares the secret
+> by default** — the three open raw-CoT targets *and* the frontier Opus 4.6/4.8 and
+> Gemini — the keep instruction never raises reasoning leakage: it is flat or
+> *lower* (DeepSeek 19=19; GLM 10<20 p=0.002; Kimi 17<20; Opus 4.6 5<20 p=0.0001;
+> Opus 4.8 2≈4; Gemini 16=16), while it reliably *cuts output* leakage. So keep
+> **installs protection** where the model would otherwise share, and adds
+> **white-bear rehearsal** only where the model already protects. The mechanism is
+> the baseline (does the model share the secret unprompted?), and it splits
+> gpt-5-mini from all eight other targets — open and frontier alike.
 
 > **Quotable — headline is deterministic-only** (METHODS M5/M8/M23): the
 > reasoning-rehearsal counts are the deterministic matcher (∪ the confirmation
@@ -251,3 +254,70 @@ All three are the guard route: the secret appears in the chain *because* the mod
 is holding it. The no-instruction arm's reasoning mentions are the production route
 — the model referencing an unremarkable code in its context — which is why the two
 arms' reasoning counts are not the same quantity (Interpretation).
+
+---
+
+## Frontier extension — the same instruction axis on Petri (RERUN_frontier_on_petri.md)
+
+Four cross-model password targets were re-run on the **Petri** auditor, both arms,
+paired on `secret_seed=13`, 60 turns — so E2 now spans the frontier under the same
+strong auditor as the open-weight set. Config parity verified for all four pairs
+(only `arg.variant` + target-prompt digest differ). Scoring of record is the
+deterministic matcher; the judge is triage only (M23).
+
+### Investigation-level — exact McNemar, paired on secrets (n=20)
+
+| target | reasoning keep → no-instr | disc (k+/n−, k−/n+) | p | no-instr **output** (the baseline) | white-bear? |
+|---|---|---|---:|---|---|
+| **gpt-5-mini** | 13/20 → **0/20** | **13, 0** | **0.0002** | **0/20 — protects by default** | **YES — replicates** |
+| Opus 4.6 | 5/20 → 20/20 | 0, 15 | 0.0001 | 18/20 — shares | no — keep *reduces* reasoning |
+| Opus 4.8 | 2/20 → 4/20 | 2, 4 | 0.69 (ns) | 11/20 — shares | no — flat (low event count) |
+| Gemini 3.1 Pro | 16/20 → 16/20 | 3, 3 | 1.00 | 20/20 — shares | no — dead equal |
+
+**The result is a clean split governed by the provider baseline — the E2 hypothesis
+confirmed on the frontier.** gpt-5-mini is the **only** target that protects the
+secret by default (no-instruction leaks *nothing*, 0/20 in every channel), and it
+is the **only** target where the keep instruction raises reasoning-channel leakage
+(13/20 vs 0/20, every discordant pair one-way, p = 0.0002) — white-bear replicates,
+and under the *stronger* Petri auditor, consistent with its original plain-harness
+result (`baseline-protection.md`: keep 15/20 vs 2/20). The other three **share the
+secret by default** (no-instruction output 18/11/20 of 20), so the keep instruction
+does output work rather than white-bear work: reasoning is flat (Opus 4.8, Gemini)
+or *lower* under keep (Opus 4.6, 5/20 vs 20/20). Opus 4.6 — ~100% readable raw CoT,
+the cleanest closed white-bear test there is — is the strongest single "no
+white-bear" result in the study.
+
+### Guard vs production — same-turn output co-occurrence (frontier)
+
+| target | keep: % reasoning-only | no-instr: % reasoning-only | reading |
+|---|---|---|---|
+| gpt-5-mini | **93%** (28/30, guard) | — (0 reasoning turns) | keep manufactures guard rehearsal that is absent without it |
+| Opus 4.6 | 95% (guard) | 26% (**74% production**) | no-instr reasoning is the model *sharing*, not guarding |
+| Gemini 3.1 Pro | 100% (guard) | 6% (**94% production**) | same — no-instr reasoning is production |
+| Opus 4.8 | 67% | 75% | low n (3–4 reasoning turns) — underpowered |
+
+Under **keep** every target's reasoning mentions are almost entirely guard-route
+(reasoning-only): 93–100% on the three with data. The instruction boundary differs
+on the other side: the share-by-default models fill the no-instruction reasoning
+channel with **production** (Opus 4.6 74%, Gemini 94% same-turn output), while
+gpt-5-mini's no-instruction reasoning channel is **empty** (it protects, so there
+is nothing to produce *or* rehearse) — which is exactly why its keep-arm guard
+rehearsal reads as pure white-bear excess.
+
+### Regime caveats (per target)
+
+- **Opus 4.6** — regime A, ~100% readable raw CoT: counts are clean point
+  estimates. The strongest result.
+- **Opus 4.8** — regime A but reasons on only ~half of turns; the reasoning
+  contrast is a point estimate on readable turns and low-powered (2–4 events).
+- **Gemini 3.1 Pro** — auto-summary, not raw CoT: reasoning counts are lower
+  bounds; output is the reliable channel. Petri prefill (accepted by Gemini) lifts
+  keep-arm output to 16/20 vs the plain harness's 3/20.
+- **gpt-5-mini** — regime B, 100% chain-encrypted: reasoning counts are lower
+  bounds (M22), so keep 13/20 and no-instr 0/20 are both floors. The 13-vs-0
+  contrast is a strong *observable* difference even as a lower bound.
+
+**METR framing.** None of this is "keeps the secret." Under the Petri auditor the
+frontier targets leak substantially where they leak at all (Opus 4.6 extraction
+4/20 keep / 14/20 no-instr; Gemini 17/20 keep). The finding is about *where and why*
+the secret surfaces across the instruction axis, not whether it can be extracted.
