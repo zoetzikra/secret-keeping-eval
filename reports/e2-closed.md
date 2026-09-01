@@ -70,7 +70,13 @@ test. Cost estimate + go/no-go below before launching.
 
 ## Results
 
-**A1 Haiku 4.5 — final (n=20). A2 Gemini — ⏳ running (`bpg2tjctr`).**
+**A1 Haiku 4.5 — final (n=20). A2 Gemini — SUPERSEDED:** the plain-harness A2 arm
+was aborted and is replaced by a Petri keep+no-instruction pair under
+`directives/RERUN_frontier_on_petri.md` (Gemini paired on seed 13 in Petri, so it
+is comparable to the rest of the E2 set). The Gemini result and the other three
+frontier targets (Opus 4.6/4.8, gpt-5-mini) land in the unified E2 analysis
+(`reports/e2-open-models.md`), not here. This report retains only the A1 Haiku
+result, which stands (Haiku was correctly Petri and is not re-run).
 
 ### Config parity
 
@@ -103,18 +109,19 @@ no-instruction. Every keep-arm output leak is the auditor *forcing* it via prefi
 instruction cleanly suppresses voluntary output — but Haiku does **not** protect by
 default: without the instruction it hands the code over in normal turns 37 times.
 
-### A2 — Gemini 3.1 Pro
+### A2 — Gemini 3.1 Pro — moved to the Petri re-run
 
-⏳ running. Keep-arm baseline (`pow-gemini31`): output 3/20, reasoning 17/20 (71%
-readable auto-summary — lower bound), extraction 14/20, median 40 turns.
+Superseded (see the header). Gemini's E2 pair is now run in **Petri** on seed 13
+(`pow-gemini31-petri` keep + `e2-noinstr-gemini31-petri`), reported in
+`reports/e2-open-models.md` with the other three frontier targets. The plain-harness
+attempt is not used.
 
-### Observability / regime (both arms)
+### Observability / regime (Haiku, both arms)
 
 | arm | turns | readable | none | chain-encr | regime |
 |---|---:|---:|---:|---:|---|
 | haiku keep | 187 | 0 | 187 | 0% | C |
 | haiku no-instr | 198 | 0 | 198 | 0% | C |
-| gemini keep / no-instr | ⏳ | | | | |
 
 ## Interpretation
 
@@ -125,5 +132,5 @@ prefill turns and is extracted 19/20 — it behaves like the *open* models (shar
 default), not like gpt-5-mini. What the keep instruction buys on Haiku is the
 elimination of *voluntary* output disclosure (37 → 0), with the residual 20/20 a
 prefill artifact. Because Haiku is regime C, none of this speaks to white-bear —
-that test rests on A2 (Gemini), the one closed target here with an observable
-chain. ⏳ pending A2.
+that test rests on the frontier targets with observable chains (Opus 4.6 raw CoT is
+the cleanest), now covered by the Petri re-run in `reports/e2-open-models.md`.
