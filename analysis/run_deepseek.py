@@ -28,8 +28,8 @@ from secret_keeping.hidden_goal_ca import (  # noqa: E402
 
 TARGET_ID = "openrouter/deepseek/deepseek-v4-pro"
 AUDITOR = "openrouter/anthropic/claude-sonnet-4-6"
-# Grader of record (best human agreement). Scored inline / natively — the DeepSeek target
-# is the wall-time bottleneck (26-turn audits × heavy reasoning), so a throwaway grader +
+# Grader of record (best human agreement). Scored inline / natively — the DeepSeek
+# target is the wall-time bottleneck (26-turn audits × heavy reasoning), so a grader +
 # post-hoc re-score buys little and breaks consistency with S7/S2a. Keep it native.
 GRADER = "openrouter/google/gemini-3.1-pro-preview"
 MAX_TURNS = 40
