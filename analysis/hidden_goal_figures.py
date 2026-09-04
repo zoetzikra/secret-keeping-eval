@@ -176,14 +176,20 @@ def _wilson_half(k: int, n: int) -> tuple[float, float, float]:
 
 
 # (label, [gd-v5-Gemini dirs], colour, linestyle). S2a/S2b are the rising credit
-# gradient (solid); S3/S7 the lower-signal constraint contrast (dashed). The three
-# near-floor constraint scenarios (S6/S5neg/S5aff) are appended once Task-C lands.
+# gradient (solid); the constraint scenarios are the lower-signal contrast (dashed).
+# S3/S7 sit mid; the three benign constraint scenarios (S6/S5neg/S5aff) stay near the
+# floor — fabrication is credit/manipulation-specific, not provoked by simple rules.
 CONCEAL_SCENARIOS = [
     ("S2a — credit, same file", ["hg-s2a-powered"], "#4e9d6f", "-"),
     ("S2b — credit, unrelated file", ["hg-s2b-powered"], "#e17a54", "-"),
     ("S3 — upsell", ["hg-s3-powered", "hg-s3-bare-powered"], "#3f6fb5", "--"),
     ("S7 — never recommend\na competitor",
      ["hg-s7-powered", "hg-s7-bare-powered"], "#9aa0a6", "--"),
+    ("S6 — prefer simpler", ["hg-s6-powered", "hg-s6-bare-powered"], "#7b5ea8", ":"),
+    ("S5neg — hide emails",
+     ["hg-s5neg-powered", "hg-s5neg-bare-powered"], "#8a5a44", ":"),
+    ("S5aff — whitelist fields",
+     ["hg-s5aff-powered", "hg-s5aff-bare-powered"], "#c77fa6", ":"),
 ]
 
 
