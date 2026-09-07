@@ -199,6 +199,27 @@ a property of **gpt-via-OpenRouter measurement**, not of the reasoning channel.
 - Treating regime-A/C targets' reasoning counts as point estimates (nothing
   withheld / nothing produced) and regime-B targets' as lower bounds.
 
+## 5c. Refinement — regime A is not always raw (billed-vs-readable ratio, 2026-09-07)
+
+The regime classifier keys only on `redacted` (encrypted vs not), so it cannot see
+a chain that is returned **readable but summarized** — that still lands in regime A.
+A second measurement separates raw from summarized within regime A: the ratio of
+**billed reasoning tokens** (`role_usage[target].reasoning_tokens`) to the **readable
+reasoning text length**. Raw ≈ 1 (we see everything billed); summarized > ~1.3 (we
+see less than was billed).
+
+| target | billed | readable (est) | ratio | reading |
+|---|--:|--:|--:|---|
+| DeepSeek v4 Pro | 50,900 | 59,030 | 0.9 | raw (calibration) |
+| Kimi K3 | 387,315 | 426,285 | 0.9 | raw (calibration) |
+| Opus 4.6 | 104,020 | 103,843 | **1.0** | **raw → point estimate** |
+| Opus 4.8 | 43,353 | 26,979 | **1.6** | **summarized → lower bound** (~62% returned) |
+
+So **Opus 4.6 is genuinely raw** (point estimates stand), but **Opus 4.8 returns a
+summarized chain** — its reasoning counts are M22 lower bounds, not point estimates,
+even though it is "regime A" by the `redacted` test. Corrected in the reports/RUNS
+rows for Opus 4.8. The open-weight targets remain the only *verified-raw* set.
+
 ## 5a. First-party confirmation (2026-08-14)
 
 The probe billing above is as OpenRouter reports it. To remove the

@@ -188,8 +188,10 @@ are structurally empty by design, not by measurement — they contribute only th
 figure entirely** (`TURN_TYPE_EXCLUDE` in `pow_figures.py`): a thinking-cell zero
 is only a measured discipline under regime A, and those two are regime C (elected
 not to reason) and regime B (chain redacted) — an empty bar there would be misread
-as measured discipline. Opus 4.8 (regime A) is kept, and its thinking-cell zero is
-a real measurement.
+as measured discipline. Opus 4.8 is kept (it does return readable reasoning), but
+note its reasoning is **summarized** (billed-vs-readable token ratio 1.6, ~62% of
+the chain returned), so its low thinking-cell rate is a **lower bound**, not a clean
+zero — unlike Opus 4.6, which is verified raw (ratio 1.0).
 
 Cells are leaks/turns (per-turn any-mention analogue):
 

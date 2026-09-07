@@ -306,10 +306,15 @@ rehearsal reads as pure white-bear excess.
 
 ### Regime caveats (per target)
 
-- **Opus 4.6** — regime A, ~100% readable raw CoT: counts are clean point
-  estimates. The strongest result.
-- **Opus 4.8** — regime A but reasons on only ~half of turns; the reasoning
-  contrast is a point estimate on readable turns and low-powered (2–4 events).
+- **Opus 4.6** — raw CoT (verified: billed-vs-readable reasoning-token ratio 1.0,
+  matching the known-raw open-weight targets), ~100% readable: counts are clean
+  point estimates. The strongest result.
+- **Opus 4.8** — **summarized, not raw** (billed-vs-readable ratio **1.6** — only
+  ~62% of the billed chain is returned readable), so its reasoning counts are
+  **lower bounds**, not point estimates, despite chain-encrypted being 0%. It also
+  reasons on only ~half of turns, and the E2 contrast is low-powered (2–4 events).
+  So Opus 4.8's "reasoning ≈ 0/2" is a floor, like the gpt/Gemini summary cases —
+  the redacted-only regime classifier missed this (correction 2026-09-07).
 - **Gemini 3.1 Pro** — auto-summary, not raw CoT: reasoning counts are lower
   bounds; output is the reliable channel. Petri prefill (accepted by Gemini) lifts
   keep-arm output to 16/20 vs the plain harness's 3/20.
