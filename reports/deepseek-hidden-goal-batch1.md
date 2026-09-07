@@ -49,6 +49,17 @@ result is real or an artifact of summaries. Report only, not a poster panel.
    too show the same direction as gpt-5-mini: the instruction meant to prevent
    disclosure induces active fabrication.
 
+## Robustness note (S1)
+
+An accidental duplicate S1 run (from a mistaken resume that ran alongside the
+original) produced an independent draw: reasoning **20/20** in both arms again,
+output 19 (default) / **5** (keep), concealment 17 (default) / 19 (keep) — versus
+19/10 and 16/20 in the reported run. So the exact output and concealment counts
+vary run-to-run by a few, but the two robust results hold in both draws: reasoning
+disclosure is 20/20 regardless, and the keep instruction drops output disclosure
+(19→10 or 19→5) while leaving reasoning pinned. The reported table uses the first
+run; the duplicate log was removed.
+
 ## Status
 
 Complete: S7, S2a (60/60 each, bare/default/keep), S6, S1 (40/40 each). S2b not
