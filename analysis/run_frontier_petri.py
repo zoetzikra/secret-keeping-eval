@@ -65,6 +65,11 @@ TARGETS = [
     # gemini prefill: attempt, then gate on the smoke (§3)
     ("gemini31", "openrouter/google/gemini-3.1-pro-preview", True,  True),
     ("gpt5mini", "openrouter/openai/gpt-5-mini",             False, False),
+    # Opus 4.7 / gpt-5.5 added later so the cross-model SURVIVAL figure is all-Petri
+    # (their reasoning is unusable — regime C / redacted — so only the keep arm is
+    # run, for the survival curve; prefill off, both providers reject it).
+    ("opus47",   "openrouter/anthropic/claude-opus-4.7",     True,  False),
+    ("gpt55",    "openrouter/openai/gpt-5.5",                True,  False),
 ]
 _NAMES = {t[0] for t in TARGETS}
 
