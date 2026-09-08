@@ -54,8 +54,11 @@ SECRET_SEED = 13        # same 20 secrets as pow-deepseek/kimi/glm; pairs the ar
 SECRET_LENGTH = 7
 TOKEN_LIMIT = 6_000_000
 
+# timeout=600: a per-request cap so a hung provider connection errors after 10 min
+# (then fail_on_error tolerates it) instead of stalling the whole run indefinitely —
+# gpt-5.5 wedged a keep arm for ~17h with no timeout (2026-09-08).
 _REASONING = GenerateConfig(
-    reasoning_tokens=2048, reasoning_summary="auto", max_tokens=8192
+    reasoning_tokens=2048, reasoning_summary="auto", max_tokens=8192, timeout=600
 )
 
 # (short name, target id, needs-explicit-reasoning-cfg, enable_prefill)
