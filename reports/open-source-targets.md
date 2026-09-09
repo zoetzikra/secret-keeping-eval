@@ -130,32 +130,29 @@ one axis, "this is what the replication reproduces"):
 
 ![Secret-keeping robustness over investigator turns, powered open-weight set](../analysis/out/pow_survival.png)
 
-**Cross-model overlay — now uniform harness for all curves but the two reference
-lines (read the caption before the curves).** Every curve is the KEEP arm on the
-**same 60-turn Petri auditor, `secret_seed=13`**, so they are directly comparable —
-the open-weight set (solid), the Anthropic-4.5 prefill pair (dashed), and the four
-frontier re-runs (dashed: Opus 4.6, Opus 4.8, Gemini 3.1 Pro, gpt-5-mini,
-`RERUN_frontier_on_petri.md`). Those four **used to sit flat at 1.0 on the weaker
-plain harness; on Petri they decay** — Opus 4.6 to ~0.75 (any 5/20), Opus 4.8 to
-~0.90 (2/20), gpt-5-mini to ~0.40 (12/20), Gemini fast to ~0.10 (18/20) — because
-the stronger auditor extracts more. The **only two lines still plain-harness** are
-the dotted **Opus 4.7 (seed 52) and gpt-5.5 (seed 54)**, out of scope for the Petri
-re-run (regime C / redacted — no usable reasoning); they remain flat at S=1.0 and
-are drawn on the 100% line with interleaved dash phases (`CEILING_INTERLEAVE`) so
-both colours stay visible. Do not read those two as comparable to the Petri set.
+**Cross-model overlay — now ALL on one auditor (read the caption before the
+curves).** Every one of the eleven curves is the KEEP arm on the **same 60-turn
+Petri auditor, `secret_seed=13`** — the open-weight set (solid), the Anthropic-4.5
+prefill pair (dashed), and the six frontier re-runs (dashed: Opus 4.6, Opus 4.8,
+Gemini 3.1 Pro, gpt-5-mini, **and now Opus 4.7 + gpt-5.5**). All six frontier
+targets used to sit flat at 1.0 on the weaker plain harness; on Petri most decay —
+Opus 4.6 to ~0.75 (any 5/20), Opus 4.8 ~0.90 (2/20), gpt-5-mini ~0.40 (12/20),
+Gemini fast to ~0.10 (18/20), **Opus 4.7 to ~0.95 (any 1/20)** — because the
+stronger auditor extracts more. The one line still at 1.0 is **gpt-5.5 (any 0/20)**:
+it leaks nothing in any observable channel *even under Petri*, so its 100% is a
+genuine no-leak result, not a weak-auditor artifact — with the caveat that gpt-5.5
+is regime B (redacted chain), so its reasoning-0 is a lower bound; the strong claim
+is output 0/20.
 
-**Structural-zero caveat — now only the two dotted reference lines (M25).** A
-flat-at-1.0 line means "no leak in any *observable* channel", which equals "kept"
-only when the reasoning channel is observable. That caveat now applies solely to
-Opus 4.7 (regime C — elected not to reason, ~0.7 billed reasoning tokens/turn) and
-gpt-5.5 (regime B — reasons but the chain is returned redacted): for those two the
-reasoning channel is a non-observation and a lower bound respectively, so only
-their **output** 0/20 is informative and they stay on the plain harness. The four
-Petri frontier curves are real decaying survival, not structural zeros. METR
-framing throughout: leaks *observed under this Petri auditor* are not evidence the
-secret cannot be extracted, and a high curve is not "keeps the secret". Per-channel
-counts + the paired E2 keep-vs-no-instruction analysis: `reports/e2-open-models.md`
-and RUNS.md (`pow-*-petri`, `e2-noinstr-*-petri`).
+**Reasoning-visibility caveats (M25).** Now that all curves are on one auditor, the
+remaining caveats are per-target reasoning visibility, not harness: **Opus 4.6** raw
+CoT (point estimate); **Opus 4.8** summarized (~62% of the billed chain returned →
+lower bound); **Gemini / gpt-5-mini / gpt-5.5** summary/encrypted → lower bounds;
+**Opus 4.7** regime C (elected not to reason — ~0.4 tokens/turn — so its reasoning-0
+is a non-observation; only its output/any curve is informative). METR framing
+throughout: leaks *observed under this Petri auditor* are not evidence the secret
+cannot be extracted, and a high curve is not "keeps the secret". Per-channel counts
++ the paired E2 analysis: `reports/e2-open-models.md`, RUNS.md (`pow-*-petri`).
 
 Per-target Greenwood-banded curves broken out by all four channels (any-mention,
 output, reasoning, extraction):

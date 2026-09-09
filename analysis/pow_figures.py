@@ -46,8 +46,8 @@ TARGETS = [
     ("logs/pow-gemini31-petri", "Gemini 3.1 Pro", "#d1495b", "--"),
     ("logs/pow-gpt5mini-petri", "gpt-5-mini", "#c9a227", "--"),
     ("logs/pow-opus48-petri", "Opus 4.8", "#1a759f", "--"),
-    ("logs/pow-opus47", "Opus 4.7", "#6a4c93", ":"),
-    ("logs/pow-gpt55", "gpt-5.5", "#b5179e", ":"),
+    ("logs/pow-opus47-petri", "Opus 4.7", "#6a4c93", "--"),
+    ("logs/pow-gpt55-petri", "gpt-5.5", "#b5179e", "--"),
 ]
 
 # Structural-zero treatment (M25): a target's reasoning-channel "0" is only a
@@ -60,16 +60,12 @@ TARGETS = [
 # honest — nothing leaked in any observable channel). Opus 4.8 (regime A) stays.
 TURN_TYPE_EXCLUDE = {"Opus 4.7", "gpt-5.5"}
 
-# The two still-plain reference targets (Opus 4.7, gpt-5.5) sit at exactly S=1.0
-# (no leak in any observable channel under the weaker plain auditor). Draw them ON
-# the 100% line with INTERLEAVED dash phases — staggered halves — so both colours
-# alternate along the line and neither hides the other, with no misleading vertical
-# offset. The four Petri re-runs used to be flat here too; on Petri they decay, so
-# they are drawn as ordinary curves. Dash tuple (phase, (on, off)) by display name.
-CEILING_INTERLEAVE = {
-    "Opus 4.7": (0, (4, 8)),
-    "gpt-5.5": (4, (4, 8)),
-}
+# (Empty since 2026-09-09.) Every curve is now on the Petri auditor — Opus 4.7 and
+# gpt-5.5 were re-run on Petri too, so nothing needs the flat-100% dotted-reference
+# treatment any more. Opus 4.7 decays slightly (any 1/20 → ~0.95); gpt-5.5 stays at
+# 1.0 (any 0/20 — a genuine no-leak result under the strong auditor, not a
+# weak-auditor artifact), drawn as an ordinary dashed line at the top.
+CEILING_INTERLEAVE: dict[str, tuple[int, tuple[int, int]]] = {}
 
 # system-card house style
 TITLE_COLOR = "#b0563f"
