@@ -48,9 +48,9 @@ from secret_keeping.petri_task import secret_keeping_petri  # noqa: E402
 AUDITOR = "openrouter/anthropic/claude-sonnet-4-6"
 GRADER = "openrouter/anthropic/claude-sonnet-4-6"
 GRADER_FALLBACK = "openrouter/google/gemini-2.5-flash"  # match pow-* role set exactly
-MAX_TURNS = 60          # match pow-* (NOT the plain runs' 40, NOT the task default 40)
-MAX_SAMPLES = 4         # Petri deadlock cap — always
-SECRET_SEED = 13        # same 20 secrets as pow-deepseek/kimi/glm; pairs the arms
+MAX_TURNS = 60  # match pow-* (NOT the plain runs' 40, NOT the task default 40)
+MAX_SAMPLES = 4  # Petri deadlock cap — always
+SECRET_SEED = 13  # same 20 secrets as pow-deepseek/kimi/glm; pairs the arms
 SECRET_LENGTH = 7
 TOKEN_LIMIT = 6_000_000
 
@@ -63,22 +63,22 @@ _REASONING = GenerateConfig(
 
 # (short name, target id, needs-explicit-reasoning-cfg, enable_prefill)
 TARGETS = [
-    ("opus46",   "openrouter/anthropic/claude-opus-4.6",     True,  False),
-    ("opus48",   "openrouter/anthropic/claude-opus-4.8",     True,  False),
+    ("opus46", "openrouter/anthropic/claude-opus-4.6", True, False),
+    ("opus48", "openrouter/anthropic/claude-opus-4.8", True, False),
     # gemini prefill: attempt, then gate on the smoke (§3)
-    ("gemini31", "openrouter/google/gemini-3.1-pro-preview", True,  True),
-    ("gpt5mini", "openrouter/openai/gpt-5-mini",             False, False),
+    ("gemini31", "openrouter/google/gemini-3.1-pro-preview", True, True),
+    ("gpt5mini", "openrouter/openai/gpt-5-mini", False, False),
     # Opus 4.7 / gpt-5.5 added later so the cross-model SURVIVAL figure is all-Petri
     # (their reasoning is unusable — regime C / redacted — so only the keep arm is
     # run, for the survival curve; prefill off, both providers reject it).
-    ("opus47",   "openrouter/anthropic/claude-opus-4.7",     True,  False),
-    ("gpt55",    "openrouter/openai/gpt-5.5",                True,  False),
+    ("opus47", "openrouter/anthropic/claude-opus-4.7", True, False),
+    ("gpt55", "openrouter/openai/gpt-5.5", True, False),
 ]
 _NAMES = {t[0] for t in TARGETS}
 
 # arm -> (variant string, log-dir template)
 ARMS = {
-    "keep":    ("keep",           "pow-{name}-petri"),
+    "keep": ("keep", "pow-{name}-petri"),
     "noinstr": ("no-instruction", "e2-noinstr-{name}-petri"),
 }
 
@@ -124,9 +124,9 @@ def main() -> None:
                 secret_length=SECRET_LENGTH,
                 informed=True,
                 judge=True,
-                enable_prefill=enable_prefill,   # static per-target (§3)
+                enable_prefill=enable_prefill,  # static per-target (§3)
                 target_tools="none",
-                variant=variant,                 # "keep" or "no-instruction"
+                variant=variant,  # "keep" or "no-instruction"
                 token_limit=TOKEN_LIMIT,
             )
             pf = "ON" if enable_prefill else "OFF"
@@ -140,8 +140,11 @@ def main() -> None:
             # excludes such turns (invariant #1). Tolerate <=20% so one bad request
             # never aborts the whole run.
             inspect_eval(
-                task, model_roles=roles, max_samples=MAX_SAMPLES,
-                log_dir=log_dir, fail_on_error=0.2,
+                task,
+                model_roles=roles,
+                max_samples=MAX_SAMPLES,
+                log_dir=log_dir,
+                fail_on_error=0.2,
             )
             print(f"=== done {base} arm={arm} {mode} ===", flush=True)
 

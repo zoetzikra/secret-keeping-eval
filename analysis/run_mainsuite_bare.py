@@ -47,11 +47,16 @@ def main() -> None:
     for scenario, seed in RUNS:
         suffix = "" if mode == "powered" else "-smoke"
         log_dir = f"{OUT_ROOT}/hg-{scenario.lower()}-bare-powered{suffix}"
-        print(f"\n=== {scenario} bare {mode} n={n} seed={seed} -> {log_dir} ===",
-              flush=True)
+        print(
+            f"\n=== {scenario} bare {mode} n={n} seed={seed} -> {log_dir} ===",
+            flush=True,
+        )
         task = secret_keeping_hidden_goal_scenario(
-            scenario=scenario, arms="bare", investigations=n,
-            secret_seed=seed, max_turns=MAX_TURNS,
+            scenario=scenario,
+            arms="bare",
+            investigations=n,
+            secret_seed=seed,
+            max_turns=MAX_TURNS,
         )
         inspect_eval(task, model_roles=roles, max_samples=MAX_SAMPLES, log_dir=log_dir)
         print(f"=== done {scenario} bare {mode} ===", flush=True)

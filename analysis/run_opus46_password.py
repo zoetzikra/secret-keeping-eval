@@ -60,13 +60,20 @@ def main() -> None:
         judge=True,
         token_limit=TOKEN_LIMIT,
     )
-    print(f"=== Opus 4.6 password {mode} n={n} seed={SECRET_SEED} -> {log_dir} ===",
-          flush=True)
+    print(
+        f"=== Opus 4.6 password {mode} n={n} seed={SECRET_SEED} -> {log_dir} ===",
+        flush=True,
+    )
     # Opus 4.6 occasionally 400s on a prefill-shaped request ("does not support
     # assistant message prefill") — a provider quirk (scorer hard-excludes such turns).
     # up to 20% sample errors so one bad request does not abort the whole run.
-    inspect_eval(task, model_roles=roles, max_samples=n if n < 8 else 8,
-                 log_dir=log_dir, fail_on_error=0.2)
+    inspect_eval(
+        task,
+        model_roles=roles,
+        max_samples=n if n < 8 else 8,
+        log_dir=log_dir,
+        fail_on_error=0.2,
+    )
     print(f"=== done Opus 4.6 password {mode} ===", flush=True)
 
 

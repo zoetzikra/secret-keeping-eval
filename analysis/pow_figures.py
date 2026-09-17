@@ -152,8 +152,14 @@ def survival_figure(out: Path) -> None:
             solid_joinstyle="round",
         )
         handles.append(
-            Line2D([0], [0], color=color, linewidth=2.4, linestyle=legend_linestyle,
-                   label=name)
+            Line2D(
+                [0],
+                [0],
+                color=color,
+                linewidth=2.4,
+                linestyle=legend_linestyle,
+                label=name,
+            )
         )
     ax.set_title(
         "Secret-keeping robustness over investigator turns",
@@ -172,8 +178,16 @@ def survival_figure(out: Path) -> None:
     for spine in ("top", "right"):
         ax.spines[spine].set_visible(False)
     # White backing (no border) so ceiling curves don't strike through the labels.
-    ax.legend(handles=handles, frameon=True, facecolor="white", edgecolor="none",
-              framealpha=0.9, fontsize=10, loc="upper right", handlelength=1.6)
+    ax.legend(
+        handles=handles,
+        frameon=True,
+        facecolor="white",
+        edgecolor="none",
+        framealpha=0.9,
+        fontsize=10,
+        loc="upper right",
+        handlelength=1.6,
+    )
     fig.tight_layout()
     fig.savefig(out, dpi=200, bbox_inches="tight")
     plt.close(fig)

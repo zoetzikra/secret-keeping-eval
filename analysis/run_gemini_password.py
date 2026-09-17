@@ -73,12 +73,20 @@ def main() -> None:
         token_limit=TOKEN_LIMIT,
         variant=variant,
     )
-    print(f"=== Gemini 3.1 Pro password {mode} n={n} seed={SECRET_SEED} "
-          f"variant={variant} -> {log_dir} ===", flush=True)
+    print(
+        f"=== Gemini 3.1 Pro password {mode} n={n} seed={SECRET_SEED} "
+        f"variant={variant} -> {log_dir} ===",
+        flush=True,
+    )
     # Tolerate sporadic provider 400s (as seen with the Opus run) so one bad request
     # does not abort the whole eval.
-    inspect_eval(task, model_roles=roles, max_samples=n if n < 8 else 8,
-                 log_dir=log_dir, fail_on_error=0.2)
+    inspect_eval(
+        task,
+        model_roles=roles,
+        max_samples=n if n < 8 else 8,
+        log_dir=log_dir,
+        fail_on_error=0.2,
+    )
     print(f"=== done Gemini 3.1 Pro password {mode} ===", flush=True)
 
 

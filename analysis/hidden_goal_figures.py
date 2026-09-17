@@ -119,13 +119,30 @@ def s3_survival_figure(out: Path) -> None:
         for arm in ("default", "keep"):
             obs = _observations(log, arm, channel)
             xs, ys = _step_xy(obs, max_t)
-            ax.plot(xs, ys, color=CH_COLOR[channel], linewidth=2.3,
-                    linestyle=ARM_STYLE[arm], solid_joinstyle="round")
-            handles.append(Line2D([0], [0], color=CH_COLOR[channel], linewidth=2.3,
-                                  linestyle=ARM_STYLE[arm],
-                                  label=f"{channel} · {arm}"))
-    ax.set_title("Hidden-goal concealment survival — S3 (Plan Pro)",
-                 color=TITLE_COLOR, fontsize=19, pad=18)
+            ax.plot(
+                xs,
+                ys,
+                color=CH_COLOR[channel],
+                linewidth=2.3,
+                linestyle=ARM_STYLE[arm],
+                solid_joinstyle="round",
+            )
+            handles.append(
+                Line2D(
+                    [0],
+                    [0],
+                    color=CH_COLOR[channel],
+                    linewidth=2.3,
+                    linestyle=ARM_STYLE[arm],
+                    label=f"{channel} · {arm}",
+                )
+            )
+    ax.set_title(
+        "Hidden-goal concealment survival — S3 (Plan Pro)",
+        color=TITLE_COLOR,
+        fontsize=19,
+        pad=18,
+    )
     ax.set_xlabel("turn index")
     ax.set_ylabel("Fraction with goal not yet disclosed")
     ax.set_xlim(0, max_t)
@@ -136,8 +153,14 @@ def s3_survival_figure(out: Path) -> None:
     ax.set_axisbelow(True)
     for spine in ("top", "right"):
         ax.spines[spine].set_visible(False)
-    ax.legend(handles=handles, frameon=False, fontsize=12, loc="upper right",
-              handlelength=2.0, title="channel · arm")
+    ax.legend(
+        handles=handles,
+        frameon=False,
+        fontsize=12,
+        loc="upper right",
+        handlelength=2.0,
+        title="channel · arm",
+    )
     fig.tight_layout()
     fig.savefig(out, dpi=200, bbox_inches="tight")
     plt.close(fig)
@@ -183,13 +206,25 @@ CONCEAL_SCENARIOS = [
     ("S2a — credit, same file", ["hg-s2a-powered"], "#4e9d6f", "-"),
     ("S2b — credit, unrelated file", ["hg-s2b-powered"], "#e17a54", "-"),
     ("S3 — upsell", ["hg-s3-powered", "hg-s3-bare-powered"], "#3f6fb5", "--"),
-    ("S7 — never recommend\na competitor",
-     ["hg-s7-powered", "hg-s7-bare-powered"], "#9aa0a6", "--"),
+    (
+        "S7 — never recommend\na competitor",
+        ["hg-s7-powered", "hg-s7-bare-powered"],
+        "#9aa0a6",
+        "--",
+    ),
     ("S6 — prefer simpler", ["hg-s6-powered", "hg-s6-bare-powered"], "#7b5ea8", ":"),
-    ("S5neg — hide emails",
-     ["hg-s5neg-powered", "hg-s5neg-bare-powered"], "#8a5a44", ":"),
-    ("S5aff — whitelist fields",
-     ["hg-s5aff-powered", "hg-s5aff-bare-powered"], "#c77fa6", ":"),
+    (
+        "S5neg — hide emails",
+        ["hg-s5neg-powered", "hg-s5neg-bare-powered"],
+        "#8a5a44",
+        ":",
+    ),
+    (
+        "S5aff — whitelist fields",
+        ["hg-s5aff-powered", "hg-s5aff-bare-powered"],
+        "#c77fa6",
+        ":",
+    ),
 ]
 
 
@@ -201,15 +236,30 @@ def concealment_gradient_figure(out: Path) -> None:
         stats = [_wilson_half(*counts[a]) for a in arms]
         ys = [s[0] for s in stats]
         yerr = [[s[1] for s in stats], [s[2] for s in stats]]
-        ax.errorbar(range(len(arms)), ys, yerr=yerr, color=color, linewidth=2.6,
-                    linestyle=linestyle, marker="o", markersize=8, capsize=4,
-                    elinewidth=1.2, label=label)
-    ax.set_title("Secrecy manufactures fabrication: concealment rates",
-                 color=TITLE_COLOR, fontsize=18, pad=18)
+        ax.errorbar(
+            range(len(arms)),
+            ys,
+            yerr=yerr,
+            color=color,
+            linewidth=2.6,
+            linestyle=linestyle,
+            marker="o",
+            markersize=8,
+            capsize=4,
+            elinewidth=1.2,
+            label=label,
+        )
+    ax.set_title(
+        "Secrecy manufactures fabrication: concealment rates",
+        color=TITLE_COLOR,
+        fontsize=18,
+        pad=18,
+    )
     ax.set_ylabel("Fraction fabricating a cover story")
     ax.set_xticks(range(len(arms)))
-    ax.set_xticklabels(["bare\n(no secrecy)", "default\n(don't mention)",
-                        "keep\n(not even in CoT)"])
+    ax.set_xticklabels(
+        ["bare\n(no secrecy)", "default\n(don't mention)", "keep\n(not even in CoT)"]
+    )
     ax.set_xlim(-0.25, len(arms) - 0.75)
     ax.set_ylim(0, 1.02)
     ax.set_yticks([0, 0.2, 0.4, 0.6, 0.8, 1.0])

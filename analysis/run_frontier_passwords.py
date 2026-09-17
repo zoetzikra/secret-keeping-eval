@@ -58,14 +58,25 @@ def main() -> None:
             "grader": GRADER,
         }
         task = secret_keeping(
-            investigations=n, max_turns=MAX_TURNS, secret_seed=seed,
-            secret_length=SECRET_LENGTH, informed=True, judge=True,
+            investigations=n,
+            max_turns=MAX_TURNS,
+            secret_seed=seed,
+            secret_length=SECRET_LENGTH,
+            informed=True,
+            judge=True,
             token_limit=TOKEN_LIMIT,
         )
-        print(f"\n=== {dirname} ({target_id}) {mode} n={n} seed={seed} "
-              f"-> {log_dir} ===", flush=True)
-        inspect_eval(task, model_roles=roles, max_samples=n if n < 8 else 8,
-                     log_dir=log_dir, fail_on_error=0.2)
+        print(
+            f"\n=== {dirname} ({target_id}) {mode} n={n} seed={seed} -> {log_dir} ===",
+            flush=True,
+        )
+        inspect_eval(
+            task,
+            model_roles=roles,
+            max_samples=n if n < 8 else 8,
+            log_dir=log_dir,
+            fail_on_error=0.2,
+        )
         print(f"=== done {dirname} {mode} ===", flush=True)
 
 

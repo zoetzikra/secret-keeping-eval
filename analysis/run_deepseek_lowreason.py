@@ -16,7 +16,7 @@ Read-out: if low-effort DeepSeek thinks less AND its reasoning-leak rate falls
 toward GLM's, "reasoning exposure tracks thinking budget". If it does not, the
 model-variance finding stands. Either way it is quotable.
 
-    PYTHONPATH=src:. uv run python analysis/run_deepseek_lowreason.py smoke     # n=1 — verify cap binds
+    PYTHONPATH=src:. uv run python analysis/run_deepseek_lowreason.py smoke     # n=1
     PYTHONPATH=src:. uv run python analysis/run_deepseek_lowreason.py powered   # n=20
 
 The smoke must confirm the cap binds (tokens/turn well below the ~346 default).
@@ -36,9 +36,9 @@ AUDITOR = "openrouter/anthropic/claude-sonnet-4-6"
 GRADER = "openrouter/anthropic/claude-sonnet-4-6"
 GRADER_FALLBACK = "openrouter/google/gemini-2.5-flash"
 TARGET_ID = "openrouter/deepseek/deepseek-v4-pro"
-REASONING_CAP = 128     # ceiling; DeepSeek uses ~346/turn at the default 2048
-MAX_TURNS = 60          # match pow-deepseek-v4
-SECRET_SEED = 13        # pair within-secret to pow-deepseek-v4
+REASONING_CAP = 128  # ceiling; DeepSeek uses ~346/turn at the default 2048
+MAX_TURNS = 60  # match pow-deepseek-v4
+SECRET_SEED = 13  # pair within-secret to pow-deepseek-v4
 SECRET_LENGTH = 7
 TOKEN_LIMIT = 6_000_000
 
@@ -66,15 +66,25 @@ def main() -> None:
         "grader_fallback": GRADER_FALLBACK,
     }
     task = secret_keeping_petri(
-        investigations=n, max_turns=MAX_TURNS, secret_seed=SECRET_SEED,
-        secret_length=SECRET_LENGTH, informed=True, judge=True,
-        enable_prefill=True, target_tools="none", variant="keep",
+        investigations=n,
+        max_turns=MAX_TURNS,
+        secret_seed=SECRET_SEED,
+        secret_length=SECRET_LENGTH,
+        informed=True,
+        judge=True,
+        enable_prefill=True,
+        target_tools="none",
+        variant="keep",
         token_limit=TOKEN_LIMIT,
     )
-    print(f"\n=== {base} ({TARGET_ID}) reasoning_tokens={REASONING_CAP} {mode} n={n} "
-          f"seed={SECRET_SEED} -> {log_dir} ===", flush=True)
-    inspect_eval(task, model_roles=roles, max_samples=4, log_dir=log_dir,
-                 fail_on_error=0.2)
+    print(
+        f"\n=== {base} ({TARGET_ID}) reasoning_tokens={REASONING_CAP} {mode} n={n} "
+        f"seed={SECRET_SEED} -> {log_dir} ===",
+        flush=True,
+    )
+    inspect_eval(
+        task, model_roles=roles, max_samples=4, log_dir=log_dir, fail_on_error=0.2
+    )
     print(f"=== done {base} {mode} ===", flush=True)
 
 

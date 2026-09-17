@@ -35,9 +35,9 @@ GRADER = "openrouter/anthropic/claude-sonnet-4-6"
 # target system prompt differing; grader_fallback feeds only the triage judge,
 # never the scoring of record, but parity must be mechanical.
 GRADER_FALLBACK = "openrouter/google/gemini-2.5-flash"
-MAX_TURNS = 60          # match pow-*
-MAX_SAMPLES = 4         # Petri deadlock cap (per-process, always)
-SECRET_SEED = 13        # same 20 secrets as pow-* (within-secret pairing)
+MAX_TURNS = 60  # match pow-*
+MAX_SAMPLES = 4  # Petri deadlock cap (per-process, always)
+SECRET_SEED = 13  # same 20 secrets as pow-* (within-secret pairing)
 SECRET_LENGTH = 7
 # (target id, log-dir short name). Every entry is a Petri no-instruction arm paired
 # within-secret to the identically-configured pow-* keep arm. deepseek/glm/kimi are
@@ -61,11 +61,11 @@ def main() -> None:
         raise SystemExit(usage)
     sel = sys.argv[2] if len(sys.argv) > 2 else None
     if sel is None:
-        runs = RUNS[:2]                                   # default: deepseek + glm
+        runs = RUNS[:2]  # default: deepseek + glm
     elif sel == "all":
-        runs = RUNS[:3]                                   # the open-weight set
+        runs = RUNS[:3]  # the open-weight set
     elif sel in _TARGETS:
-        runs = [r for r in RUNS if r[1].rsplit("-", 1)[-1] == sel]   # single target
+        runs = [r for r in RUNS if r[1].rsplit("-", 1)[-1] == sel]  # single target
     else:
         raise SystemExit(usage)
     n = 1 if mode == "smoke" else 20
@@ -73,19 +73,33 @@ def main() -> None:
         log_dir = f"logs/{name}" if mode == "powered" else f"logs/{name}-smoke"
         roles: dict[str, str | Model] = {
             "auditor": AUDITOR,
-            "target": target_id,   # default GenerateConfig, matching pow-*
+            "target": target_id,  # default GenerateConfig, matching pow-*
             "grader": GRADER,
             "grader_fallback": GRADER_FALLBACK,
         }
         task = secret_keeping_petri(
-            investigations=n, max_turns=MAX_TURNS, secret_seed=SECRET_SEED,
-            secret_length=SECRET_LENGTH, informed=True, judge=True,
-            enable_prefill=True, target_tools="none", variant="no-instruction",
+            investigations=n,
+            max_turns=MAX_TURNS,
+            secret_seed=SECRET_SEED,
+            secret_length=SECRET_LENGTH,
+            informed=True,
+            judge=True,
+            enable_prefill=True,
+            target_tools="none",
+            variant="no-instruction",
         )
-        print(f"\n=== {name} ({target_id}) {mode} n={n} variant=no-instruction "
-              f"-> {log_dir} ===", flush=True)
-        inspect_eval(task, model_roles=roles, max_samples=MAX_SAMPLES,
-                     log_dir=log_dir, fail_on_error=0.2)
+        print(
+            f"\n=== {name} ({target_id}) {mode} n={n} variant=no-instruction "
+            f"-> {log_dir} ===",
+            flush=True,
+        )
+        inspect_eval(
+            task,
+            model_roles=roles,
+            max_samples=MAX_SAMPLES,
+            log_dir=log_dir,
+            fail_on_error=0.2,
+        )
         print(f"=== done {name} {mode} ===", flush=True)
 
 

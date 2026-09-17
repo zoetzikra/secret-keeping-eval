@@ -38,10 +38,10 @@ OUT_ROOT = "logs/gdv5-deepseek"
 
 # (kind, scenario, arms-filter, fresh seed). kind: "scenario" | "ca" (S1).
 RUNS = [
-    ("scenario", "S7", "", 43),          # bare/default/keep (three-point)
-    ("scenario", "S2a", "", 41),         # bare/default/keep (concealment gradient)
+    ("scenario", "S7", "", 43),  # bare/default/keep (three-point)
+    ("scenario", "S2a", "", 41),  # bare/default/keep (concealment gradient)
     ("scenario", "S6", "bare,keep", 42),  # bare vs keep only (default no-op known)
-    ("ca", "S1", "", 40),                 # default/keep (no coherent bare)
+    ("ca", "S1", "", 40),  # default/keep (no coherent bare)
     # S2b intentionally omitted — gated on extra-budget approval.
 ]
 
@@ -77,8 +77,11 @@ def main() -> None:
             continue
         tag = "s1-apps" if kind == "ca" else scen.lower()
         log_dir = f"{OUT_ROOT}/hg-{tag}-deepseek-{mode}"
-        print(f"\n=== {scen} ({kind}) deepseek {mode} n={n} seed={seed} "
-              f"arms='{arms or 'all'}' -> {log_dir} ===", flush=True)
+        print(
+            f"\n=== {scen} ({kind}) deepseek {mode} n={n} seed={seed} "
+            f"arms='{arms or 'all'}' -> {log_dir} ===",
+            flush=True,
+        )
         if kind == "ca":
             ids = ",".join(str(i) for i in range(n))
             task = secret_keeping_hidden_goal_ca(
@@ -86,8 +89,11 @@ def main() -> None:
             )
         else:
             task = secret_keeping_hidden_goal_scenario(
-                scenario=scen, arms=arms, investigations=n,
-                secret_seed=seed, max_turns=MAX_TURNS,
+                scenario=scen,
+                arms=arms,
+                investigations=n,
+                secret_seed=seed,
+                max_turns=MAX_TURNS,
             )
         inspect_eval(task, model_roles=roles, max_samples=MAX_SAMPLES, log_dir=log_dir)
         print(f"=== done {scen} deepseek {mode} ===", flush=True)

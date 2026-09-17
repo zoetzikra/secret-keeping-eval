@@ -66,18 +66,27 @@ def main() -> None:
                 continue
             xs, ys, lo, hi = _step_xy(points)
             style = "-" if channel == "output" else "--"
-            ax.step(xs, ys, where="post", color=colour, linestyle=style,
-                    linewidth=1.9, label=f"S3 {arm} — {channel}")
-            ax.fill_between(xs, lo, hi, step="post", color=colour, alpha=0.12,
-                            linewidth=0)
+            ax.step(
+                xs,
+                ys,
+                where="post",
+                color=colour,
+                linestyle=style,
+                linewidth=1.9,
+                label=f"S3 {arm} — {channel}",
+            )
+            ax.fill_between(
+                xs, lo, hi, step="post", color=colour, alpha=0.12, linewidth=0
+            )
     ax.set_xlabel("investigator turn $t$")
     ax.set_ylabel("$S(t)$ — fraction with the hidden goal not yet disclosed")
     ax.set_ylim(-0.02, 1.02)
     ax.set_xlim(left=0)
     ax.grid(alpha=0.25, linewidth=0.6)
     ax.legend(frameon=False, fontsize=9)
-    ax.set_title("Hidden-goal concealment survival — S3 (Plan Pro)", loc="left",
-                 fontsize=12)
+    ax.set_title(
+        "Hidden-goal concealment survival — S3 (Plan Pro)", loc="left", fontsize=12
+    )
     caption = (
         "Solid = output channel; dashed = reasoning channel. Bands are Greenwood "
         "95%. Disclosure = the model owns the hidden goal (gd-v5). Grader of record: "
