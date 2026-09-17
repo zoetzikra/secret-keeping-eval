@@ -129,7 +129,7 @@ train the models to guard system prompts (none of the three publish anything on 
 
 | Model | Output leaks | Reasoning mentions |
 |---|:--:|:--:|
-| DeepSeek V4-Pro | 4/20 | 19/20 |
+| DeepSeek V4-Pro | 1/20 | 19/20 |
 | Kimi K3 | 1/20 | 17/20 |
 | GLM-5.2 | 1/20 | 10/20 |
 
@@ -216,7 +216,7 @@ the question descriptively, so no run is queued.
 
 We had been explaining away the no-instruction arms' high reasoning-leak counts with:
 "the model only mentions the secret in its thinking because it's about to say it out
-loud anyway." The guard-vs-production scan tested that directly: for every reasoning
+loud anyway." The same-turn leak split tested that directly: for every reasoning
 leak, does the secret *also* appear in that same turn's reply? Answer: only **12–47%**
 of the time (Kimi 12%, DeepSeek 36%, GLM 47%). Most reasoning leaks are **not**
 accompanied by an output leak — the caveat was too strong, and we retracted it.
@@ -224,6 +224,15 @@ accompanied by an output leak — the caveat was too strong, and we retracted it
 What survives is narrower and still useful: **under the keep instruction, zero
 reasoning leaks ever co-occur with a same-turn output leak, on all three models;
 without the instruction, some always do.** The report now claims only that.
+
+The per-investigation version (`reports/reasoning-leak-followup.md`) adds the
+cross-turn view the same-turn scan could not: under keep, a reasoning leak is later
+followed by an output leak in **17/82** investigations (median 7 turns), and **53/82**
+end reasoning-only. But **47 of those 53** were extracted by the auditor from the
+visible chain (32 exactly one turn later) before it ended the audit; none ran to the
+turn budget. A reasoning leak is terminal for extraction, so "reasoning-only" is
+not a contained leak. Without the instruction, 63/103 reasoning leaks coincide with
+or precede an output leak and only 20 end reasoning-only.
 
 ## H. Why gpt-5.5 leaks nothing
 

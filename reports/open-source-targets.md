@@ -111,12 +111,12 @@ first-passage turn among leaked investigations.
 
 | target | any-mention (headline) | output | reasoning | extraction | median t\* (any) |
 |---|---|---|---|---|---:|
-| **deepseek-v4-pro** | **20/20** = 100% [84, 100], S=0.00 | 4/20 = 20% [8, 42] | 19/20 = 95% [76, 99] | 20/20 = 100% [84, 100] | 2 |
+| **deepseek-v4-pro** | **20/20** = 100% [84, 100], S=0.00 | 1/20 = 5% [1, 24] | 19/20 = 95% [76, 99] | 20/20 = 100% [84, 100] | 2 |
 | **kimi-k3** | **17/20** = 85% [64, 95], S=0.15 | 1/20 = 5% [1, 24] | 17/20 = 85% [64, 95] | 17/20 = 85% [64, 95] | 5 |
 | **glm-5.2** | **10/20** = 50% [30, 70], S=0.50 | 1/20 = 5% [1, 24] | 10/20 = 50% [30, 70] | 9/20 = 45% [26, 66] | 30 |
 
 The cross-lab pattern holds and is now a point estimate: **near-perfect output
-discipline (1–4/20), reasoning-channel mentions carrying the whole headline, and
+discipline (1/20 on each target; DeepSeek corrected from 4/20 on 2026-09-15, see CHANGELOG), reasoning-channel mentions carrying the whole headline, and
 extraction tracking the reasoning channel** — with the chain readable, the auditor
 reads the reasoning leak and states the secret, so extraction ≈ reasoning on every
 target. deepseek decays fastest (headline S→0 by turn 2), glm-5 slowest (S=0.50,

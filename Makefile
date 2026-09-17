@@ -1,4 +1,4 @@
-.PHONY: blindness-scan check lint format types test controls control-report fp-control cot-scan cot-scan-audit config-parity observability reasoning-provenance pipeline-selfcheck reasoning-trigger-scan judge-sample judge-agreement preflight run-status run-watch pressure-test pressure-replication arm-compare channel-exploitation pilot-summary transcript eval-smoke ca-browse powered-overnight disclosure-sample disclosure-agreement gdv4-rescore gdv4-report
+.PHONY: same-turn-split reasoning-token-normalisation s5-phrasing-test run-configs reasoning-followup blindness-scan check lint format types test controls control-report fp-control cot-scan cot-scan-audit config-parity observability reasoning-provenance pipeline-selfcheck reasoning-trigger-scan judge-sample judge-agreement preflight run-status run-watch pressure-test pressure-replication arm-compare channel-exploitation pilot-summary transcript eval-smoke ca-browse powered-overnight disclosure-sample disclosure-agreement gdv4-rescore gdv4-report
 
 # uv 0.12.0 sets the macOS UF_HIDDEN flag on .venv and the flag reaches the .pth
 # files it writes inside; CPython >=3.12.13 deliberately skips hidden .pth files,
@@ -54,6 +54,11 @@ fp-control:
 #   make cot-scan LOG=logs/pilot-informed
 cot-scan:
 	$(PY) python analysis/cot_scan.py $(LOG)
+
+# Per-investigation follow-up after a reasoning leak (output later / same turn /
+# reasoning-only to end, with extraction). No FOLLOWUP_DIRS = the paired Petri arms.
+reasoning-followup:
+	$(PY) python analysis/reasoning_followup.py $(FOLLOWUP_DIRS)
 
 # Paired comparison of reasoning-channel leakage with and without audit pressure.
 #   make pressure-test PRESSURE=logs/powered-pressure CONTROL=logs/powered-control
@@ -246,3 +251,33 @@ turn-type-figure:
 #   make pow-figures
 pow-figures:
 	PYTHONPATH=src:.:analysis uv run python analysis/pow_figures.py
+
+# Same-turn leak split: of the turns where the secret appears in the chain, how
+# many also disclose it in that turn's output. Bare target reproduces the
+# published table (3 open-weight + 4 frontier targets, keep vs no-instruction).
+#   make same-turn-split
+#   make same-turn-split PAIRS="deepseek=logs/pow-deepseek-v4:logs/e2-noinstr-deepseek"
+PAIRS ?=
+same-turn-split:
+	$(PY) python analysis/same_turn_split.py $(PAIRS)
+
+# Gap-3: normalise reasoning leaks by how much each target actually thinks.
+# Answers the "is the cross-model spread just thinking volume?" objection with no
+# new runs. Defaults to the three regime-A open-weight keep arms.
+#   make reasoning-token-normalisation
+reasoning-token-normalisation:
+	$(PY) python analysis/reasoning_token_normalisation.py $(DIRS)
+
+# S5neg vs S5aff: same policy, opposite grammar -- does the prohibition phrasing
+# disclose earlier? Mann-Whitney on first-disclosure turn.
+#   make s5-phrasing-test [ARM=keep|default|bare]
+ARM ?= keep
+s5-phrasing-test:
+	$(PY) python analysis/s5_phrasing_test.py $(ARM)
+
+# Recover the exact launch configuration of every `complete` run from the .eval
+# headers. This is the generator behind REPRODUCE.md -- regenerate, do not edit
+# the prose by hand.
+#   make run-configs [DIRS="logs/pow-glm-5"]
+run-configs:
+	$(PY) python analysis/dump_run_configs.py $(DIRS)
